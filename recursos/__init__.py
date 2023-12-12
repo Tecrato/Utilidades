@@ -1,0 +1,1 @@
+from .api_images import tinify_API
