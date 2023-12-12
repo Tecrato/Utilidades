@@ -130,6 +130,7 @@ class Create_text(Base):
             self.direccion(self.rect)
 
             if self.mode == 1:
+                
                     self.rect_text.center = self.rect.center
             elif self.mode == 2:
                 self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
