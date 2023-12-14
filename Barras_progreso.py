@@ -31,14 +31,15 @@ class Barra_de_progreso:
             else:
                 self.rect.height = self.rect2.bottom - k
             self.rect.bottom = self.pos[1]
+            self.volumen = float(self.rect.height / self.lenght)
         elif self.orientacion == 'horizontal':
-            if self.rect2.bottom + g > self.lenght:
+            if self.rect2.left + g > self.lenght:
                 self.rect.w = self.lenght
-            elif self.rect2.bottom + g < 0:
+            elif self.rect2.left + g < 0:
                 self.rect.w = 0
             else:
                 self.rect.w = self.rect2.bottom - g
-        self.volumen = float(self.rect.w / self.lenght)
+            self.volumen = float(self.rect.w / self.lenght)
     
     def set_volumen(self, volumen) -> None:
         self.volumen = volumen

@@ -49,7 +49,8 @@ class Create_text(Base):
     - move() - Mueve el texto al sitio seleccionado\n
     - smothmove() - permite una transicion suave en el movimiento utilizando la clase Second Order Dinamics
     """
-    def __init__(self,text: str,size: int,font: str, pos: tuple,surface: Surface,dire='center',color='white',with_rect = False,color_rect ='black', **kwargs) -> None:
+    def __init__(self,text: str,size: int,font: str, pos: tuple,surface: Surface,dire='center',color='white',with_rect = False
+                 ,color_rect ='black', border_width = -1, **kwargs) -> None:
         
         pag.font.init()
         self.raw_text = text
@@ -73,7 +74,7 @@ class Create_text(Base):
         self.border_bottom_left_radius = kwargs.get('border_bottom_left_radius',-1)
         self.border_top_right_radius = kwargs.get('border_top_right_radius',-1)
         self.border_bottom_right_radius = kwargs.get('border_bottom_right_radius',-1)
-        self.border_width = kwargs.get('border_width', -1)
+        self.border_width = border_width
         self.border_color = kwargs.get('border_color', 'black')
 
         self.lista_text = []

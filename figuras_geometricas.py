@@ -33,6 +33,8 @@ class Poligono_regular:
 
 	def copy(self):
 		return self
+	def get_edges(self):
+		return self.figure
 
 
 class Poligono_irregular:
@@ -124,3 +126,5 @@ class Poligono_irregular:
 
 	def copy(self):
 		return self
+	def get_edges(self):
+		return self.figure
