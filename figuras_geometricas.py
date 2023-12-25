@@ -1,19 +1,23 @@
-import pygame as pag
+from dataclasses import dataclass, field
 from numpy import sin,cos,radians
 from io import open
+ 
 
 
+@dataclass
 class Poligono_regular:
-	def __init__(self, pos:tuple=(0,0), angle= 0, radius = 20, lados=4):
-		self.pos = pos
-		self.x, self.y= self.pos
-		self.radio = radius
-		self.angle = angle
-		self.lados = lados
-		if lados < 3: raise Exception('Para generar un poligono regular debe tener almenos 3 lados.')
+	pos: [list|tuple] = field(compare=False)
+	radio: int = 20
+	lados: int =4
+	angle: int = 0
+	color: [list|tuple] = (255,255,255,255)
+	
+	def __post_init__(self) -> None:
+		self.x, self.y = list(self.pos)
+		if self.lados < 3: raise Exception('Para generar un poligono regular debe tener almenos 3 lados.')
 		self.__generate()
 
-	def __generate(self):
+	def __generate(self) -> None:
 		nose = []
 		xs = [self.x + cos(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados)]
 		ys = [self.y - sin(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados)]
@@ -21,35 +25,41 @@ class Poligono_regular:
 			nose.append(list((x,y)))
 		self.figure = nose
 
-	def move(self,x=None,y=None,angle=None,radius=None):
-		self.x=x if x != None else self.x
-		self.y=y if y != None else self.y
+	def move(self,x=None,y=None,angle=None,radio=None) -> None:
+		self.pos[0]=x if x != None else self.pos[0]
+		self.pos[1]=y if y != None else self.pos[1]
 		self.angle=angle if angle != None else self.angle
-		self.radio=radius if radius != None else self.radio
+		self.radio=radio if radio != None else self.radio
 		self.__generate()
 
-	def draw(self, surface):
-		pag.draw.polygon(surface, 'white', self.figure)
 
 	def copy(self):
 		return self
-	def get_edges(self):
+	def get_edges(self) -> list:
 		return self.figure
 
 
 class Poligono_irregular:
-	def __init__(self, type, pos = (0,0), angle= 0, radius=20, **otros) -> None:
+	'''
+	# Contiene las siguientes figuras:
+	- flecha
+	- estrella
+	- rectangulo
+	- engranaje
+	- x
+	- coordenadas en una lista mediante la variable type
+	- nombre del archivo con un formato valido.
+	'''
+	def __init__(self, type, pos = (0,0), radius=20, angle= 0, **otros) -> None:
 		self.x, self.y= pos
 		self.angle = angle
 		self.radio = radius
 		self.type = type
-		self.rectangle_n =  otros.get('rect_n')
 		if self.type == 'engranaje':
-			self.diente =  otros.get('diente')
-			self.n = otros.get('n')
+			self.tamaño_diente =  otros.get('tamaño_diente')
+			self.num_dientes = otros.get('num_dientes')
 		elif self.type == 'export':
 			self.archive_name = otros.get('name')
-			self.n = otros.get('n')
 		self.color =  otros.get('color') if otros.get('color') != None else 'white'
 		self.__generate()
 
@@ -77,7 +87,7 @@ class Poligono_irregular:
 				[self.x + cos(radians(190 + self.angle))*self.radio,self.y - sin(radians(190 + self.angle)) * self.radio],
 			]
 		elif self.type == 'engranaje':
-			self.figure = [Poligono_regular((self.x + cos(radians(360/self.n*a +self.angle+45)) * self.radio,self.y - sin(radians(360/self.n*a +self.angle+45)) * self.radio),360/self.n*a +self.angle, self.diente) for a in range(self.n)]
+			self.figure = [Poligono_regular((self.x + cos(radians(360/self.num_dientes*a +self.angle+45)) * self.radio,self.y - sin(radians(360/self.num_dientes*a +self.angle+45)) * self.radio),360/self.num_dientes*a +self.angle, self.tamaño_diente) for a in range(self.num_dientes)]
 		elif self.type == 'x':
 			self.figure = [
 				[self.x + cos(radians(350  + self.angle))*self.radio,self.y - sin(radians(350  + self.angle)) * self.radio],
@@ -113,16 +123,22 @@ class Poligono_irregular:
 		self.angle=angle if angle != None else self.angle
 		self.radio=radio if radio != None else self.radio
 		self.__generate()
+	def move_sum(self,x:int=None,y:int=None,angle:int=None,radio:int=None,dt:float=1.0) -> None:
+		self.x=self.x+(x*dt) if x != None else self.x
+		self.y=self.y+(y*dt) if y != None else self.y
+		self.angle=self.angle + angle*dt if angle != None else self.angle
+		self.radio=self.radio+radio*dt if radio != None else self.radio
+		self.__generate()
 
-	def draw(self,surface):
-		if self.type in ['flecha','estrella','rectangulo','diamante']:
-			pag.draw.polygon(surface,self.color, self.figure)
-		elif self.type == 'engranaje':
-			pag.draw.circle(surface, self.color, (self.x,self.y),self.radio)
-			for x in self.figure:
-				pag.draw.polygon(surface,self.color,x.figure)
-		else:
-			pag.draw.polygon(surface,self.color, self.figure)
+	# def draw(self,surface) -> None:
+	# 	if self.type in ['flecha','estrella','rectangulo','diamante']:
+	# 		draw.polygon(surface,self.color, self.figure)
+	# 	elif self.type == 'engranaje':
+	# 		draw.circle(surface, self.color, (self.x,self.y),self.radio)
+	# 		for x in self.figure:
+	# 			draw.polygon(surface,self.color,x.figure)
+	# 	else:
+	# 		draw.polygon(surface,self.color, self.figure)
 
 	def copy(self):
 		return self

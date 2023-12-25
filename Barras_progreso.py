@@ -3,8 +3,7 @@ import pygame as pag
 from pygame.surface import Surface
 
 class Barra_de_progreso:
-    def __init__(self, pos: Tuple[int,int], surface: Surface, lenght: int, orientacion = 'vertical') -> None:
-        self.surface = surface
+    def __init__(self, pos: Tuple[int,int], lenght: int, orientacion = 'vertical') -> None:
         self.lenght = lenght
         self.pos = pos
         self.orientacion = orientacion
@@ -50,9 +49,9 @@ class Barra_de_progreso:
             self.rect.w = self.lenght*volumen
         pag.mixer_music.set_volume(volumen)
 
-    def draw(self) -> None:
-        pag.draw.rect(self.surface, 'lightblue', self.rect2, width=2)
-        pag.draw.rect(self.surface, 'green', self.rect)
+    def draw(self,surface) -> None:
+        pag.draw.rect(surface, 'lightblue', self.rect2, width=2)
+        pag.draw.rect(surface, 'green', self.rect)
 
     def move(self, pos) -> None:
         self.pos = pos

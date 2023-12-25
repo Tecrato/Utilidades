@@ -1,5 +1,6 @@
 from .Animaciones import *
 from .Barras_progreso import *
+from .figuras_geometricas import Poligono_irregular, Poligono_regular
 from .hipotenuza import *
 from .mytime import *
 from .particles import *
