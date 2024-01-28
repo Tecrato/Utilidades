@@ -1,4 +1,4 @@
-import tinify
+import tinify, decouple
 
 #ejemplo
 
@@ -10,8 +10,9 @@ import tinify
 
 class Compress_img:
     def compress_file(self, img, destino):
-        tinify.key = '3V8Kkx6pmrWy4g6cZtNVcBYWnjhQj8HK'
+        tinify.key = decouple.config('API_KEY')
         source = tinify.from_file(img)
         source.to_file(destino)
 
-    
+
+# Compress_img().compress_file('C:/Users/Edouard/Pictures/Naruto.jpg','C:/Users/Edouard/Pictures/Fnaf.jpg')

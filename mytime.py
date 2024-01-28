@@ -23,10 +23,15 @@ class Deltatime:
 
 def tener_el_tiempo(func):
 	def wr(*args, **kwargs) -> None:
-		time1 = time.pref_counter()
+		time1 = time.perf_counter()
 
-		result = func()
+		result = func(*args,**kwargs)
 
-		tiempo_final = time.pref_counter() - time1
-		print(f'El tiempo fue {tiempo_final}\n - {result}')
+		tiempo_final = time.perf_counter() - time1
+		if tiempo_final < 1.0:
+			tiempo_final *= 1000
+			print(f'El tiempo fue {tiempo_final:.3f} ms')
+		else:
+			print(f'El tiempo fue {tiempo_final:.3f} seg')
+		return result
 	return wr
