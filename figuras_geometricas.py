@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from numpy import sin,cos,radians
 from io import open
+from pygame import draw
  
 
 
@@ -87,7 +88,7 @@ class Poligono_irregular:
 				[self.x + cos(radians(190 + self.angle))*self.radio,self.y - sin(radians(190 + self.angle)) * self.radio],
 			]
 		elif self.type == 'engranaje':
-			self.figure = [Poligono_regular((self.x + cos(radians(360/self.num_dientes*a +self.angle+45)) * self.radio,self.y - sin(radians(360/self.num_dientes*a +self.angle+45)) * self.radio),360/self.num_dientes*a +self.angle, self.tamaño_diente) for a in range(self.num_dientes)]
+			self.figure = [Poligono_regular((self.x + cos(radians(360/self.num_dientes*a +self.angle+45)) * self.radio,self.y - sin(radians(360/self.num_dientes*a +self.angle+45)) * self.radio), self.tamaño_diente,4,360/self.num_dientes*a +self.angle) for a in range(self.num_dientes)]
 		elif self.type == 'x':
 			self.figure = [
 				[self.x + cos(radians(350  + self.angle))*self.radio,self.y - sin(radians(350  + self.angle)) * self.radio],
@@ -130,15 +131,15 @@ class Poligono_irregular:
 		self.radio=self.radio+radio*dt if radio != None else self.radio
 		self.__generate()
 
-	# def draw(self,surface) -> None:
-	# 	if self.type in ['flecha','estrella','rectangulo','diamante']:
-	# 		draw.polygon(surface,self.color, self.figure)
-	# 	elif self.type == 'engranaje':
-	# 		draw.circle(surface, self.color, (self.x,self.y),self.radio)
-	# 		for x in self.figure:
-	# 			draw.polygon(surface,self.color,x.figure)
-	# 	else:
-	# 		draw.polygon(surface,self.color, self.figure)
+	def draw(self,surface) -> None:
+		if self.type in ['flecha','estrella','rectangulo','diamante']:
+			draw.polygon(surface,self.color, self.figure)
+		elif self.type == 'engranaje':
+			draw.circle(surface, self.color, (self.x,self.y),self.radio)
+			for x in self.figure:
+				draw.polygon(surface,self.color,x.figure)
+		else:
+			draw.polygon(surface,self.color, self.figure)
 
 	def copy(self):
 		return self
