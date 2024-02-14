@@ -32,9 +32,12 @@ class Base:
             rect.bottom = self.pos[1]
             
     def smothmove(self, T, f, z, r) -> None:
-        self.smothmove_pos = self.pos
         self.smothmove_bool = True
+        self.smothmove_pos = self.pos
         self.movimiento = Second_Order_Dinamics(T, f, z, r, self.pos)
+    def normal_move(self) -> None:
+        self.smothmove_bool = False
+
 
 class Create_text(Base):
     """
@@ -104,10 +107,7 @@ class Create_text(Base):
             self.rect.center = self.rect_text.center
 
             for txt in range(len(self.raw_text)):
-                self.lista_text.append(Create_text(self.raw_text[txt], size, font, (pos[0],pos[1] + self.rect.h*txt), dire, color, False, color_rect, padding=padding, rect_width=self.rect_width, 
-                    border_radius=self.border_radius, border_top_left_radius=self.border_top_left_radius, 
-                    border_bottom_right_radius=self.border_bottom_right_radius, border_bottom_left_radius=self.border_bottom_left_radius, 
-                    border_top_right_radius=self.border_top_right_radius, border_width=self.border_width, border_color=self.border_color))
+                self.lista_text.append(Create_text(self.raw_text[txt], size, font, (pos[0],pos[1] + self.rect.h*txt), dire, color, False, color_rect, padding=padding, rect_width=0))
             self.rect = self.text.get_rect()
             if self.border_radius == 10000:
                 self.rect.size = (max(self.rect.h * len(self.raw_text) + self.padding[0],max(self.font.render(txt, 1, self.color).get_rect().width + self.padding[0] for txt in self.raw_text)), max(self.rect.h * len(self.raw_text) + self.padding[2],max(self.font.render(tixt, 1, self.color).get_rect().width + self.padding[1] for tixt in self.raw_text)))
@@ -122,9 +122,9 @@ class Create_text(Base):
 
     def draw(self, surface=None) -> None:
         if self.smothmove_bool:
-            pos = self.movimiento.update(self.smothmove_pos)
-            self.pos = pos
+            self.pos = self.movimiento.update(self.smothmove_pos)
             self.direccion(self.rect)
+            self.direccion(self.rect_border)
 
             if self.mode == 1:
                     self.rect_text.center = self.rect.center
@@ -140,6 +140,7 @@ class Create_text(Base):
             for txt in self.lista_text:
                 txt.draw(surface)
             return
+        
         if self.with_rect:
             pag.draw.rect(surface, self.color_rect, self.rect, self.rect_width,self.border_radius
                 , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
@@ -170,7 +171,7 @@ class Create_text(Base):
             self.direccion(self.rect_text)
 
             for txt in range(len(self.raw_text)):
-                self.lista_text.append(Create_text(self.raw_text[txt], self.size, self.raw_font, (self.pos[0],self.pos[1] + self.rect.h*txt), self.surface, self.dire, self.color, False, self.color_rect, self.padding, self.rect_width, self.border_radius, self.border_top_left_radius, self.border_bottom_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius, self.border_width, self.border_color))
+                self.lista_text.append(Create_text(self.raw_text[txt], self.size, self.raw_font, (self.pos[0],self.pos[1] + self.rect.h*txt), self.dire, self.color, False, self.color_rect, padding=self.padding, rect_width=0))
             self.rect = self.text.get_rect()
             if self.border_radius == 10000:
                 self.rect.size = (max(self.rect.h * len(self.raw_text) * 1.23,max(self.font.render(tixt, 1, self.color).get_rect().width * 1.2 for tixt in self.raw_text)), max(self.rect.h * len(self.raw_text) * 1.2,max(self.font.render(tixt, 1, self.color).get_rect().width * 1.2 for tixt in self.raw_text)))
@@ -194,6 +195,7 @@ class Create_text(Base):
         else:
             self.pos = pos
             self.direccion(self.rect)
+            self.direccion(self.rect_border)
 
             if self.mode == 1:
                 self.rect_text.center = self.rect.center
@@ -201,7 +203,16 @@ class Create_text(Base):
                 for n, txt in enumerate(self.lista_text):
                     txt.move((pos[0],pos[1] + self.rect.h*n), dire)
                 self.direccion(self.rect)
+                self.direccion(self.rect_border)
                 self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
+    
+    def move_rel(self, pos) -> None:
+        if self.smothmove_bool:
+            self.smothmove_pos = self.pos + pos
+        else:
+            self.pos = Vector2(self.pos + pos)
+            self.direccion(self.rect)
+            self.direccion(self.rect_border)
 
     def get_text(self) -> str:
         return self.raw_text
@@ -231,8 +242,7 @@ class Create_boton(Create_text):
 
         self.toggle_rect = kwargs.get('toggle_rect',False)
 
-        color_active = kwargs.get('color_active',None)
-        self.color_active = color_active if color_active != None else color
+        self.color_active = kwargs.get('color_active',None)
         self.func = func
     
         self.sound_to_hover = kwargs.get('sound_to_hover',False)
@@ -255,7 +265,7 @@ class Create_boton(Create_text):
                     self.sound_to_hover.play()
                 self.hover = True
                 self.color_rect = self.color_rect_active
-                self.change_color(self.color_active)
+                self.change_color(self.color_active) if self.color_active else None
                 if self.toggle_rect and self.with_rect2:
                     self.with_rect = True
         else:
@@ -272,10 +282,10 @@ class Create_boton(Create_text):
             self.sound_to_click.play()
         if self.func:
             self.func()
-    def change_color_ad(self,color,color_active) -> None:
+    def change_color_ad(self,color,color_active = None) -> None:
         self.color_inactive = color
         self.color_active = color_active if color_active != None else self.color_active
-        if self.hover:
+        if self.hover and self.color_active:
             self.change_color(self.color_active)
         else:
             self.change_color(self.color_inactive)
@@ -420,7 +430,7 @@ class Input_text(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
 
-    def left(self):
+    def left(self) -> None:
         if not self.left_b:
             self.left_b = True
             self.left_time = time.time()
@@ -428,7 +438,7 @@ class Input_text(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
 
-    def right(self):
+    def right(self) -> None:
         if not self.right_b:
             self.right_b = True
             self.right_time = time.time()
@@ -498,7 +508,7 @@ class List_Box:
         self.smothmove_bool = False
         self.el_elegido = False
 
-        self.actualizar()
+        self.actualizar_lista()
         self.scroll_bar_active = kwargs.get('scroll_bar_active',True)
         if self.scroll_bar_active:
             #Scrollbar
@@ -525,10 +535,10 @@ class List_Box:
             # if self.smothscroll == True:
             te.draw(self.lista_surface)
             # else:
-                # n = self.lista_surface_rect.copy()
-                # n.topleft = (0,0)
-                # if n.collidepoint(te.rect.center):
-                #     te.draw()
+            #     n = self.lista_surface_rect.copy()        # Nose si es que no sirve o que
+            #     n.topleft = (0,0)                         # pero no hay cambio
+            #     if n.collidepoint(te.rect.center):
+            #         te.draw(self.lista_surface)
         if self.scroll:
             self.scroll_func()
             
@@ -568,13 +578,12 @@ class List_Box:
         for num ,text in enumerate(self.lista_objetos):
             text.move((self.padding_left,(self.text_size + self.separation) * num + self.desplazamiento))
 
-    def actualizar(self) -> None:
+    def actualizar_lista(self) -> None:
         self.lista_objetos.clear()
+        
         for num ,text in enumerate(self.lista_palabras):
-            if self.with_index:
-                self.lista_objetos.append(Create_text(f'{num}) {text}', self.text_size, None, (self.padding_left,(self.text_size + self.separation) * num + self.padding_top), 'topleft', self.text_color))
-            else:
-                self.lista_objetos.append(Create_text(text, self.text_size, None, (self.padding_left,(self.text_size + self.separation) * num + self.padding_top), 'topleft', self.text_color))
+            self.lista_objetos.append(Create_text((f'{num}) {text}') if self.with_index else text, self.text_size, None, (self.padding_left,(self.text_size + self.separation) * num + self.padding_top), 'topleft', self.text_color))
+        
         self.total_height = 0
         if self.smothscroll:
             for x in self.lista_objetos:
@@ -583,16 +592,16 @@ class List_Box:
 
     def append(self,texto:str) -> None:
         self.lista_palabras.append(texto)
-        self.actualizar()
+        self.actualizar_lista()
 
     def change_list(self, lista) -> None:
         self.lista_palabras = [] if lista == None or not lista else lista
         if self.scroll_bar_active:
             self.select_box.top = self.rect.bottom
         self.selected_num = -1
-        self.actualizar()
+        self.actualizar_lista()
     
-    def clear(self):
+    def clear(self) -> None:
         self.lista_palabras.clear()
         self.selected_num = -1
 
@@ -600,9 +609,11 @@ class List_Box:
         if pos == None:
             m = Vector2(pag.mouse.get_pos())
             m -= self.pos
-            if self.header: m += (0,10)
+            if self.header: m += (0,self.text_header.rect.h)
         else:
             m = Vector2(pos)
+            if self.header: m += (0,10)
+
         if isinstance(index, str):
             self.select_box.top = self.lista_surface_rect.h
             return False
@@ -654,7 +665,7 @@ class Multi_list(Base):
     '''
     def __init__(self, size:tuple,pos:tuple,num_lists:int=2,lista: list = None, text_size: int = 20, separation: int = -5,
         background_color = 'black', selected_color = (100,100,100,100), text_color= 'white', colums_witdh= -1, header: bool =True,
-        header_text: list = None, **kwargs) -> None:
+        header_text: list = None, dire: str = 'topleft', **kwargs) -> None:
         
         self.size = Vector2(size)
         self.pos = Vector2(pos)
@@ -676,6 +687,7 @@ class Multi_list(Base):
         self.text_header = [None for x in range(num_lists)] if header_text == None else header_text
         self.header_radius = kwargs.get('header_radius',0)
         self.border_color = kwargs.get('border_color', 'black')
+        self.dire = dire
 
         self.listas = []
         self.lineas = []
@@ -684,6 +696,7 @@ class Multi_list(Base):
         self.actual_index = -1
 
         self.rect = pag.rect.Rect(pos[0], pos[1], size[0], size[1])
+        self.direccion(self.rect)
         self.lista_surface= pag.surface.Surface(self.rect.size, pag.SRCALPHA)
         self.lista_surface_rect = self.lista_surface.get_rect()
         self.lista_surface_rect.topleft = self.pos
@@ -704,7 +717,9 @@ class Multi_list(Base):
     def draw(self,surface) -> None:
         if self.smothmove_bool:
             self.pos = self.movimiento.update(self.smothmove_pos)
-            self.rect.topleft = self.pos
+            # self.rect.topleft = self.pos
+            self.direccion(self.rect)
+
         self.lista_surface.fill(self.background_color)
         if self.header:
             pag.draw.rect(self.lista_surface, (0,0,0,0), pag.rect.Rect(0,0,self.rect.w, 20))
@@ -720,6 +735,20 @@ class Multi_list(Base):
         for x in self.listas:
             pag.draw.rect(self.lista_surface, self.border_color, x.rect, 1)
         surface.blit(self.lista_surface,self.rect)
+
+    def move(self, pos) -> None:
+        if self.smothmove_bool:
+            self.smothmove_pos = pos
+        else:
+            self.pos = Vector2(*pos)
+            self.direccion(self.rect)
+
+    def move_rel(self, pos) -> None:
+        if self.smothmove_bool:
+            self.smothmove_pos = self.pos + pos
+        else:
+            self.pos = Vector2(self.pos + pos)
+            self.direccion(self.rect)
 
     def rodar(self,y) -> None:
         for x in self.listas:

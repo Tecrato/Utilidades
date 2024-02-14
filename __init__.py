@@ -6,4 +6,5 @@ from .mytime import *
 from .particles import *
 from .sparks import *
 from .text import Create_text,Create_boton,Input_text,List_Box,Multi_list
+from .optimize import memosize
 import Utilidades.recursos as recursos
