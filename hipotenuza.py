@@ -15,13 +15,20 @@ def Angulo(vector1, vector2) -> float:
 class Vector2:
     def __init__(self,*args) -> None:
         if len(args) == 1:
-            self.x,self.y = args[0]
+            try:
+                self.x,self.y = args[0][0],args[0][1]
+            except:
+                self.x = args[0]
+                self.y = args[0]
         elif len(args) == 2:
             self.x = args[0]
             self.y = args[1]
+        
+        self.x = float(self.x)
+        self.y = float(self.y)
     
-    def __repr__(self) -> str:
-        return [self.x,self.y]
+    # def __repr__(self) -> str:
+    #     return [self.x,self.y]
     def __str__(self) -> str:
         return f'x:{self.x} - y:{self.y}'
     def __len__(self) -> str:
@@ -34,19 +41,20 @@ class Vector2:
         elif index == 1:
             self.y = float(value)
 
+
     def __add__(self,other) -> list:
-        return [self.x+other[0],self.y+other[1]]
+        return Vector2(self.x+other[0],self.y+other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x+other,self.y+other)
     def __radd__(self,other) -> list:
-        return [self.x+other[0],self.y+other[1]]
+        return Vector2(self.x+other[0],self.y+other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x+other,self.y+other)
     def __sub__(self,other) -> list:
-        return [self.x-other[0],self.y-other[1]] if isinstance(other,Iterable) else [self.x-other,self.y-other]
+        return Vector2(self.x-other[0],self.y-other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x-other,self.y-other)
     def __rsub__(self,other) -> list:
-        return [self.x-other[0],self.y-other[1]] if isinstance(other,Iterable) else [self.x-other,self.y-other]
+        return Vector2(self.x-other[0],self.y-other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x-other,self.y-other)
     def __mul__(self,other) -> list:
-        return [self.x*other[0],self.y*other[1]]
+        return Vector2(self.x*other[0],self.y*other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x*other,self.y*other)
     def __rmul__(self,other) -> list:
-        return [self.x*other[0],self.y*other[1]]
+        return Vector2(self.x*other[0],self.y*other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x*other,self.y*other)
     def __truediv__(self,other) -> list:
-        return [self.x/other[0],self.y/other[1]]
+        return Vector2(self.x/other[0],self.y/other[1]) if isinstance(other,Iterable) or isinstance(other,Vector2) else Vector2(self.x/other,self.y/other)
     def __pow__(self,other) -> list:
-        return [self.x**other[0],self.y**other[1]]
+        return Vector2(self.x**other[0],self.y**other[1])

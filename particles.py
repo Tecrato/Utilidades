@@ -22,7 +22,6 @@ class Particles:
 
         if self.type == 3:
             self.particles.append([Vector2(pos), Vector2(vel),self.radius])
-            # self.particles = [((sin(radians(24*i))*3,cos(radian
     def update(self, coord = (0.0,0.0), pos = None,dt= 1) -> bool:
         if pos == None:
             pos = Vector2(coord)
@@ -33,7 +32,10 @@ class Particles:
 
                 if self.type == 1:
                     if self.speed[0] != 0 or self.speed[1] != 0:
-                        self.particles.append([Vector2(pos),[random.randint(int(self.speed[0]-1),int(self.speed[0]+1)),random.randint(int(self.speed[1]-1),int(self.speed[1]+1))],random.randint(self.radius/2,self.radius*2)])
+                        self.particles.append([
+                            Vector2(pos),
+                            [random.randint(int(self.speed[0]-1),int(self.speed[0]+1)),random.randint(int(self.speed[1]-1),int(self.speed[1]+1))],
+                            (random.random()*(self.radius/2+self.radius*2)) - self.radius])
                 elif self.type == 2:
                     if self.speed[0] != 0 or self.speed[1] != 0:
                         self.particles.append([Vector2(pos), [0,0],self.radius])
@@ -77,7 +79,7 @@ class Particles:
 
     def apply_lighting(self, part):
         for x in range(self.lighting_number):
-            radius = part[2]*(x+1) *1.5
+            radius = part[2]* (1.5*(x+1))
             self.surface.blit(self.lighting_func(radius),part[0]-Vector2(radius), special_flags= pag.BLEND_RGB_ADD)
 
 

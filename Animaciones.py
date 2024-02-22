@@ -4,14 +4,6 @@ from math import comb
 from pygame.math import Vector2
 
 
-def calculate_pos(k1,k2,k3,y,t,x,xd,yd) -> list:
-        k2_stable = max(k2,t*t/2 + t*k1/2, t*k1)
-
-        y = y + t * yd
-        yd = yd + t * (x + k3*xd - y - k1*yd) / k2_stable
-        return [y,yd]
-
-
 class Second_Order_Dinamics:
     def __init__(self, T, f, z, r, coord:list) -> None:
 
@@ -23,7 +15,7 @@ class Second_Order_Dinamics:
 
         self.xp = Vector2(coord)
         self.y = Vector2(coord)
-        self.yd = Vector2(coord)
+        self.yd = Vector2(0,0)
 
     def update(self, x, xd = None) -> list:
         x = Vector2(x)
@@ -33,11 +25,11 @@ class Second_Order_Dinamics:
             xd = (x-self.xp) / self.__T
             self.xp = x
         
-        result = calculate_pos(self.k1,self.k2,self.k3,self.y,self.__T,x,xd, self.yd)
 
-        self.y = result[0]
-        self.yd = result[1]
+        k2_stable = max(self.k2,self.__T*self.__T/2 + self.__T*self.k1/2, self.__T*self.k1)
 
+        self.y = self.y + self.__T * self.yd
+        self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / k2_stable
         return self.y
         
 
@@ -54,7 +46,7 @@ class Curva_de_Bezier:
     def move(self, points) -> None:
         self.points = [Vector2(ag) for ag in points]
 
-    def set(self,progress:float):
+    def set(self,progress:float) -> None:
         ' - Define en que % de la animacion estara'
         self.__T = progress
 
