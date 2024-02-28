@@ -1,8 +1,6 @@
 import pygame as pag, time
 from pygame.math import Vector2
 
-from .mytime import tener_el_tiempo
-
 from .Animaciones import Second_Order_Dinamics
 
 class Base:
@@ -47,7 +45,7 @@ class Create_text(Base):
 
     ### Comandos
     - draw() - Dibuja el texto\n
-        - Si colocas border radius 10_000 sera redondo\n
+        - Si colocas border radius -1 sera redondo\n
     - change_text() - Cambia el texto\n
     - change_color() - Cambia el color del texto\n
     - get_text() - Retorna el texto actual
@@ -68,10 +66,7 @@ class Create_text(Base):
         self.with_rect = with_rect
         self.color_rect = color_rect
         padding = kwargs.get('padding',20)
-        if isinstance(padding, tuple) or isinstance(padding, Vector2) or isinstance(padding, list):
-            self.padding = Vector2(padding)
-        else:
-            self.padding = Vector2(padding,padding)
+        self.padding: Vector2 = Vector2(padding)
         self.rect_width = kwargs.get('rect_width',0)
         
         self.border_radius = kwargs.get('border_radius',0)
@@ -94,7 +89,7 @@ class Create_text(Base):
             self.rect_text = self.text.get_rect()
             self.rect = self.text.get_rect()
             self.rect.size = (self.rect.w + self.padding[0], self.rect.h + self.padding[1])
-            if self.border_radius == 10000:
+            if self.border_radius == -1:
                 self.rect.size = (max(self.rect_text.h * 1.2,self.rect_text.w * 1.2), max(self.rect_text.h * 1.2,self.rect_text.w * 1.2))
             self.rect.center = self.pos
             self.direccion(self.rect)
@@ -114,7 +109,7 @@ class Create_text(Base):
             for txt in range(len(self.raw_text)):
                 self.lista_text.append(Create_text(self.raw_text[txt], size, font, (pos[0],pos[1] + self.rect.h*txt), dire, color, False, color_rect, padding=padding, rect_width=0))
             self.rect = self.text.get_rect()
-            if self.border_radius == 10000:
+            if self.border_radius == -1:
                 self.rect.size = (max(self.rect.h * len(self.raw_text) + self.padding[0],max(self.font.render(txt, 1, self.color).get_rect().width + self.padding[0] for txt in self.raw_text)), max(self.rect.h * len(self.raw_text) + self.padding[2],max(self.font.render(tixt, 1, self.color).get_rect().width + self.padding[1] for tixt in self.raw_text)))
             else:
                 self.rect.width = min(max(self.font.render(tixt, 1, self.color).get_rect().width * 1.2 for tixt in self.raw_text), max(self.font.render(tixt, 1, self.color).get_rect().width + self.padding[0] for tixt in self.raw_text))
@@ -312,12 +307,12 @@ class Input_text(Base):
         self.border_color = kwargs.get('border_color', 'black')
 
         self.size = Vector2(size)
-        self.pos = pos
-        if isinstance(padding, tuple) or isinstance(padding, Vector2) or isinstance(padding, list):self.padding = Vector2(padding)
-        else: self.padding = Vector2(padding,padding)
+        self.pos = Vector2(pos)
+        self.padding = Vector2(padding)
         self.raw_text = ''
         self.max_letter = max_letter
         self.background_color = background_color
+        self.font = font
 
 
         self.text = Create_text(self.raw_text, size[0], font, pos, 'left', padding=padding)
@@ -346,20 +341,25 @@ class Input_text(Base):
         self.right_time = 0
         self.typing_line = True
         self.typing_line_time = time.time()
+        self.letter_pos = [0]
+        self.button_pressed_time = 0
 
     def draw(self, surface) -> None:
-        if self.backspace and time.time() - self.del_time > .5:
-            self.del_letter()
-        if self.left_b and time.time() - self.left_time > .5:
-            self.left()
-        if self.right_b and time.time() - self.right_time > .5:
-            self.right()
-        pag.draw.rect(surface, self.background_color, self.text_rect, border_radius=self.border_radius)
+        if time.time() - self.button_pressed_time > .5:
+            if self.backspace and time.time() - self.del_time > .03:
+                self.del_letter()
+                self.del_time = time.time()
+            elif self.left_b and time.time() - self.left_time > .03:
+                self.left()
+                self.left_time = time.time()
+            elif self.right_b and time.time() - self.right_time > .03:
+                self.right()
+                self.right_time = time.time()
+        pag.draw.rect(surface, self.background_color, self.text_rect, 0, self.border_radius, self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
         pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
             , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
         self.input_surface.fill((0,0,0,0))
 
-        # else:
         if self.typing:
             if time.time()-self.typing_line_time > .7:
                 self.typing_line = not self.typing_line
@@ -373,10 +373,10 @@ class Input_text(Base):
                 
         surface.blit(self.input_surface, self.text_rect2)
 
-    def eventos_teclado(self, eventos, offset=False):
+    def eventos_teclado(self, eventos):
         for evento in eventos:
             if self.typing:
-                if evento.type == pag.KEYDOWN:
+                if evento.type == pag.KEYDOWN and not (self.backspace or self.left_b or self.right_b):
                     if evento.key == pag.K_LEFT:
                         self.left()
                     elif evento.key == pag.K_RIGHT:
@@ -385,6 +385,7 @@ class Input_text(Base):
                         self.del_letter()
                     elif evento.key == pag.K_RETURN:
                         return "enter"
+                    self.button_pressed_time = time.time()
                 elif evento.type == pag.TEXTINPUT:
                     self.add_letter(evento.text)
                 elif evento.type == pag.KEYUP:
@@ -397,12 +398,22 @@ class Input_text(Base):
             if evento.type == pag.MOUSEBUTTONDOWN:
                 self.click(evento.pos)
 
-    def click(self, pos) -> None:
-        if pos:
-            m = Vector2(pos)
+    def check_pos_letter_click(self,x):
+        acumulacion = 0
+        for pos, i in enumerate(self.letter_pos):
+            if x < acumulacion+self.text.rect_text.left:
+                return pos
+            acumulacion += i
+        else:
+            return len(self.raw_text)
 
-        if self.text_rect.collidepoint(m): 
+    def click(self, pos) -> None:
+
+        if self.text_rect.collidepoint(pos): 
             self.typing = True
+            self.typing_pos = self.check_pos_letter_click(pos[0]-self.pos.x-(self.padding.x))
+            self.typing_line = True
+            self.typing_line_time = time.time()
         else:
             self.typing = False
             self.backspace = False
@@ -413,29 +424,14 @@ class Input_text(Base):
     def add_letter(self, t) -> None:
         if len(self.raw_text) < self.max_letter:
             self.raw_text = self.raw_text[:self.typing_pos] + t + self.raw_text[self.typing_pos:]
+            self.text.change_text(self.raw_text)
+            self.letter_pos.insert(self.typing_pos,Create_text(t,int(self.size.x), self.font, (0,0), padding=0).rect.w)
             self.typing_pos += 1
-            self.text.change_text(self.raw_text)
-            if self.text.rect_text.w > self.text_rect2.w:
-                self.text.move((self.text_rect2.width,self.size[0]/2), 'right')
-            else:
-                self.text.move((0,self.size[0]/2), 'left')
-        self.typing_line = True
-        self.typing_line_time = time.time()
-
-    def del_letter(self) -> None:
-        if not self.backspace:
-            self.backspace = True
-            self.del_time = time.time()
-        if len(str(self.raw_text)) > 0:
-            if self.typing_pos == 0:
-                return
-            self.raw_text = self.raw_text = self.raw_text[:self.typing_pos-1] + self.raw_text[self.typing_pos:]
-            self.typing_pos -= 1
-            self.text.change_text(self.raw_text)
-            if self.text.rect_text.w > self.text_rect2.w:
-                self.text.move((self.text_rect2.width,self.size[0]/2), 'right')
-            else:
-                self.text.move((0,self.size[0]/2), 'left')
+            suma = sum(self.letter_pos[:self.typing_pos])
+            if suma + self.text.rect_text.left < 0:
+                self.text.move((-suma,self.size[0]/2),'left')
+            elif suma + self.text.rect_text.left > self.text_rect2.w:
+                self.text.move_rel((-self.letter_pos[self.typing_pos-1]*1.5,0))
         self.typing_line = True
         self.typing_line_time = time.time()
 
@@ -446,6 +442,9 @@ class Input_text(Base):
         self.typing_pos = max(0,self.typing_pos -1)
         self.typing_line = True
         self.typing_line_time = time.time()
+        suma = sum(self.letter_pos[:self.typing_pos])
+        if suma + self.text.rect_text.left < 0:
+            self.text.move((-suma,self.size[0]/2),'left')
 
     def right(self) -> None:
         if not self.right_b:
@@ -454,20 +453,49 @@ class Input_text(Base):
         self.typing_pos = min(len(self.raw_text),self.typing_pos + 1)
         self.typing_line = True
         self.typing_line_time = time.time()
+        suma = sum(self.letter_pos[:self.typing_pos])
+        if suma + self.text.rect_text.left > self.text_rect2.w - self.padding.x:
+            self.text.move_rel((-self.letter_pos[self.typing_pos],0))
 
-    def set(self, text) -> None:
-        self.raw_text = text + ' '
-        self.typing_pos = len(str(self.raw_text))
-        self.text.change_text(self.raw_text)
-        self.backspace = False
+    def del_letter(self) -> None:
+        if not self.backspace:
+            self.backspace = True
+            self.del_time = time.time()
+        if len(str(self.raw_text)) > 0:
+            if self.typing_pos == 0:
+                return
+            
+            self.raw_text = self.raw_text[:self.typing_pos-1] + self.raw_text[self.typing_pos:]
+            self.letter_pos.pop(self.typing_pos)
+            self.typing_pos -= 1
+            self.text.change_text(self.raw_text)
+            if self.text.rect_text.w > self.text_rect2.w:
+                self.text.move((self.text_rect2.width,self.size[0]/2), 'right')
+            else:
+                self.text.move((0,self.size[0]/2), 'left')
         self.typing_line = True
         self.typing_line_time = time.time()
+
+    def clear(self):
+        self.letter_pos = [0]
+        self.raw_text = ''
+        self.typing_pos = 1
+        self.typing_line = True
+        self.typing_line_time = time.time()
+        self.text.change_text(self.raw_text)
+        self.text.move((0,self.size[0]/2), 'left')
+
+
+    def set(self, text) -> None:
+        self.clear()
+        for x in text:
+            self.add_letter(x)
 
     def get_text(self) -> str:
         return self.raw_text
     
     def __str__(self) -> str:
-        return f'{self.raw_text = } - {self.pos = } - {self.max_letter}'
+        return f'{self.raw_text}'
 
 class List_Box:
     '''
@@ -775,8 +803,6 @@ class Multi_list(Base):
             x.rodar(y)
 
     def append(self,data) -> None:
-        # for i,x in enumerate(data):
-        #     self.listas[i].append(x)
         for i in range(self.num_list):
             if i < len(data):
                 self.listas[i].append(data[i])
@@ -819,7 +845,6 @@ class Multi_list(Base):
         return list([list(x) for x in zip(*var1)])
 
     def __getitem__(self,index: int):
-        # return [li[index] for li in self.listas]
         return self.listas[index]
     def __setitem__(self,index,value):
         self.listas[index] = value
