@@ -13,7 +13,6 @@ class Funcs_pool:
         self.running[f'{alias}'].join(timeout)
 
     def start(self,alias) -> None:
-    #     self.threads[f'{alias}']['func'].start()
         self.go(alias)
 
     def go(self,alias, id=0) -> None:
