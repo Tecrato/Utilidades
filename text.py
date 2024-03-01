@@ -90,7 +90,9 @@ class Create_text(Base):
             self.rect = self.text.get_rect()
             self.rect.size = (self.rect.w + self.padding[0], self.rect.h + self.padding[1])
             if self.border_radius == -1:
-                self.rect.size = (max(self.rect_text.h * 1.2,self.rect_text.w * 1.2), max(self.rect_text.h * 1.2,self.rect_text.w * 1.2))
+                self.border_radius = 100_000
+                n = max(self.rect_text.h * 1.2 + self.padding.y,self.rect_text.w * 1.2 + self.padding.x)
+                self.rect.size = (n, n)
             self.rect.center = self.pos
             self.direccion(self.rect)
             self.rect_text.center = self.rect.center
@@ -110,6 +112,7 @@ class Create_text(Base):
                 self.lista_text.append(Create_text(self.raw_text[txt], size, font, (pos[0],pos[1] + self.rect.h*txt), dire, color, False, color_rect, padding=padding, rect_width=0))
             self.rect = self.text.get_rect()
             if self.border_radius == -1:
+                self.border_radius = 100_000
                 self.rect.size = (max(self.rect.h * len(self.raw_text) + self.padding[0],max(self.font.render(txt, 1, self.color).get_rect().width + self.padding[0] for txt in self.raw_text)), max(self.rect.h * len(self.raw_text) + self.padding[2],max(self.font.render(tixt, 1, self.color).get_rect().width + self.padding[1] for tixt in self.raw_text)))
             else:
                 self.rect.width = min(max(self.font.render(tixt, 1, self.color).get_rect().width * 1.2 for tixt in self.raw_text), max(self.font.render(tixt, 1, self.color).get_rect().width + self.padding[0] for tixt in self.raw_text))
@@ -565,21 +568,26 @@ class List_Box:
         self.select_box = pag.rect.Rect(0,-5000,self.lista_surface_rect.w,self.letter_size)
         self.selected_num = -1
 
-    def draw(self,surface) -> None:
-        if self.header:
-            self.text_header.draw(surface)
+    def draw_surf(self):
+
         self.lista_surface.fill(self.background_color)
         pag.draw.rect(self.lista_surface, self.selected_color, self.select_box)
-        self.select_box.centery = self.lista_objetos[self.selected_num].rect.centery if self.selected_num != -1 else 4000
         for te in self.lista_objetos:
             te.draw(self.lista_surface, only_move=False if -self.padding_top-30 < te.pos.y < self.rect.h else True)
-        if self.scroll:
-            self.scroll_func()
             
-        if self.total_height + self.lista_surface_rect.h > self.rect.h and self.scroll_bar_active:
+        if self.scroll_bar_active and self.total_height + self.lista_surface_rect.h > self.rect.h:
             pag.draw.rect(self.lista_surface, 'white', self.barra)
             self.lista_surface.blit(self.bar_surface, self.bar.topleft)
 
+    def draw(self,surface) -> None:
+        if self.header:
+            self.text_header.draw(surface)
+        self.select_box.centery = self.lista_objetos[self.selected_num].rect.centery if self.selected_num != -1 else 4000
+        if self.smothscroll:
+            self.draw_surf()
+        if self.scroll:
+            self.scroll_func()
+            
         if self.smothmove_bool:
             self.pos = self.movimiento.update(self.smothmove_pos)
             self.rect.topleft = self.pos
@@ -611,6 +619,8 @@ class List_Box:
         
         for num ,text in enumerate(self.lista_objetos):
             text.move((self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento))
+        if not self.smothscroll:
+            self.draw_surf()
 
     def actualizar_lista(self) -> None:
         self.lista_objetos.clear()
