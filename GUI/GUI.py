@@ -1,7 +1,6 @@
 import pygame as pag, pyperclip
-from pathlib import Path
 
-from .text import Create_boton, Create_text, Input_text
+from ..text import Create_boton, Create_text, Input_text
 from pygame.math import Vector2
 
 configs = {}
