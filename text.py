@@ -3,6 +3,14 @@ from pygame.math import Vector2
 
 from .Animaciones import Second_Order_Dinamics
 
+
+'''
+1) Hacer superficies y normalizar una funcion draw.
+2) normalizar el move y move_rel.
+3) Hacer que la barra de las listas cambie de tamaño con el tamaño de la lista.
+4) Hacer otra clase multilista, donde las listas sean tuplas y no List_box.
+'''
+
 class Base:
     def create_border(self, rect, border_width) -> None:
         self.rect_border = pag.rect.Rect(0,0,rect.size[0] + border_width,rect.size[1] + border_width)
@@ -284,11 +292,14 @@ class Create_boton(Create_text):
                     self.with_rect = False
         super().draw(surface)
 
-    def click(self) -> None:
+    def click(self,pos) -> None:
+        if not self.rect.collidepoint(pos):
+            return False
         if self.sound_to_click:
             self.sound_to_click.play()
         if self.func:
             self.func()
+        return True
     def change_color_ad(self,color,color_active = None) -> None:
         self.color_inactive = color
         self.color_active = color_active if color_active != None else self.color_active
@@ -298,6 +309,11 @@ class Create_boton(Create_text):
             self.change_color(self.color_inactive)
 
 class Input_text(Base):
+    '''
+    for x in self.lista_inputs:
+        if isinstance(x,Input_text):
+            x.update(eventos)
+    '''
     def __init__(self, pos: tuple, size: tuple, font: str, text_value: str = 'Type here',max_letter = 20, padding = 20,
         text_color = 'white', background_color = 'black', **kwargs) -> None:
         
@@ -323,7 +339,7 @@ class Input_text(Base):
         self.text_rect.w = size[1]
         self.create_border(self.text_rect, self.border_width)
 
-        self.text = Create_text(self.raw_text, size[0], font, pos, 'left', padding=5)
+        self.text = Create_text('abdc123--||', size[0], font, pos, 'left', padding=5)
         self.text_rect2 = self.text.rect.copy()
         self.text_rect2.w = size[1] - self.padding.x
         self.text_rect2.left += self.padding.x/2
@@ -490,6 +506,7 @@ class Input_text(Base):
 
 
     def set(self, text) -> None:
+        'Cambiar el texto'
         self.clear()
         for x in text:
             self.add_letter(x)
@@ -498,7 +515,7 @@ class Input_text(Base):
         return self.raw_text
     
     def __str__(self) -> str:
-        return f'{self.raw_text}'
+        return self.raw_text
 
 class List_Box:
     '''
@@ -533,7 +550,7 @@ class List_Box:
         self.lista_objetos: list[Create_text] = []
 
         if self.header:
-            self.text_header: Create_text = Create_text(self.text_header, text_size, None, pos, 'topleft', 'black', True, 'darkgrey',
+            self.text_header: Create_text = Create_text(self.text_header, 20, None, pos, 'topleft', 'black', True, 'darkgrey',
             padding=(20,15),border_width=1, border_top_left_radius=kwargs.get('header_top_left_radius',20), border_top_right_radius=kwargs.get('header_top_right_radius',20))
             self.text_header.rect.w = size[0]
             self.text_header.rect_border.w = size[0]+1
@@ -722,7 +739,7 @@ class Multi_list(Base):
     '''
     def __init__(self, size:tuple,pos:tuple,num_lists:int=2,lista: list[list] = None, text_size: int = 20, separation: int = 0,
         background_color = 'black', selected_color = (100,100,100,100), text_color= 'white', colums_witdh= -1, header: bool =True,
-        header_text: list = None, dire: str = 'topleft', fonts=None, default: list[list]=None, **kwargs) -> None:
+        header_text: list = None, dire: str = 'topleft', fonts: list['str']|None = None, default: list[list]=None, **kwargs) -> None:
         
         self.size = Vector2(size)
         self.pos = Vector2(pos)
@@ -739,7 +756,7 @@ class Multi_list(Base):
         self.text_color = text_color
         if num_lists <= 0: raise Exception('\n\nComo vas a hacer 0 listas en una multilista\nPensá bro...')
         self.num_list = num_lists
-        self.colums_witdh = [(self.size[0]/self.num_lists)*x for x in range(self.num_list)] if colums_witdh == -1 else list(colums_witdh)
+        self.colums_witdh = [((self.size.x/self.num_list)*x)/self.size.x for x in range(self.num_list)] if colums_witdh == -1 else list(colums_witdh)
         self.colums_witdh.append(1)
         self.header = header
         self.text_header = [None for x in range(num_lists)] if header_text == None else header_text
@@ -835,8 +852,10 @@ class Multi_list(Base):
             if a == 'scrolling':
                 self.scroll = True
             elif isinstance(a,dict):
-                minilista = [l.select(a['index'], False)['text'] for l in self.listas]
+                minilista = {'index':a['index'],'result':[l.select(a['index'], False)['text'] for l in self.listas]}
                 return minilista
+        for x in self.listas:
+            x.select(-2000)
 
 
     def select(self, index: int = -2000) -> str:
