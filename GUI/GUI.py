@@ -39,17 +39,17 @@ class GUI_admin:
     def click(self, pos):
         mx,my = pos
         result = self.__list[self.active]['GUI'].click((mx,my))
-        if result and result['return'] == 'aceptar':
+        if result and result['return'] in ['aceptar','cancelar']:
             if self.__list[self.active]['func']: self.__list[self.active]['func'](result['result']())
             self.pop(self.active)
             self.active = -1 if not self.__list else 0
             return (self.active,result['result']())
-        elif result and result['return'] in ['destroy', 'cancelar']:
+        elif result and result['return'] in ['destroy']:
             self.pop(self.active)
             self.active = -1 if not self.__list else 0
             return False
         elif result and result['return'] == 'function':
-            self.active,result['result']()
+            result['result']()
         return False
     def pop(self,index=-1) -> None:
         if len(self.__list) > 0:
@@ -124,7 +124,7 @@ class Desicion(Base_win):
         self.botones.append({
             'btn':Create_boton('Aceptar',30,None,(350,280), 20, 'bottomright','black','white', border_width=-1),
             'return':'aceptar',
-            'result': lambda: True
+            'result': lambda: 'aceptar'
             })
         self.botones.append({
             'btn':Create_boton('Cancelar',30,None,(480,280), 20, 'bottomright','black','white', border_width=-1),
