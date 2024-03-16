@@ -2,16 +2,16 @@ from dataclasses import dataclass, field
 from numpy import sin,cos,radians
 from io import open
 from pygame import draw
- 
+from pygame import Vector2
 
 
 @dataclass
 class Poligono_regular:
-	pos: [list|tuple] = field(compare=False)
+	pos: list|tuple = field(compare=False)
 	radio: int = 20
 	lados: int =4
 	angle: int = 0
-	color: [list|tuple] = (255,255,255,255)
+	color: list|tuple = (255,255,255,255)
 	
 	def __post_init__(self) -> None:
 		self.x, self.y = list(self.pos)
@@ -20,8 +20,8 @@ class Poligono_regular:
 
 	def __generate(self) -> None:
 		nose = []
-		xs = [self.x + cos(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados)]
-		ys = [self.y - sin(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados)]
+		xs = [self.x + cos(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados+1)]
+		ys = [self.y - sin(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados+1)]
 		for x,y in zip(xs,ys):
 			nose.append(list((x,y)))
 		self.figure = nose
@@ -31,7 +31,12 @@ class Poligono_regular:
 		self.pos[1]=y if y != None else self.pos[1]
 		self.angle=angle if angle != None else self.angle
 		self.radio=radio if radio != None else self.radio
-		self.__generate()
+		if x or y and not (angle or radio):
+			for x in self.figure:
+				x[0] += (self.pos[0] - x[0])
+				x[1] += (self.pos[1] - x[1])
+		elif angle or radio:
+			self.__generate()
 
 
 	def copy(self):
@@ -77,6 +82,7 @@ class Poligono_irregular:
 				[self.x + cos(radians(self.angle+195)) * self.radio,self.y - sin(radians(self.angle+195)) * self.radio],
 				[self.x + cos(radians(self.angle-90)) * self.radio*.25,self.y - sin(radians(self.angle-90)) * self.radio*.25],
 				[self.x + cos(radians(self.angle-90)) * self.radio*.8,self.y - sin(radians(self.angle-90)) * self.radio*.8],
+				[self.x + cos(radians(self.angle)) * self.radio,self.y - sin(radians(self.angle)) * self.radio],
 			]
 		elif self.type == 'estrella':
 			self.figure = [(self.x + cos(radians(360/5* (.5*x) + self.angle))*self.radio/(2 if x%2==0 else 1),self.y - sin(radians(360/5* (.5*x) + self.angle)) * self.radio/(2 if x%2==0 else 1)) for x in range(11)]
@@ -86,6 +92,7 @@ class Poligono_irregular:
 				[self.x + cos(radians(10 + self.angle))*self.radio,self.y - sin(radians(10 + self.angle)) * self.radio],
 				[self.x + cos(radians(170 + self.angle))*self.radio,self.y - sin(radians(170 + self.angle)) * self.radio],
 				[self.x + cos(radians(190 + self.angle))*self.radio,self.y - sin(radians(190 + self.angle)) * self.radio],
+				[self.x + cos(radians(-10 + self.angle))*self.radio,self.y - sin(radians(-10 + self.angle)) * self.radio],
 			]
 		elif self.type == 'engranaje':
 			self.figure = [Poligono_regular((self.x + cos(radians(360/self.num_dientes*a +self.angle+45)) * self.radio,self.y - sin(radians(360/self.num_dientes*a +self.angle+45)) * self.radio), self.tamaño_diente,4,360/self.num_dientes*a +self.angle) for a in range(self.num_dientes)]
@@ -103,6 +110,7 @@ class Poligono_irregular:
 				[self.x + cos(radians(260  + self.angle))*self.radio,self.y - sin(radians(260  + self.angle)) * self.radio],
 				[self.x + cos(radians(280  + self.angle))*self.radio,self.y - sin(radians(280  + self.angle)) * self.radio],
 				[self.x + cos(radians(315  + self.angle))*(self.radio/4),self.y - sin(radians(315  + self.angle)) * (self.radio/4)],
+				[self.x + cos(radians(350  + self.angle))*self.radio,self.y - sin(radians(350  + self.angle)) * self.radio],
 			]
 		elif self.type == 'export':
 			string = [{'angle':float(a), 'radio':float(s)} for a,s in [x.split(',') for x in open(f'{self.archive_name}.txt','r').read().split('|')]]
@@ -119,17 +127,27 @@ class Poligono_irregular:
 		return nose
 
 	def move(self,x=None,y=None,angle=None,radio=None) -> None:
-		self.x=x if x != None else self.x
-		self.y=y if y != None else self.y
+		self.pos[0]=x if x != None else self.pos[0]
+		self.pos[1]=y if y != None else self.pos[1]
 		self.angle=angle if angle != None else self.angle
 		self.radio=radio if radio != None else self.radio
-		self.__generate()
+		if x or y and not (angle or radio):
+			for x in self.figure:
+				x[0] += (self.pos[0] - x[0])
+				x[1] += (self.pos[1] - x[1])
+		elif angle or radio:
+			self.__generate()
 	def move_sum(self,x:int=None,y:int=None,angle:int=None,radio:int=None,dt:float=1.0) -> None:
 		self.x=self.x+(x*dt) if x != None else self.x
 		self.y=self.y+(y*dt) if y != None else self.y
 		self.angle=self.angle + angle*dt if angle != None else self.angle
 		self.radio=self.radio+radio*dt if radio != None else self.radio
-		self.__generate()
+		if x or y and not (angle or radio):
+			for x in self.figure:
+				x[0] += (self.pos[0] - x[0])
+				x[1] += (self.pos[1] - x[1])
+		elif angle or radio:
+			self.__generate()
 
 	def draw(self,surface) -> None:
 		if self.type in ['flecha','estrella','rectangulo','diamante']:
