@@ -1,7 +1,7 @@
 import pygame as pag, time
 from pygame.math import Vector2
 
-from .Animaciones import Second_Order_Dinamics
+from .Animaciones import Second_Order_Dinamics, Curva_de_Bezier
 
 
 '''
@@ -42,7 +42,13 @@ class Base:
     def smothmove(self, T, f, z, r) -> None:
         self.smothmove_bool = True
         self.smothmove_pos = self.pos
+        self.smothmove_type = 'Second order dinamics'
         self.movimiento = Second_Order_Dinamics(T, f, z, r, self.pos)
+    def Cubic_bezier_move(self, fps, puntos, multiplicador:float = 1):
+        self.smothmove_bool = True
+        self.smothmove_pos = self.pos
+        self.smothmove_type = 'Cubic Bezier'
+        self.movimiento = Curva_de_Bezier(fps,puntos,multiplicador)
     def normal_move(self) -> None:
         self.smothmove_bool = False
 
@@ -133,7 +139,17 @@ class Create_text(Base):
 
     def draw(self, surface, only_move=False) -> None:
         if self.smothmove_bool:
-            self.pos = Vector2(self.movimiento.update(self.smothmove_pos))
+            if self.smothmove_type == 'Second order dinamics':
+                self.pos = Vector2(self.movimiento.update(self.smothmove_pos))
+            elif self.smothmove_type == 'Cubic Bezier':
+                r = self.movimiento.update()
+                
+                if (r == True):
+                    self.smothmove_bool = False
+                    self.smothmove_type = None
+                else:
+                    self.pos = Vector2(r)
+
             self.direccion(self.rect)
             self.direccion(self.rect_border)
 
@@ -206,21 +222,23 @@ class Create_text(Base):
 
     def move(self, pos, dire: str = None) -> None:
         if dire != None: self.dire = dire
-        if self.smothmove_bool:
+
+        if self.smothmove_bool and self.smothmove_type == 'Second order dinamics':
             self.smothmove_pos = Vector2(pos)
-        else:
-            self.pos = Vector2(pos)
+            return 
+        
+        self.pos = Vector2(pos)
+        self.direccion(self.rect)
+        self.direccion(self.rect_border)
+
+        if self.mode == 1:
+            self.rect_text.center = self.rect.center
+        elif self.mode == 2:
+            for n, txt in enumerate(self.lista_text):
+                txt.move((self.pos.x,self.pos.y + self.rect.h*n), dire)
             self.direccion(self.rect)
             self.direccion(self.rect_border)
-
-            if self.mode == 1:
-                self.rect_text.center = self.rect.center
-            elif self.mode == 2:
-                for n, txt in enumerate(self.lista_text):
-                    txt.move((self.pos.x,self.pos.y + self.rect.h*n), dire)
-                self.direccion(self.rect)
-                self.direccion(self.rect_border)
-                self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
+            self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
     
     def move_rel(self, pos) -> None:
         if self.smothmove_bool:

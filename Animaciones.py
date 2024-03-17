@@ -50,7 +50,7 @@ class Curva_de_Bezier:
         ' - Define en que % de la animacion estara'
         self.__T = progress
 
-    def update(self) -> bool:
+    def update(self) -> bool|list[float,float]:
         self.__T += 1/self.timer
         if self.__T > self.extra_time:
             return True
