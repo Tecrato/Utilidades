@@ -121,25 +121,29 @@ class select(Base):
         self.dir = dir
         self.texts = options
         self.captured = captured
-
-        self.txt_tama = Create_boton(f'{options[0]}',16,None,(0,280), 6, 'topleft','white', (20,20,20), 'darkgrey', 0, 0, border_width=1, border_color='white').rect.h
-        
-        self.size = (125,self.txt_tama*len(options)+10)
-        self.border_radius = 5
         self.botones: list[Create_text] = []
+
+        self.txt_tama_h = Create_boton(f'{max(options)}',16,None,(0,280), 6, 'topleft','white', (20,20,20), 'darkgrey', 0, 0, border_width=1, border_color='white').rect.h
+        self.txt_tama_w = 0
+        
+        for i, op in enumerate(options):
+            t = Create_text(f'{op}',16,None,(10,self.txt_tama_h*i +5), 'topleft','black', padding= (0,5))
+            self.txt_tama_w = max(self.txt_tama_w,t.rect.w + 20)
+            self.botones.append(t.copy())
+
+        self.size = (self.txt_tama_w,(self.txt_tama_h*len(options))+10)
+        self.border_radius = 5
 
         self.surf = pag.Surface(self.size,pag.SRCALPHA)
         self.rect = self.surf.get_rect()
 
-        for i, op in enumerate(options):
-            self.botones.append(Create_text(f'{op}',16,None,(10,self.txt_tama*i +5), 'topleft','black', padding= 5))
     
     def draw(self,surface,pos):
         pag.draw.rect(self.surf, (240,240,240), [0,0,*self.size], 0, self.border_radius)
         if self.rect.collidepoint(pos):
             new_pos = Vector2(pos)-self.rect.topleft
-            new_pos_selection = self.txt_tama*math.floor((new_pos.y/self.size[1])*len(self.texts)) + 5
-            pag.draw.rect(self.surf, 'darkgrey', [0,new_pos_selection,self.size[0],self.txt_tama], 0, self.border_radius)
+            new_pos_selection = self.txt_tama_h*math.floor((new_pos.y/self.size[1])*len(self.texts)) + 5
+            pag.draw.rect(self.surf, 'darkgrey', [0,new_pos_selection,self.size[0],self.txt_tama_h], 0, self.border_radius)
         for btn in self.botones:
             btn.draw(self.surf)
         surface.blit(self.surf,self.rect)

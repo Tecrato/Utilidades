@@ -51,6 +51,8 @@ class Base:
         self.movimiento = Curva_de_Bezier(fps,puntos,multiplicador)
     def normal_move(self) -> None:
         self.smothmove_bool = False
+    def copy(self):
+        return self
 
 
 class Create_text(Base):
