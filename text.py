@@ -1,5 +1,6 @@
 import pygame as pag, time
 from pygame.math import Vector2
+from typing import Iterable, Literal
 
 from .Animaciones import Second_Order_Dinamics, Curva_de_Bezier
 
@@ -68,8 +69,8 @@ class Create_text(Base):
     - move() - Mueve el texto al sitio seleccionado\n
     - smothmove() - permite una transicion suave en el movimiento utilizando la clase Second Order Dinamics
     """
-    def __init__(self,text: str,size: int,font: str, pos: tuple,dire='center',color='white',with_rect = False
-                 ,color_rect ='black', border_width = -1, **kwargs) -> None:
+    def __init__(self,text: str,size: int,font: str, pos: tuple,dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] ='center',color='white',with_rect = False
+                 ,color_rect ='black', border_width = -1, padding: int|list|tuple = 20, **kwargs) -> None:
         
         pag.font.init()
         text = str(text)
@@ -81,7 +82,6 @@ class Create_text(Base):
         self.color = color
         self.with_rect = with_rect
         self.color_rect = color_rect
-        padding = kwargs.get('padding',20)
         self.padding: Vector2 = Vector2(padding)
         self.rect_width = kwargs.get('rect_width',0)
         
@@ -264,8 +264,8 @@ class Create_boton(Create_text):
      - toggle_rect
      - color_active
     '''
-    def __init__(self, text, size: int, font: str, pos: tuple, padding: int = 20,
-        dire: str = 'center', color = 'black', color_rect = 'darkgrey',
+    def __init__(self, text, size: int, font: str, pos: tuple, padding: int|list|tuple = 20,
+        dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] = 'center', color = 'black', color_rect = 'darkgrey',
         color_rect_active='lightgrey',rect_width=0,border_radius:int=15,border_top_left_radius:int=-1,
         border_top_right_radius: int = -1, border_bottom_left_radius: int = -1,
         border_bottom_right_radius: int = -1, border_width = 2, border_color = 'black', with_rect = True,

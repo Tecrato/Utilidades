@@ -48,7 +48,7 @@ class Base:
 
 
         self.botones = [{
-            'btn':Create_boton('X',24,None,(200,0),10,'topright', 'black', color_rect='lightgrey', color_rect_active='darkgrey', border_radius=0, border_top_right_radius=border_radius, border_width=-1),
+            'btn':Create_boton('X',24,None,(size[0],0),10,'topright', 'black', color_rect='lightgrey', color_rect_active='darkgrey', border_radius=0, border_top_right_radius=border_radius, border_width=-1),
             'result': 'exit',
             }]
 
@@ -102,15 +102,16 @@ class Base:
         surface.blit(self.surf,self.rect)
 
 class simple_popup(Base):
-    def __init__(self, pos, dir = 'center') -> None:
+    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui') -> None:
 
-        super().__init__(pos,dir)
+        super().__init__(pos,dir, (200,80))
 
-        Create_text('Hola :)', 20, None, (100,75), 'center', 'black').draw(self.surf)
+        Create_text(title, 16, None, (0,0), 'topleft', 'black').draw(self.surf)
+        Create_text(text, 16, None, (10,40), 'left', 'black').draw(self.surf)
 
         
         self.botones.append({
-            'btn':Create_boton('Aceptar',16,None,(195,120), (20,10), 'bottomright','black','white', border_width=-1),
+            'btn':Create_boton('Aceptar',16,None,self.rect.bottomright, (20,15), 'bottomright','black',(240,240,240), border_radius=10, border_bottom_right_radius=0, border_width=-1),
             'result': 'exit'
             })
 
