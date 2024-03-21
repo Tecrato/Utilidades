@@ -61,20 +61,24 @@ class GUI_admin:
                 x['GUI'].update(eventos)
 
 class Base_win:
-    def __init__(self, centro, title) -> None:
-        self.rect = pag.Rect(0,0,500,300)
+    def __init__(self, centro, title, size:tuple[int,int]=(500,300)) -> None:
+        self.rect = pag.Rect(0,0,*size)
         self.rect.center = centro
+        self.size = size
 
-        self.surface: pag.Surface = pag.Surface((500,300), pag.SRCALPHA)
-        pag.draw.rect(self.surface,'white',[0,0,500,300], border_radius=20)
-        pag.draw.rect(self.surface,'lightgrey',[0,0,500,40], border_top_left_radius=20, border_top_right_radius=20)
+
+        self.surface: pag.Surface = pag.Surface(size)
+        self.surface.fill((254,1,1))
+        self.surface.set_colorkey((254,1,1))
+        pag.draw.rect(self.surface,'white',[0,0,*size], border_radius=20)
+        pag.draw.rect(self.surface,'lightgrey',[0,0,size[0],40], border_top_left_radius=20, border_top_right_radius=20)
         Create_text(title, 30, None, (0,0), 'topleft', 'black', False).draw(self.surface)
 
         self.state: str = 'minimized' # minimized | maximized
         self.pressed_click: bool = False
 
         self.botones = [{
-            'btn':Create_boton('X',30,None,(500,0),20,'topright', 'black', color_rect='lightgrey', color_rect_active='darkgrey', border_radius=0, border_top_right_radius=20, border_width=-1),
+            'btn':Create_boton('X',30,None,(size[0],0),20,'topright', 'black', color_rect='lightgrey', color_rect_active='darkgrey', border_radius=0, border_top_right_radius=20, border_width=-1),
             'return': 'destroy',
             'result': lambda:'',
             }]
@@ -87,6 +91,7 @@ class Base_win:
         [inp.draw(self.surface) for inp in self.inputs]
         [btn['btn'].draw(self.surface,(mx,my)) for btn in self.botones]
         surface.blit(self.surface,self.rect)
+        pag.draw.rect(surface,'black', self.rect,3, 20)
 
     def click(self, pos):
         mx,my = Vector2(pos)-self.rect.topleft
@@ -110,33 +115,33 @@ class Info(Base_win):
         Create_text(text,25,None,(30,120),'left', 'black').draw(self.surface)
 
         self.botones.append({
-            'btn':Create_boton('Aceptar',30,None,(480,280), 20, 'bottomright','black','white', border_width=-1),
+            'btn':Create_boton('Aceptar',30,None,Vector2(size)-(20,20), 20, 'bottomright','black','white', border_width=-1),
             'return':'aceptar',
             'result': lambda: True
             })
         
 class Desicion(Base_win):
-    def __init__(self,centro: tuple[int,int],encabezado: str,text: str|list[str]):
-        super().__init__(centro,encabezado)
+    def __init__(self,centro: tuple[int,int],encabezado: str,text: str|list[str], size=(500,300)):
+        super().__init__(centro,encabezado,size)
 
-        Create_text(text,25,None,(30,120),'left', 'black').draw(self.surface)
+        Create_text(text,25,None,(30,size[1]/2.3),'left', 'black').draw(self.surface)
 
         self.botones.append({
-            'btn':Create_boton('Aceptar',30,None,(350,280), 20, 'bottomright','black','white', border_width=-1),
-            'return':'aceptar',
-            'result': lambda: 'aceptar'
-            })
-        self.botones.append({
-            'btn':Create_boton('Cancelar',30,None,(480,280), 20, 'bottomright','black','white', border_width=-1),
+            'btn':Create_boton('Cancelar',24,None,Vector2(size)-(20,20), 15, 'bottomright','black','white', border_width=-1),
             'return':'cancelar',
             'result': lambda: 'cancelar'
+            })
+        self.botones.append({
+            'btn':Create_boton('Aceptar',24,None,(Vector2(size)-(20,20))-(self.botones[1]['btn'].rect.w+20,0), 15, 'bottomright','black','white', border_width=-1),
+            'return':'aceptar',
+            'result': lambda: 'aceptar'
             })
 
 class Text_return(Base_win):
     def __init__(self, centro, encabezado, texto, large=False) -> None:
         super().__init__(centro, encabezado)
         
-        Create_text(texto,30,None,(250,70),'center', 'black').draw(self.surface)
+        Create_text(texto,30,None,(250,50),'center', 'black').draw(self.surface)
         if large:
             self.input = Input_text((50,150),(20,375), None, border_top_left_radius=20, border_bottom_left_radius=20, max_letter=400)
         else:
