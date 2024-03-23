@@ -553,7 +553,7 @@ class List_Box:
         self.pos = Vector2(pos)
         self.text_size = text_size
         self.separation = separation
-        self.smothscroll = kwargs.get('smothscroll',True)
+        self.smothscroll = kwargs.get('smothscroll',False)
         self.background_color = background_color
         self.selected_color = selected_color
         self.padding_top = kwargs.get('padding_top',10)
@@ -564,13 +564,13 @@ class List_Box:
         self.text_header = text_header
         self.font = font
 
-        self.letter_size = Create_text('ssss', self.text_size, self.font, (0,0),padding= separation).rect.height
+        self.letter_size = Create_text('ssss|', self.text_size, self.font, (0,0),padding= separation).rect.height
 
         self.lista_palabras = ['None', 'None', 'None'] if not lista else lista
         self.lista_objetos: list[Create_text] = []
 
         if self.header:
-            self.text_header: Create_text = Create_text(self.text_header, 20, None, pos, 'topleft', 'black', True, 'darkgrey',
+            self.text_header: Create_text = Create_text(self.text_header, 23, None, pos, 'topleft', 'black', True, 'darkgrey',
             padding=(20,15),border_width=1, border_top_left_radius=kwargs.get('header_top_left_radius',20), border_top_right_radius=kwargs.get('header_top_right_radius',20))
             self.text_header.rect.w = size[0]
             self.text_header.rect_border.w = size[0]+1
@@ -578,9 +578,11 @@ class List_Box:
             self.rect = pag.rect.Rect(self.pos[0], self.pos[1], size[0], size[1]-self.text_header.rect.h)
         else:
             self.rect = pag.rect.Rect(pos[0], pos[1], size[0], size[1])
-        self.lista_surface= pag.surface.Surface(self.rect.size, pag.SRCALPHA)
+        self.lista_surface= pag.surface.Surface(self.rect.size)
         self.lista_surface_rect = self.lista_surface.get_rect()
         self.lista_surface_rect.topleft = pos
+        self.lista_surface.fill((254,1,1))
+        self.lista_surface.set_colorkey((254,1,1))
 
         self.desplazamiento = 0
         self.total_height = 0
@@ -606,6 +608,7 @@ class List_Box:
         self.selected_num = -1
 
     def draw_surf(self):
+        self.lista_surface.fill((254,1,1))
 
         self.lista_surface.fill(self.background_color)
         pag.draw.rect(self.lista_surface, self.selected_color, self.select_box)
@@ -688,7 +691,7 @@ class List_Box:
     def click(self,pos):
         m = Vector2(pos)
         m -= self.pos
-        if self.header: m += (0,10)
+        if self.header: m += (0,5)
         if self.scroll_bar_active and self.barra.collidepoint(m-(0,10)):
             self.scroll = True
             self.last_mouse_pos = pag.mouse.get_pos()
@@ -777,7 +780,7 @@ class Multi_list(Base):
         if num_lists <= 0: raise Exception('\n\nComo vas a hacer 0 listas en una multilista\nPensá bro...')
         self.num_list = num_lists
         self.colums_witdh = [((self.size.x/self.num_list)*x)/self.size.x for x in range(self.num_list)] if colums_witdh == -1 else list(colums_witdh)
-        self.colums_witdh.append(1)
+        self.colums_witdh.append(1.0)
         self.header = header
         self.text_header = [None for x in range(num_lists)] if header_text == None else header_text
         self.fonts = [None for x in range(num_lists)] if fonts == None else fonts
@@ -797,17 +800,17 @@ class Multi_list(Base):
         self.lista_surface_rect = self.lista_surface.get_rect()
         self.lista_surface_rect.topleft = self.pos
         for x in range(num_lists):
-            self.lineas.append([((self.size.x*self.colums_witdh[x] -1),0 if not self.header else -20), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
-            separar = Create_text('Hola', self.text_size, self.fonts[-1], (0,0)).rect.h
-            separar = separar - Create_text('Hola', self.text_size, self.fonts[0], (0,0)).rect.h
-            self.listas.append(List_Box(((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y), 
-                (self.size.x*self.colums_witdh[x],0), [self.lista_palabras[x]], self.text_size, self.separation+(separar if x != num_lists-1 else 0), 
+            separar = Create_text('Hola|', self.text_size, self.fonts[-1], (0,0)).rect.h
+            separar = separar - Create_text('Hola|', self.text_size, self.fonts[0], (0,0)).rect.h
+            self.listas.append(List_Box(((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y),
+                (self.size.x*self.colums_witdh[x],0), [self.lista_palabras[x]], self.text_size, self.separation+(separar if x != num_lists-1 else 0),
                 self.selected_color, self.text_color, background_color=(0,0,0,0), smothscroll=self.smothscroll, 
                 padding_top=self.padding_top-(separar//2 if x == num_lists-1 else 0), padding_left=self.padding_left, 
                 with_index=self.with_index if x == 0 and self.with_index else False, 
                 scroll_bar_active=False if x != num_lists-1 else True,
                 header=True, text_header=self.text_header[x], header_top_left_radius=20 if x == 0 else 0, 
                 header_top_right_radius=20 if x == self.num_list-1 else 0, font=self.fonts[x]))
+            self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
 
 
     def draw(self,surface) -> None:

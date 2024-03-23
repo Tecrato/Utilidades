@@ -37,7 +37,10 @@ class mini_GUI_admin:
             elif self.__list[i]['GUI'].rect.collidepoint(pos):
                 self.__list.pop(i)
                 self.__list.append(g)
-                return 0
+                return False
+    
+    def clear(self):
+        self.__list.clear()
 
 
 
@@ -57,7 +60,7 @@ class Base:
         self.rect = self.surf.get_rect()
 
         pag.draw.rect(self.surf, (240,240,240), [0,0,*size], 0, border_radius)
-        pag.draw.rect(self.surf, 'lightgrey', [0,0,200,26], 0, border_top_left_radius=border_radius, border_top_right_radius=border_radius)
+        pag.draw.rect(self.surf, 'lightgrey', [0,0,size[0],26], 0, border_top_left_radius=border_radius, border_top_right_radius=border_radius)
 
     def direccion(self, rect) -> None:
         rect.center = self.pos
@@ -102,9 +105,9 @@ class Base:
         surface.blit(self.surf,self.rect)
 
 class simple_popup(Base):
-    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui') -> None:
+    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui', size= (200,80)) -> None:
 
-        super().__init__(pos,dir, (200,80))
+        super().__init__(pos,dir, size)
 
         Create_text(title, 16, None, (0,0), 'topleft', 'black').draw(self.surf)
         Create_text(text, 16, None, (10,40), 'left', 'black').draw(self.surf)
@@ -113,6 +116,23 @@ class simple_popup(Base):
         self.botones.append({
             'btn':Create_boton('Aceptar',16,None,self.rect.bottomright, (20,15), 'bottomright','black',(240,240,240), border_radius=10, border_bottom_right_radius=0, border_width=-1),
             'result': 'exit'
+            })
+class desicion_popup(Base):
+    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui', size= (200,80),accept_boton_text= 'aceptar') -> None:
+
+        super().__init__(pos,dir, size)
+
+        Create_text(title, 16, None, (0,0), 'topleft', 'black').draw(self.surf)
+        Create_text(text, 16, None, (10,40), 'left', 'black').draw(self.surf)
+
+        
+        self.botones.append({
+            'btn':Create_boton('Cancelar',16,None,self.rect.bottomright, (20,15), 'bottomright','black',(240,240,240), border_radius=10, border_bottom_right_radius=0, border_width=-1),
+            'result': 'exit'
+            })
+        self.botones.append({
+            'btn':Create_boton(accept_boton_text,16,None,(self.botones[1]['btn'].rect.left - 10,self.rect.bottom), (20,15), 'bottomright','black',(240,240,240), border_radius=10, border_bottom_right_radius=0, border_width=-1),
+            'result': 'aceptar'
             })
 
 class select(Base):
