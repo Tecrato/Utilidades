@@ -127,16 +127,16 @@ class Poligono_irregular:
 		return nose
 
 	def move(self,x=None,y=None,angle=None,radio=None) -> None:
-		self.pos[0]=x if x != None else self.pos[0]
-		self.pos[1]=y if y != None else self.pos[1]
+		self.x=x if x != None else self.x
+		self.y=y if y != None else self.y
 		self.angle=angle if angle != None else self.angle
 		self.radio=radio if radio != None else self.radio
-		if x or y and not (angle or radio):
-			for x in self.figure:
-				x[0] += (self.pos[0] - x[0])
-				x[1] += (self.pos[1] - x[1])
-		elif angle or radio:
-			self.__generate()
+		# if x or y and not (angle or radio):
+		# 	for x in self.figure:
+		# 		x[0] += self.x
+		# 		x[1] += self.y
+		# elif angle or radio:
+		self.__generate()
 	def move_sum(self,x:int=None,y:int=None,angle:int=None,radio:int=None,dt:float=1.0) -> None:
 		self.x=self.x+(x*dt) if x != None else self.x
 		self.y=self.y+(y*dt) if y != None else self.y

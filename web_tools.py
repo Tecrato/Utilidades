@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 from urllib.parse import quote
 
 def check_update(program_name:str,version_actual:str,version_deseada='last'):
@@ -19,3 +20,6 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
             return {'version': resultado['version'], 'url': resultado['url']}
     else:
         return False
+
+def get_mediafire_url(url):
+    return BeautifulSoup(requests.get(url, allow_redirects=True).content, 'html.parser').find(id='downloadButton').get('href',False)

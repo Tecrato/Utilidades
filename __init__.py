@@ -8,6 +8,6 @@ from .sparks import Spark
 from .text import Create_text,Create_boton,Input_text,List_Box,Multi_list
 from .optimize import memosize
 from .multithread import Funcs_pool
-from .actualizador import check_update
+from .web_tools import check_update, get_mediafire_url
 
 configs = {}
