@@ -19,12 +19,13 @@ class Poligono_regular:
 		self.__generate()
 
 	def __generate(self) -> None:
-		nose = []
+		# nose = []
 		xs = [self.x + cos(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados+1)]
 		ys = [self.y - sin(radians(360/self.lados*a +self.angle)) * self.radio for a in range(self.lados+1)]
-		for x,y in zip(xs,ys):
-			nose.append(list((x,y)))
-		self.figure = nose
+		# for x,y in zip(xs,ys):
+		# 	nose.append(list((x,y)))
+		# [list((x,y)) for x,y in zip(xs,ys)]
+		self.figure = [list((x,y)) for x,y in zip(xs,ys)]
 
 	def move(self,x=None,y=None,angle=None,radio=None) -> None:
 		self.pos[0]=x if x != None else self.pos[0]

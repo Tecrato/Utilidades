@@ -1,11 +1,14 @@
 from typing import Iterable
 import math
+from .optimize import memosize
 
+@memosize
 def Hipotenuza(vector1, vector2) -> int:
     vector1 = Vector2(*vector1)
     vector2 = Vector2(*vector2)
     return math.dist(vector1,vector2)
 
+@memosize
 def Angulo(vector1, vector2) -> float:
     x = vector2[0] - vector1[0]
     y = vector2[1] - vector1[1]
