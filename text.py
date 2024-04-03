@@ -58,7 +58,7 @@ class Base:
 
 class Create_text(Base):
     """
-    # Atributos extras
+    # Funciones
 
     ### Comandos
     - draw() - Dibuja el texto\n
@@ -69,8 +69,10 @@ class Create_text(Base):
     - move() - Mueve el texto al sitio seleccionado\n
     - smothmove() - permite una transicion suave en el movimiento utilizando la clase Second Order Dinamics
     """
-    def __init__(self,text: str,size: int,font: str, pos: tuple,dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] ='center',color='white',with_rect = False
-                 ,color_rect ='black', border_width = -1, padding: int|list|tuple = 20, **kwargs) -> None:
+    def __init__(self,text: str,size: int,font: str, pos: tuple,
+                 dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] ='center',
+                 color='white',with_rect = False, color_rect ='black', border_width = -1, padding: int|list|tuple = 20, 
+                 width = 0, height = 0, rect_width= 0, **kwargs) -> None:
         
         pag.font.init()
         text = str(text)
@@ -83,7 +85,9 @@ class Create_text(Base):
         self.with_rect = with_rect
         self.color_rect = color_rect
         self.padding: Vector2 = Vector2(padding)
-        self.rect_width = kwargs.get('rect_width',0)
+        self.rect_width = rect_width
+        self.width = width
+        self.height = height
         
         self.border_radius = kwargs.get('border_radius',0)
         self.border_top_left_radius = kwargs.get('border_top_left_radius',-1)
@@ -104,12 +108,11 @@ class Create_text(Base):
             self.text = self.font.render(f'{text}', 1, self.color)
             self.rect_text = self.text.get_rect()
             self.rect = self.text.get_rect()
-            self.rect.size = (self.rect.w + self.padding[0], self.rect.h + self.padding[1])
+            self.rect.size = (max(self.width,self.rect.w + self.padding[0]), max(self.height,self.rect.h + self.padding[1]))
             if self.border_radius == -1:
                 self.border_radius = 100_000
                 n = max(self.rect_text.h * 1.2 + self.padding.y,self.rect_text.w * 1.2 + self.padding.x)
                 self.rect.size = (n, n)
-            self.rect.center = self.pos
             self.direccion(self.rect)
             self.rect_text.center = self.rect.center
             self.create_border(self.rect, self.border_width)
@@ -265,11 +268,11 @@ class Create_boton(Create_text):
      - color_active
     '''
     def __init__(self, text, size: int, font: str, pos: tuple, padding: int|list|tuple = 20,
-        dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] = 'center', color = 'black', color_rect = 'darkgrey',
+        dire: Literal["center","left","right","top","bottom","topleft","topright","bottomleft","bottomright"] = 'center', color = 'black', color_rect = 'darkgrey',
         color_rect_active='lightgrey',rect_width=0,border_radius:int=15,border_top_left_radius:int=-1,
         border_top_right_radius: int = -1, border_bottom_left_radius: int = -1,
         border_bottom_right_radius: int = -1, border_width = 2, border_color = 'black', with_rect = True,
-        func = None, **kwargs) -> None:
+        func = None, width = 0, height = 0, **kwargs) -> None:
 
         self.color_rect_active = color_rect_active if color_rect_active != None else color_rect
         self.color_rect_inactive = color_rect
@@ -287,7 +290,8 @@ class Create_boton(Create_text):
         Create_text.__init__(self,text, size, font, pos, dire, color, with_rect, color_rect, padding=padding, 
                              rect_width=rect_width, border_radius=border_radius,border_top_left_radius=border_top_left_radius, 
                              border_top_right_radius=border_top_right_radius, border_bottom_left_radius=border_bottom_left_radius, 
-                             border_bottom_right_radius=border_bottom_right_radius, border_width=border_width,border_color=border_color)
+                             border_bottom_right_radius=border_bottom_right_radius, border_width=border_width,border_color=border_color,
+                             width = width, height = height)
         if self.toggle_rect:
             self.with_rect = False
         self.hover = False
@@ -327,6 +331,13 @@ class Create_boton(Create_text):
             self.change_color(self.color_active)
         else:
             self.change_color(self.color_inactive)
+    def change_color_rect_ad(self,color_inactive,color_active = None) -> None:
+        self.color_rect_inactive = color_inactive if color_inactive != None else self.color_rect_inactive
+        self.color_rect_active = color_active if color_active != None else self.color_rect_active
+        if self.hover:
+            self.color_rect = self.color_rect_active
+        else:
+            self.color_rect = self.color_rect_inactive
 
 class Input_text(Base):
     '''
@@ -355,19 +366,20 @@ class Input_text(Base):
 
 
         self.text = Create_text(self.raw_text, size[0], font, pos, 'left', padding=padding)
-        self.text_rect = self.text.rect.copy()
-        self.text_rect.w = size[1]
-        self.create_border(self.text_rect, self.border_width)
+        self.rect2 = self.text.rect.copy()
+        self.rect2.w = size[1]
+        # self.create_border(self.rect2, self.border_width)
 
         self.text = Create_text('abdc123--||', size[0], font, pos, 'left', padding=5)
-        self.text_rect2 = self.text.rect.copy()
-        self.text_rect2.w = size[1] - self.padding.x
-        self.text_rect2.left += self.padding.x/2
-        self.input_surface = pag.surface.Surface(self.text_rect2.size, pag.SRCALPHA)
-        self.text = Create_text(self.raw_text, size[0], font, (0,size[0]/2), 'left', text_color, padding=0)
+        self.rect = self.text.rect.copy()
+        self.rect.w = size[1] - self.padding.x
+        self.rect.left += self.padding.x/2
+        self.input_surface = pag.surface.Surface(self.rect.size)
+        self.input_surface.fill(self.background_color)
+        self.text = Create_text(self.raw_text, size[0], font, (0,self.input_surface.get_height()/2), 'left', text_color, True, self.background_color, padding=0,height=self.input_surface.get_height())
 
 
-        self.text_value = Create_text(text_value, size[0], font, (0,size[0]/2), 'left', 'gray', padding=0)
+        self.text_value = Create_text(text_value, size[0], font, (0,self.input_surface.get_height()/2), 'left', 'gray', True, self.background_color, padding=0,height=self.input_surface.get_height())
 
         self.typing = False
         self.typing_pos = 0
@@ -378,10 +390,21 @@ class Input_text(Base):
         self.left_time = 0
         self.right_b = False
         self.right_time = 0
-        self.typing_line = True
+        self.typing_line = False
         self.typing_line_time = time.time()
         self.letter_pos = [0]
         self.button_pressed_time = 0
+        self.draw_surf()
+
+    def draw_surf(self):
+        self.input_surface.fill(self.background_color)
+        if self.raw_text == '':
+            self.text_value.draw(self.input_surface)
+        else:
+            self.text.draw(self.input_surface)
+        if self.typing_line:
+            pag.draw.line(self.input_surface, 'white', (sum(self.letter_pos[:self.typing_pos]),0),(sum(self.letter_pos[:self.typing_pos]),self.input_surface.get_height()))
+
 
     def draw(self, surface) -> None:
         if time.time() - self.button_pressed_time > .5:
@@ -394,23 +417,18 @@ class Input_text(Base):
             elif self.right_b and time.time() - self.right_time > .03:
                 self.right()
                 self.right_time = time.time()
-        pag.draw.rect(surface, self.background_color, self.text_rect, 0, self.border_radius, self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-        pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
-            , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-        self.input_surface.fill((0,0,0,0))
-
+            self.draw_surf()
+        pag.draw.rect(surface, self.background_color, self.rect2, 0, self.border_radius, self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+        # pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
+        #     , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+    
         if self.typing:
             if time.time()-self.typing_line_time > .7:
                 self.typing_line = not self.typing_line
                 self.typing_line_time = time.time()
-            if self.typing_line:
-                self.text.change_text(self.raw_text[:self.typing_pos] + '|' + self.raw_text[self.typing_pos:])
-            else:
-                self.text.change_text(self.raw_text)
-        elif self.raw_text == '': self.text_value.draw(self.input_surface)
-        self.text.draw(self.input_surface)
-                
-        surface.blit(self.input_surface, self.text_rect2)
+                self.draw_surf()
+
+        surface.blit(self.input_surface, self.rect)
 
     def eventos_teclado(self, eventos):
         for evento in eventos:
@@ -427,6 +445,7 @@ class Input_text(Base):
                     self.button_pressed_time = time.time()
                 elif evento.type == pag.TEXTINPUT:
                     self.add_letter(evento.text)
+                    self.draw_surf()
                 elif evento.type == pag.KEYUP:
                     if evento.key == pag.K_BACKSPACE:
                         self.backspace = False
@@ -448,9 +467,9 @@ class Input_text(Base):
 
     def click(self, pos) -> None:
 
-        if self.text_rect.collidepoint(pos): 
+        if self.rect2.collidepoint(pos): 
             self.typing = True
-            self.typing_pos = self.check_pos_letter_click(pos[0]-self.pos.x-(self.padding.x))
+            self.typing_pos = self.check_pos_letter_click(pos[0]-self.pos.x-(self.padding.x/1.5))
             self.typing_line = True
             self.typing_line_time = time.time()
         else:
@@ -459,6 +478,7 @@ class Input_text(Base):
             self.typing_line = False
             self.typing_line_time = time.time()
             self.text.change_text(self.raw_text)
+        self.draw_surf()
 
     def add_letter(self, t) -> None:
         if len(self.raw_text) < self.max_letter:
@@ -468,8 +488,8 @@ class Input_text(Base):
             self.typing_pos += 1
             suma = sum(self.letter_pos[:self.typing_pos])
             if suma + self.text.rect_text.left < 0:
-                self.text.move((-suma,self.size[0]/2),'left')
-            elif suma + self.text.rect_text.left > self.text_rect2.w:
+                self.text.move((-suma,self.input_surface.get_height()/2),'left')
+            elif suma + self.text.rect_text.left > self.rect.w:
                 self.text.move_rel((-self.letter_pos[self.typing_pos-1]*1.5,0))
         self.typing_line = True
         self.typing_line_time = time.time()
@@ -483,7 +503,8 @@ class Input_text(Base):
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
         if suma + self.text.rect_text.left < 0:
-            self.text.move((-suma,self.size[0]/2),'left')
+            self.text.move((-suma,self.input_surface.get_height()/2),'left')
+        self.draw_surf()
 
     def right(self) -> None:
         if not self.right_b:
@@ -493,8 +514,9 @@ class Input_text(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
-        if suma + self.text.rect_text.left > self.text_rect2.w - self.padding.x:
+        if suma + self.text.rect_text.left > self.rect.w - self.padding.x:
             self.text.move_rel((-self.letter_pos[self.typing_pos],0))
+        self.draw_surf()
 
     def del_letter(self) -> None:
         if not self.backspace:
@@ -508,28 +530,31 @@ class Input_text(Base):
             self.letter_pos.pop(self.typing_pos)
             self.typing_pos -= 1
             self.text.change_text(self.raw_text)
-            if self.text.rect_text.w > self.text_rect2.w:
-                self.text.move((self.text_rect2.width,self.size[0]/2), 'right')
+            if self.text.rect_text.w > self.rect.w:
+                self.text.move((self.rect.width,self.input_surface.get_height()/2), 'right')
             else:
-                self.text.move((0,self.size[0]/2), 'left')
+                self.text.move((0,self.input_surface.get_height()/2), 'left')
         self.typing_line = True
         self.typing_line_time = time.time()
+        self.draw_surf()
 
     def clear(self):
         self.letter_pos = [0]
         self.raw_text = ''
-        self.typing_pos = 1
+        self.typing_pos = 0
         self.typing_line = True
         self.typing_line_time = time.time()
         self.text.change_text(self.raw_text)
-        self.text.move((0,self.size[0]/2), 'left')
+        self.text.move((0,self.input_surface.get_height()/2), 'left')
+        self.draw_surf()
 
 
     def set(self, text) -> None:
         'Cambiar el texto'
         self.clear()
-        for x in text:
+        for x in f'{text}':
             self.add_letter(x)
+        self.draw_surf()
 
     def get_text(self) -> str:
         return self.raw_text
@@ -537,7 +562,7 @@ class Input_text(Base):
     def __str__(self) -> str:
         return self.raw_text
 
-class List_Box:
+class List_Box(Base):
     '''
     ### More options
      - smothscroll
@@ -547,13 +572,13 @@ class List_Box:
     '''
     def __init__(self, size: tuple, pos: tuple, lista: list = None, text_size: int = 20, separation: int = 0,
         selected_color = (100,100,100,100), text_color= 'white', header: bool =False, text_header:str = None,
-        background_color = 'black', font=None, **kwargs) -> None:
+        background_color = 'black', font=None, smothscroll=False, **kwargs) -> None:
 
         self.size = Vector2(size)
         self.pos = Vector2(pos)
         self.text_size = text_size
         self.separation = separation
-        self.smothscroll = kwargs.get('smothscroll',False)
+        self.smothscroll = smothscroll
         self.background_color = background_color
         self.selected_color = selected_color
         self.padding_top = kwargs.get('padding_top',10)
@@ -600,17 +625,23 @@ class List_Box:
             self.bar_surface.fill((255,255,255,128))
 
             #La barra que sube y baja
-            self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, 50)
+            self.bar_height = max(10,self.size[1]*(self.size[1]/self.lista_objetos[-1].rect.bottom))
+            self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
         self.scroll = False
 
         #cuadro de seleccion
         self.select_box = pag.rect.Rect(0,-5000,self.lista_surface_rect.w,self.letter_size)
         self.selected_num = -1
+        self.draw_surf()
 
     def draw_surf(self):
         self.lista_surface.fill((254,1,1))
 
+        # if self.header:
         self.lista_surface.fill(self.background_color)
+        #     pag.draw.rect(self.lista_surface, self.background_color, [0,0,self.size[0],self.size[1]], 0, 0,0,0,20,20)
+        # else:
+        #     pag.draw.rect(self.lista_surface, self.background_color, [0,0,self.size[0],self.size[1]], 0, 20)
         pag.draw.rect(self.lista_surface, self.selected_color, self.select_box)
         for te in self.lista_objetos:
             te.draw(self.lista_surface, only_move=False if -self.padding_top-30 < te.pos.y < self.rect.h else True)
@@ -623,14 +654,15 @@ class List_Box:
         if self.header:
             self.text_header.draw(surface)
         self.select_box.centery = self.lista_objetos[self.selected_num].rect.centery if self.selected_num != -1 else 4000
-        if self.smothscroll:
-            self.draw_surf()
+        # if self.smothscroll:
+        self.draw_surf()
         if self.scroll:
             self.scroll_func()
             
         if self.smothmove_bool:
             self.pos = self.movimiento.update(self.smothmove_pos)
             self.rect.topleft = self.pos
+            
 
         surface.blit(self.lista_surface,self.rect)
 
@@ -641,26 +673,6 @@ class List_Box:
             self.pos = pos
             self.rect.topleft = self.pos
 
-    def rodar(self,y) -> None:
-        if self.total_height + self.lista_surface_rect.h < self.rect.h:
-            return
-
-        self.desplazamiento += y
-        if self.scroll_bar_active:
-            self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento/self.total_height)
-        if self.desplazamiento > 1:
-            self.desplazamiento = self.padding_top
-            if self.scroll_bar_active:
-                self.barra.top = 0
-        elif self.desplazamiento < -self.total_height:
-            self.desplazamiento = -self.total_height
-            if self.scroll_bar_active:
-                self.barra.bottom = self.rect.h
-        
-        for num ,text in enumerate(self.lista_objetos):
-            text.move((self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento))
-        if not self.smothscroll:
-            self.draw_surf()
 
     def actualizar_lista(self) -> None:
         self.lista_objetos.clear()
@@ -672,6 +684,8 @@ class List_Box:
             for x in self.lista_objetos:
                 x.smothmove(60, 1.5, 1, 1.5)
         self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
+        self.bar_height = max(10,self.size[1]*(self.size[1]/self.lista_objetos[-1].rect.bottom))
+        self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
 
     def append(self,texto:str) -> None:
         self.lista_palabras.append(texto)
@@ -692,7 +706,7 @@ class List_Box:
         m = Vector2(pos)
         m -= self.pos
         if self.header: m += (0,5)
-        if self.scroll_bar_active and self.barra.collidepoint(m-(0,10)):
+        if self.scroll_bar_active and self.lista_objetos[-1].rect.bottom > self.size.y and self.barra.collidepoint(m-(0,10)):
             self.scroll = True
             self.last_mouse_pos = pag.mouse.get_pos()
             return 'scrolling'
@@ -701,7 +715,8 @@ class List_Box:
                 self.select_box.centery = te.rect.centery
                 self.select(index, False)
                 return {'index': index,'text': te.get_text()}
-
+        else:
+            self.select(-2000)
     def select(self, index: int = -2000, driff = True) -> str:
         if index != -2000:
             self.select_box.centery = self.lista_objetos[index].rect.centery
@@ -715,6 +730,24 @@ class List_Box:
         self.selected_num=-1
         return False
 
+    def rodar(self,y) -> None:
+        if self.total_height + self.lista_surface_rect.h < self.rect.h:
+            return
+
+        self.desplazamiento += y
+        if self.scroll_bar_active:
+            self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento/self.total_height)
+        if self.desplazamiento > 0:
+            self.desplazamiento = -self.padding_top
+            if self.scroll_bar_active:
+                self.barra.top = 0
+        elif self.desplazamiento < -self.total_height:
+            self.desplazamiento = -self.total_height
+            if self.scroll_bar_active:
+                self.barra.bottom = self.rect.h
+        
+        for num ,text in enumerate(self.lista_objetos):
+            text.move((self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento))
     def scroll_func(self) -> None:
         
         var = Vector2(pag.mouse.get_pos())
@@ -726,7 +759,7 @@ class List_Box:
         self.desplazamiento = -self.total_height *(self.barra.top / (self.lista_surface_rect.h-self.barra.h))
 
         if self.desplazamiento > 0:
-            self.desplazamiento = self.padding_top
+            self.desplazamiento = -self.padding_top
             self.barra.top = 0
         elif self.desplazamiento < -self.total_height:
             self.desplazamiento = -self.total_height
