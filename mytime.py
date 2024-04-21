@@ -35,3 +35,27 @@ def tener_el_tiempo(func):
 			print(f'El tiempo fue {tiempo_final:.3f} seg')
 		return result
 	return wr
+
+def format_date(seconds,escalones=5):
+	result = {'seg':0,'min':0,'hour':0,'day':0,'year':0}
+	if 5 < escalones < 1:
+		raise Exception('Debe tener minimo 1 escalon (segundos) y un maximo de 5 (años)')
+	result['seg'] = int(seconds % 60)
+	if escalones > 1:
+		seconds -= result['seg']
+		seconds /= 60
+		result['min'] = int(seconds % 60)
+	if escalones > 2:
+		seconds -= result['min']
+		seconds /= 60
+		result['hour'] = int(seconds % 24)
+	if escalones > 3:
+		seconds -= result['hour']
+		seconds /= 24
+		result['day'] = int(seconds % 365)
+	if escalones > 4:
+		seconds -= result['day']
+		seconds /= 365
+		result['year'] = int(seconds)
+	return result
+	

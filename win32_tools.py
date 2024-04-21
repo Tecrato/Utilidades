@@ -10,7 +10,7 @@ def front(win_name) -> None:
         if i[1] == win_name:
             shell = win32com.client.Dispatch("WScript.Shell")
             shell.SendKeys('%')
-            win32gui.ShowWindow(i[0],win32con.SW_SHOWNORMAL)# 5
+            win32gui.ShowWindow(i[0],win32con.SW_SHOWDEFAULT)# 5
             win32gui.SetForegroundWindow(i[0])
             return True
     return False
