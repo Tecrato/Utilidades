@@ -118,7 +118,7 @@ class simple_popup(Base):
             'result': 'exit'
             })
 class desicion_popup(Base):
-    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui', size= (200,80),accept_boton_text= 'aceptar') -> None:
+    def __init__(self, pos, title= 'Titulo', text= 'Texto aqui', size= (200,80),accept_boton_text= 'aceptar', dir = 'center') -> None:
 
         super().__init__(pos,dir, size)
 
@@ -173,6 +173,6 @@ class select(Base):
         if self.rect.collidepoint(pos):
             new_pos = Vector2(pos)-self.rect.topleft
             final_index = math.floor((new_pos.y/self.size[1])*len(self.texts))
-            return {'index': final_index, 'text': self.botones[final_index].get_text(), 'obj':self.captured}
+            return {'index': final_index, 'text': self.botones[final_index].text, 'obj':self.captured}
         else:
             return 'exit'
