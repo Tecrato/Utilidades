@@ -16,42 +16,43 @@ class Base:
 
         self.__dire: str = dire
         self.__pos = Vector2(0)
+        self.smothmove_pos = Vector2(0)
         self.pos = pos
     def create_border(self, rect, border_width) -> None:
         self.rect_border = pag.rect.Rect(0,0,rect.size[0] + border_width,rect.size[1] + border_width)
         self.rect_border.center = rect.center
     def direccion(self, rect) -> None:
-        rect.center = self.pos
+        rect.center = self.__pos
         
         if self.dire == 'left':
-            rect.left = self.pos.x
+            rect.left = self.__pos.x
         elif self.dire == 'right':
-            rect.right = self.pos.x
+            rect.right = self.__pos.x
         elif self.dire == 'top':
-            rect.top = self.pos.y
+            rect.top = self.__pos.y
         elif self.dire == 'bottom':
-            rect.bottom = self.pos.y
+            rect.bottom = self.__pos.y
         elif self.dire == 'topleft':
-            rect.left = self.pos.x
-            rect.top = self.pos.y
+            rect.left = self.__pos.x
+            rect.top = self.__pos.y
         elif self.dire == 'topright':
-            rect.right = self.pos.x
-            rect.top = self.pos.y
+            rect.right = self.__pos.x
+            rect.top = self.__pos.y
         elif self.dire == 'bottomleft':
-            rect.left = self.pos.x
-            rect.bottom = self.pos.y
+            rect.left = self.__pos.x
+            rect.bottom = self.__pos.y
         elif self.dire == 'bottomright':
-            rect.right = self.pos.x
-            rect.bottom = self.pos.y
+            rect.right = self.__pos.x
+            rect.bottom = self.__pos.y
             
     def smothmove(self, T, f, z, r) -> None:
-        self.smothmove_bool = True
         self.smothmove_pos = self.pos
-        self.smothmove_type = 'Second order dinamics'
         self.movimiento = Second_Order_Dinamics(T, f, z, r, self.pos)
-    def Cubic_bezier_move(self, fps, puntos, multiplicador:float = 1):
         self.smothmove_bool = True
+        self.smothmove_type = 'Second order dinamics'
+    def Cubic_bezier_move(self, fps, puntos, multiplicador:float = 1):
         self.smothmove_pos = self.pos
+        self.smothmove_bool = True
         self.smothmove_type = 'Cubic Bezier'
         self.movimiento = Curva_de_Bezier(fps,puntos,multiplicador)
     def copy(self):
@@ -75,11 +76,14 @@ class Base:
 
     @property
     def pos(self):
+        return self.__pos if not self.smothmove_bool else self.smothmove_pos
+    @property
+    def raw_pos(self):
         return self.__pos
     @pos.setter
     def pos(self,pos):
         if self.smothmove_bool:
-            self.smothmove_pos = pos
+            self.smothmove_pos = Vector2(pos)
         else:
             self.__pos = Vector2(pos)
         self.direccion(self.rect)
@@ -174,6 +178,7 @@ class Create_text(Base):
     - move() - Mueve el texto al sitio seleccionado\n
     - smothmove() - permite una transicion suave en el movimiento utilizando la clase Second Order Dinamics
     """
+    
     def __init__(self,text: str,size: int,font: str, pos: tuple,
                  dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] ='center',
                  color='white',with_rect = False, color_rect ='black', border_width = -1, padding: int|list|tuple = 20, 
@@ -207,7 +212,6 @@ class Create_text(Base):
         self.smothmove_bool = False
 
         self.__generate()
-    
     
     def __generate(self):
         self.raw_text = self.text.replace('\t', '    ').split('\n') if '\n' in self.raw_text else self.raw_text
@@ -680,7 +684,7 @@ class List_Box(Base):
         self.size = Vector2(size)
         self.text_size = text_size
         self.separation = separation
-        self.smothscroll = smothscroll
+        self.__smothscroll = smothscroll
         self.background_color = background_color
         self.selected_color = selected_color
         self.padding_top = kwargs.get('padding_top',10)
@@ -725,7 +729,7 @@ class List_Box(Base):
             #La barra entera
             self.bar = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.lista_surface_rect.h)
             self.bar_surface = pag.Surface(self.bar.size, pag.SRCALPHA)
-            self.bar_surface.fill((255,255,255,128))
+            self.bar_surface.fill((255,255,255,100))
 
             #La barra que sube y baja
             self.bar_height = max(10,self.size[1]*(self.size[1]/self.lista_objetos[-1].rect.bottom))
@@ -746,24 +750,20 @@ class List_Box(Base):
             te.draw(self.lista_surface, only_move=False if -self.padding_top-30 < te.pos.y < self.rect.h else True)
             
         if self.scroll_bar_active and self.total_height + self.lista_surface_rect.h > self.rect.h:
-            pag.draw.rect(self.lista_surface, 'white', self.barra)
             self.lista_surface.blit(self.bar_surface, self.bar.topleft)
+            pag.draw.rect(self.lista_surface, 'white', self.barra)
 
     def draw(self,surface) -> None:
         if self.header:
             self.text_header.draw(surface)
-        if self.selected_num != -1:
-            self.select_box.centery = self.lista_objetos[self.selected_num].rect.centery
-        else:
-            self.select_box.centery = -400
-        # if self.smothscroll:
-        self.draw_surf()
-        if self.scroll:
-            self.scroll_func()
-            
+
         if self.smothmove_bool:
             self.update()
             
+        if self.smothscroll and self.selected_num >= 0:
+            self.select_box.centery = self.lista_objetos[self.selected_num].centery
+        if self.smothscroll:
+            self.draw_surf()
 
         surface.blit(self.lista_surface,self.rect)
     
@@ -779,19 +779,22 @@ class List_Box(Base):
         self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
         self.bar_height = max(10,self.size[1]*(self.size[1]/self.lista_objetos[-1].rect.bottom))
         self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
+        self.selected_num = -1
 
     def append(self,texto:str) -> None:
-        self.lista_palabras.append(texto)
+        self.selected_num = -1
+        self.lista_palabras.append(str(texto))
         self.lista_objetos.append(Create_text(texto, self.text_size, self.font, (self.padding_left,(self.letter_size*(len(self.lista_palabras)-1)) + self.padding_top), 'topleft', self.text_color, padding=20))
         # self.actualizar_lista()
         if self.smothscroll:
             self.lista_objetos[-1].smothmove(60, 1.5, 1, 1.5)
         self.total_height = 0
-        self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
+        self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h - self.desplazamiento
         self.bar_height = max(10,self.size[1]*(self.size[1]/self.lista_objetos[-1].rect.bottom))
         self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
         self.rodar(0)
-        self.draw_surf()
+        if not self.smothscroll:
+            self.draw_surf()
 
     def change_list(self, lista: list) -> None:
         self.lista_palabras: list[str] = [] if not lista else lista
@@ -799,17 +802,21 @@ class List_Box(Base):
             self.select_box.top = self.rect.bottom
         self.selected_num = -1
         self.actualizar_lista()
+        if not self.smothscroll:
+            self.draw_surf()
     
     def clear(self) -> None:
+        self.selected_num = -1
         self.lista_palabras.clear()
         self.lista_objetos.clear()
-        self.selected_num = -1
+        if not self.smothscroll:
+            self.draw_surf()
 
     def click(self,pos):
         m = Vector2(pos)
         m -= self.pos
         if self.header: m += (0,5)
-        if self.scroll_bar_active and self.lista_objetos[-1].rect.bottom > self.size.y and self.barra.collidepoint(m-(0,10)):
+        if self.scroll_bar_active and self.barra.collidepoint(m-(0,10)):
             self.scroll = True
             self.last_mouse_pos = pag.mouse.get_pos()
             return 'scrolling'
@@ -818,8 +825,7 @@ class List_Box(Base):
                 self.select_box.centery = te.rect.centery
                 self.select(index, False)
                 return {'index': index,'text': te.text}
-        else:
-            self.select(-2000)
+        self.select(-2000)
     def select(self, index: int = -2000, driff = True) -> str:
         if index != -2000:
             self.select_box.centery = self.lista_objetos[index].rect.centery
@@ -831,6 +837,8 @@ class List_Box(Base):
         
         self.select_box.top = self.lista_surface_rect.h
         self.selected_num=-1
+        if not self.smothscroll:
+            self.draw_surf()
         return False
 
     def rodar(self,y) -> None:
@@ -840,7 +848,7 @@ class List_Box(Base):
         self.desplazamiento += y
         if self.scroll_bar_active:
             self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento/self.total_height)
-        if self.desplazamiento > 0:
+        if self.desplazamiento > -self.padding_top:
             self.desplazamiento = -self.padding_top
             if self.scroll_bar_active:
                 self.barra.top = 0
@@ -848,32 +856,32 @@ class List_Box(Base):
             self.desplazamiento = -self.total_height
             if self.scroll_bar_active:
                 self.barra.bottom = self.rect.h
-        
-        for num ,text in enumerate(self.lista_objetos):
-            text.move((self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento))
-    def scroll_func(self) -> None:
-        
-        var = Vector2(pag.mouse.get_pos())
-        m_pos = self.last_mouse_pos - var
-        m_pos.y *= -1
-        self.last_mouse_pos = var
-
-        self.barra.centery += m_pos.y
-        self.desplazamiento = -self.total_height *(self.barra.top / (self.lista_surface_rect.h-self.barra.h))
-
-        if self.desplazamiento > 0:
-            self.desplazamiento = -self.padding_top
-            self.barra.top = 0
-        elif self.desplazamiento < -self.total_height:
-            self.desplazamiento = -self.total_height
-            self.barra.bottom = self.rect.h
 
         for num ,text in enumerate(self.lista_objetos):
-            text.move((self.padding_left,self.letter_size*num + self.desplazamiento))
-        
+            text.pos = (self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento)
+        if self.selected_num >= 0:
+            self.select_box.centery = self.lista_objetos[self.selected_num].centery
+        else:
+            self.select_box.centery = -400
+
+        if not self.smothscroll:
+            self.draw_surf()
+
     def get_list(self) -> list[str]:
         return self.lista_palabras
     
+    # def pop(self,index=-1):
+    #     self.lista_objetos.pop
+    
+    @property
+    def smothscroll(self):
+        return self.__smothscroll
+    @smothscroll.setter
+    def smothscroll(self,smothscroll):
+        self.__smothscroll = smothscroll
+        for x in self.lista_objetos:
+            x.smothmove_bool = self.smothscroll
+
     def __getitem__(self,index):
         return self.lista_palabras[index]
     
@@ -881,7 +889,7 @@ class List_Box(Base):
         self.lista_palabras[index] = value
         self.actualizar_lista()
     def __repr__(self):
-        return self.lista_palabras
+        return '\n'.join(self.lista_palabras)
     def __str__(self) -> str:
         text = f'{'_':_>20}\n'
         text += '\n'.join(self.lista_palabras)
@@ -891,14 +899,20 @@ class List_Box(Base):
 class Multi_list(Base):
     '''
     ### More options
-     - smothscroll
      - with_index
      - padding_top
      - padding_left
+    
+    ## Plantillas
+    elif evento.type == MOUSEMOTION:
+        for x in self.listas:
+            if x.scroll:
+                x.rodar(-evento.rel[1])
     '''
     def __init__(self, size:tuple,pos:tuple,num_lists:int=2,lista: list[list] = None, text_size: int = 20, separation: int = 0,
         background_color = 'black', selected_color = (100,100,100,100), text_color= 'white', colums_witdh= -1, header: bool =True,
-        header_text: list = None, dire: str = 'topleft', fonts: list['str']|None = None, default: list[list]=None, **kwargs) -> None:
+        header_text: list = None, dire: str = 'topleft', fonts: list['str']|None = None, default: list[list]=None,
+        smothscroll=False, **kwargs) -> None:
         
         super().__init__(pos,dire)
         self.size = Vector2(size)
@@ -906,7 +920,7 @@ class Multi_list(Base):
         self.lista_palabras = self.default if not lista else lista
         self.text_size = text_size
         self.separation = separation
-        self.smothscroll = kwargs.get('smothscroll',True)
+        self.__smothscroll = smothscroll
         self.background_color = background_color
         self.selected_color = selected_color
         self.padding_top = kwargs.get('padding_top',10)
@@ -932,45 +946,45 @@ class Multi_list(Base):
 
         self.rect = pag.rect.Rect(pos[0], pos[1], size[0], size[1])
         self.direccion(self.rect)
-        self.lista_surface= pag.surface.Surface(self.rect.size, pag.SRCALPHA)
+        self.lista_surface= pag.surface.Surface(self.rect.size)
         self.lista_surface_rect = self.lista_surface.get_rect()
+        self.lista_surface.fill((0,0,0))
+        self.lista_surface.set_colorkey((0,0,0))
         self.lista_surface_rect.topleft = self.pos
         for x in range(num_lists):
             separar = Create_text('Hola|', self.text_size, self.fonts[-1], (0,0)).rect.h
             separar = separar - Create_text('Hola|', self.text_size, self.fonts[0], (0,0)).rect.h
             self.listas.append(List_Box(((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y),
                 (self.size.x*self.colums_witdh[x],0), [self.lista_palabras[x]], self.text_size, self.separation+(separar if x != num_lists-1 else 0),
-                self.selected_color, self.text_color, background_color=(0,0,0,0), smothscroll=self.smothscroll, 
+                self.selected_color, self.text_color, background_color=self.background_color, smothscroll=self.smothscroll, 
                 padding_top=self.padding_top-(separar//2 if x == num_lists-1 else 0), padding_left=self.padding_left, 
-                with_index=self.with_index if x == 0 and self.with_index else False, 
+                with_index=self.with_index if x == 0 and self.with_index else False,
                 scroll_bar_active=False if x != num_lists-1 else True,
                 header=True, text_header=self.text_header[x], header_top_left_radius=20 if x == 0 else 0, 
                 header_top_right_radius=20 if x == self.num_list-1 else 0, font=self.fonts[x], header_border_color=self.border_color))
             self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
-
+        self.create_border(self.rect, 2)
 
     def draw(self,surface) -> None:
         if self.smothmove_bool:
-            self.pos = self.movimiento.update(self.smothmove_pos)
-            self.direccion(self.rect)
-
-        self.lista_surface.fill(self.background_color)
-        if self.header:
-            pag.draw.rect(self.lista_surface, (0,0,0,0), pag.rect.Rect(0,0,self.rect.w, 20))
+            self.update()
+            # self.direccion(self.rect)
+        
         for x in self.listas:
             x.draw(self.lista_surface)
-        if self.scroll:
-            for x in self.listas:
-                x.desplazamiento = self.listas[-1].desplazamiento
-                x.selected_num = self.listas[-1].selected_num
-                x.rodar(0)
+        # if self.smothscroll:
+        #     for x in self.listas[:-1]:
+        #         x.desplazamiento = self.listas[-1].desplazamiento
+        #         x.selected_num = self.listas[-1].selected_num
+        #         x.rodar(0)
+
+
         for x in self.listas:
             pag.draw.rect(self.lista_surface, self.border_color, x.rect, 1)
         surface.blit(self.lista_surface,self.rect)
-        # for line in self.lineas[1:]:
-        #     pag.draw.line(self.lista_surface, self.border_color, line[0], line[1], 2)
+        
         for line in self.lineas[1:]:
-            pag.draw.line(surface, self.border_color, Vector2(line[0])+self.pos-(0,0)-(0,30), Vector2(line[1])+self.pos-(0,1), 2)
+            pag.draw.line(surface, self.border_color, Vector2(line[0])+self.raw_pos-(0,0)-(0,30), Vector2(line[1])+self.raw_pos-(0,1), 2)
 
     def rodar(self,y) -> None:
         for x in self.listas:
@@ -996,13 +1010,16 @@ class Multi_list(Base):
         
         for i,x in sorted(enumerate(self.listas),reverse=True):
             a = x.click(m)
-            if a == 'scrolling':
+            if a == 'scrolling' and i==len(self.listas)-1:
                 self.scroll = True
+                x.scroll = False
+                return
             elif isinstance(a,dict):
                 minilista = {'index':a['index'],'result':[l.select(a['index'], False)['text'] for l in self.listas]}
                 return minilista
         for x in self.listas:
             x.select(-2000)
+
 
 
     def select(self, index: int = -2000) -> str:
@@ -1020,7 +1037,25 @@ class Multi_list(Base):
         var1 = [x.get_list() for x in self.listas]
         return list([list(x) for x in zip(*var1)])
 
+    @property
+    def smothscroll(self):
+        return self.__smothscroll
+    @smothscroll.setter
+    def smothscroll(self,smothscroll):
+        self.__smothscroll = smothscroll
+        for x in self.listas:
+            x.smothscroll = smothscroll
+        
+
     def __getitem__(self,index: int):
         return self.listas[index]
     def __setitem__(self,index,value):
         self.listas[index] = value
+    def __repr__(self) -> str:
+        var = ''
+        for x in self.listas:
+            var += '\n'
+            var += str(x)
+        return var
+    
+
