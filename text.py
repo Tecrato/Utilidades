@@ -17,6 +17,7 @@ class Base:
         self.__dire: str = dire
         self.__pos = Vector2(0)
         self.smothmove_pos = Vector2(0)
+        self.rect_border = pag.rect.Rect(0,0,0,0)
         self.pos = pos
     def create_border(self, rect, border_width) -> None:
         self.rect_border = pag.rect.Rect(0,0,rect.size[0] + border_width,rect.size[1] + border_width)
@@ -44,6 +45,7 @@ class Base:
         elif self.dire == 'bottomright':
             rect.right = self.__pos.x
             rect.bottom = self.__pos.y
+        self.rect_border.center = rect.center
             
     def smothmove(self, T, f, z, r) -> None:
         self.smothmove_pos = self.pos
@@ -87,6 +89,7 @@ class Base:
         else:
             self.__pos = Vector2(pos)
         self.direccion(self.rect)
+        self.rect_border.center = self.rect.center
         
     @property
     def dire(self) -> str:
@@ -296,6 +299,7 @@ class Create_text(Base):
     def width(self,width):
         self.__width = max(width,self.rect_text.w + self.padding[0])
         self.rect.width = self.width
+        self.create_border(self.rect,self.border_width)
         self.direccion(self.rect)
     @property
     def height(self):
@@ -304,6 +308,7 @@ class Create_text(Base):
     def height(self,height):
         self.__height = max(height,self.rect_text.h + self.padding[1])
         self.rect.height = self.height
+        self.create_border(self.rect,self.border_width)
         self.direccion(self.rect)
 
     def draw(self, surface, only_move=False) -> None:
@@ -360,10 +365,11 @@ class Create_text(Base):
 class Create_boton(Create_text):
     '''
     ### More options
-     - sound_to_hover
-     - sound_to_click
-     - toggle_rect
-     - color_active
+     - sound_to_hover: pag.Sound
+     - sound_to_click: pag.Sound
+     - toggle_rect: bool
+     - color_active: pygame.Color
+     - color_rect_active: pygame.Color
     '''
     def __init__(self, text, size: int, font: str, pos: tuple, padding: int|list|tuple = 20,
         dire: Literal["center","left","right","top","bottom","topleft","topright","bottomleft","bottomright"] = 'center', color = 'black', color_rect = 'darkgrey',
@@ -443,8 +449,8 @@ class Input_text(Base):
         if isinstance(x,Input_text):
             x.update(eventos)
     '''
-    def __init__(self, pos: tuple, size: tuple, font: str, text_value: str = 'Type here',max_letter = 20, padding = 20,
-        text_color = 'white', background_color = 'black', dire: str = 'topleft', **kwargs) -> None:
+    def __init__(self, pos: tuple, text_size: int, font: str, text_value: str = 'Type here',max_letter = 20, padding = 20,
+        width=100, height=50, text_color='white', background_color = 'black', dire: str = 'topleft', **kwargs) -> None:
         
         super().__init__(pos,dire)
         self.border_radius = kwargs.get('border_radius',0)
@@ -455,30 +461,19 @@ class Input_text(Base):
         self.border_width = kwargs.get('border_width', -1)
         self.border_color = kwargs.get('border_color', 'black')
 
-        self.size = Vector2(size)
+        self.text_size = text_size
+        self.text_color = text_color
         
         self.padding = Vector2(padding)
         self.raw_text = ''
+        self.text_value = text_value
         self.max_letter = max_letter
         self.background_color = background_color
         self.font = font
-
-
-        self.text = Create_text(self.raw_text, size[0], font, pos, 'left', padding=padding)
-        self.rect2 = self.text.rect.copy()
-        self.rect2.w = size[1]
-        # self.create_border(self.rect2, self.border_width)
-
-        self.text = Create_text('abdc123--||', size[0], font, pos, 'left', padding=5)
-        self.rect = self.text.rect.copy()
-        self.rect.w = size[1] - self.padding.x*2
-        self.rect.left += self.padding.x
-        self.input_surface = pag.surface.Surface(self.rect.size)
-        self.input_surface.fill(self.background_color)
-        self.text = Create_text(self.raw_text, size[0], font, (0,self.input_surface.get_height()/2), 'left', text_color, True, self.background_color, padding=0,height=self.input_surface.get_height())
-
-
-        self.text_value = Create_text(text_value, size[0], font, (0,self.input_surface.get_height()/2), 'left', 'gray', True, self.background_color, padding=0,height=self.input_surface.get_height())
+        
+        self.width = width
+        self.height = height
+        self.generate()
 
         self.typing = False
         self.typing_pos = 0
@@ -495,6 +490,24 @@ class Input_text(Base):
         self.button_pressed_time = 0
         self.draw_surf()
 
+    def generate(self):
+        t = Create_text('', self.text_size, self.font, self.pos, 'left', padding=self.padding,width=self.width,height=self.height)
+        self.rect = t.rect.copy()
+
+        self.text = Create_text('abdc123--||', self.text_size, self.font, self.pos, 'left',self.text_color,True, self.background_color,width=self.width-self.padding.x*2, padding=5)
+        self.rect2 = self.text.rect.copy()
+        self.input_surface = pag.Surface(self.rect2.size)
+        self.input_surface.fill(self.background_color)
+        self.surf_rect = self.input_surface.get_rect()
+
+        self.text = Create_text(self.raw_text, self.text_size, self.font, (0,0), 'topleft',self.text_color,True, self.background_color, padding=0)
+        self.text_value = Create_text(self.text_value, self.text_size, self.font, (0,0), 'topleft',self.text_color,True, self.background_color, padding=0)
+
+        self.surf_rect.center = self.rect.center
+        # self.width = self.rect.w
+        self.create_border(self.rect, self.border_width)
+
+
     def draw_surf(self):
         self.input_surface.fill(self.background_color)
         if self.raw_text == '':
@@ -502,7 +515,7 @@ class Input_text(Base):
         else:
             self.text.draw(self.input_surface)
         if self.typing_line:
-            pag.draw.line(self.input_surface, 'white', (sum(self.letter_pos[:self.typing_pos]),0),(sum(self.letter_pos[:self.typing_pos]),self.input_surface.get_height()))
+            pag.draw.line(self.input_surface, 'white', (sum(self.letter_pos[:self.typing_pos])+self.text.left,0),(sum(self.letter_pos[:self.typing_pos])+self.text.left,self.input_surface.get_height()))
 
 
     def draw(self, surface) -> None:
@@ -511,32 +524,32 @@ class Input_text(Base):
                 self.del_letter()
                 self.del_time = time.time()
             elif self.left_b and time.time() - self.left_time > .03:
-                self.left()
+                self.to_left()
                 self.left_time = time.time()
             elif self.right_b and time.time() - self.right_time > .03:
-                self.right()
+                self.to_right()
                 self.right_time = time.time()
             self.draw_surf()
-        pag.draw.rect(surface, self.background_color, self.rect2, 0, self.border_radius, self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-        # pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
-        #     , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+        pag.draw.rect(surface, self.background_color, self.rect, 0, self.border_radius, self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+        pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
+            , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
     
         if self.typing:
             if time.time()-self.typing_line_time > .7:
                 self.typing_line = not self.typing_line
                 self.typing_line_time = time.time()
                 self.draw_surf()
-
-        surface.blit(self.input_surface, self.rect)
+        self.surf_rect.center = self.rect.center
+        surface.blit(self.input_surface, self.surf_rect)
 
     def eventos_teclado(self, eventos):
         for evento in eventos:
             if self.typing:
                 if evento.type == pag.KEYDOWN and not (self.backspace or self.left_b or self.right_b):
                     if evento.key == pag.K_LEFT:
-                        self.left()
+                        self.to_left()
                     elif evento.key == pag.K_RIGHT:
-                        self.right()
+                        self.to_right()
                     elif evento.key == pag.K_BACKSPACE:
                         self.del_letter()
                     # elif evento.key == pag.K_DELETE:
@@ -568,9 +581,9 @@ class Input_text(Base):
 
     def click(self, pos) -> None:
 
-        if self.rect2.collidepoint(pos): 
+        if self.rect.collidepoint(pos): 
             self.typing = True
-            self.typing_pos = self.check_pos_letter_click(pos[0]-self.pos.x-(self.padding.x/1.5))
+            self.typing_pos = self.check_pos_letter_click(pos[0]-self.pos.x-(self.padding.x)-self.text_size/3)
             self.typing_line = True
             self.typing_line_time = time.time()
         else:
@@ -585,18 +598,19 @@ class Input_text(Base):
         if len(self.raw_text) < self.max_letter:
             self.raw_text = self.raw_text[:self.typing_pos] + t + self.raw_text[self.typing_pos:]
             self.text.text = self.raw_text
-            self.letter_pos.insert(self.typing_pos,Create_text(t,int(self.size.x), self.font, (0,0), padding=0).rect.w)
+            self.letter_pos.insert(self.typing_pos,Create_text(t,self.text_size, self.font, (0,0), padding=0).rect.w)
             self.typing_pos += 1
             suma = sum(self.letter_pos[:self.typing_pos])
-            if suma + self.text.rect_text.left < 0:
-                self.text.pos (-suma,self.input_surface.get_height()/2)
+            if suma > self.rect2.w-5:
+                self.text.pos = (self.rect2.w-2,self.input_surface.get_height()/2)
+                self.text.dire = 'right'
+            elif suma + self.text.left < self.rect2.w:
+                self.text.pos = (0,self.input_surface.get_height()/2)
                 self.text.dire = 'left'
-            elif suma + self.text.rect_text.left > self.rect.w:
-                self.text.pos += (-self.letter_pos[self.typing_pos-1]*1.5,0)
         self.typing_line = True
         self.typing_line_time = time.time()
 
-    def left(self) -> None:
+    def to_left(self) -> None:
         if not self.left_b:
             self.left_b = True
             self.left_time = time.time()
@@ -604,12 +618,15 @@ class Input_text(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
-        if suma + self.text.rect_text.left < 0:
-            self.text.pos += (-suma,self.input_surface.get_height()/2)
+        if suma > self.rect2.w-5:
+            self.text.pos = (self.rect2.w-2,self.input_surface.get_height()/2)
+            self.text.dire = 'right'
+        elif suma + self.text.left < self.rect2.w:
+            self.text.pos = (0,self.input_surface.get_height()/2)
             self.text.dire = 'left'
         self.draw_surf()
 
-    def right(self) -> None:
+    def to_right(self) -> None:
         if not self.right_b:
             self.right_b = True
             self.right_time = time.time()
@@ -617,8 +634,12 @@ class Input_text(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
-        if suma + self.text.rect_text.left > self.rect.w - self.padding.x:
-            self.text.pos += (-self.letter_pos[self.typing_pos],0)
+        if suma > self.rect2.w-5:
+            self.text.pos = (self.rect2.w-2,self.input_surface.get_height()/2)
+            self.text.dire = 'right'
+        elif suma + self.text.left < self.rect2.w:
+            self.text.pos = (0,self.input_surface.get_height()/2)
+            self.text.dire = 'left'
         self.draw_surf()
 
     def del_letter(self) -> None:
@@ -633,10 +654,11 @@ class Input_text(Base):
             self.letter_pos.pop(self.typing_pos)
             self.typing_pos -= 1
             self.text.text = self.raw_text
-            if self.text.rect_text.w > self.rect.w:
-                self.text.pos = (self.rect.width,self.input_surface.get_height()/2)
+            suma = sum(self.letter_pos[:self.typing_pos])
+            if suma > self.rect2.w-5:
+                self.text.pos = (self.rect2.w-2,self.input_surface.get_height()/2)
                 self.text.dire = 'right'
-            else:
+            elif suma + self.text.left < self.rect2.w:
                 self.text.pos = (0,self.input_surface.get_height()/2)
                 self.text.dire = 'left'
         self.typing_line = True
@@ -747,7 +769,7 @@ class List_Box(Base):
         self.lista_surface.fill(self.background_color)
         pag.draw.rect(self.lista_surface, self.selected_color, self.select_box)
         for te in self.lista_objetos:
-            te.draw(self.lista_surface, only_move=False if -self.padding_top-30 < te.pos.y < self.rect.h else True)
+            te.draw(self.lista_surface, only_move=False if -self.padding_top-30 < te.raw_pos.y < self.rect.h else True)
             
         if self.scroll_bar_active and self.total_height + self.lista_surface_rect.h > self.rect.h:
             self.lista_surface.blit(self.bar_surface, self.bar.topleft)
@@ -795,7 +817,6 @@ class List_Box(Base):
         self.rodar(0)
         if not self.smothscroll:
             self.draw_surf()
-
     def change_list(self, lista: list) -> None:
         self.lista_palabras: list[str] = [] if not lista else lista
         if self.scroll_bar_active:
@@ -880,7 +901,10 @@ class List_Box(Base):
     def smothscroll(self,smothscroll):
         self.__smothscroll = smothscroll
         for x in self.lista_objetos:
-            x.smothmove_bool = self.smothscroll
+            if self.smothscroll:
+                x.smothmove(60, 1.5, 1, 1.5)
+            else:
+                x.smothmove_bool = self.smothscroll
 
     def __getitem__(self,index):
         return self.lista_palabras[index]
@@ -1044,7 +1068,7 @@ class Multi_list(Base):
     def smothscroll(self,smothscroll):
         self.__smothscroll = smothscroll
         for x in self.listas:
-            x.smothscroll = smothscroll
+            x.smothscroll = self.smothscroll
         
 
     def __getitem__(self,index: int):

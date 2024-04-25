@@ -22,4 +22,9 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
         return False
 
 def get_mediafire_url(url):
-    return BeautifulSoup(requests.get(url, allow_redirects=True).content, 'html.parser').find(id='downloadButton').get('href',False)
+    try:
+        return BeautifulSoup(requests.get(url, allow_redirects=True,timeout=20).content, 'html.parser').find(id='downloadButton').get('href',False)
+    except Exception as err:
+        print(type(err))
+        print(err)
+        return False

@@ -160,7 +160,7 @@ class Text_return(Base_win):
             'result': lambda: self.input.get_text()
             })
         self.botones.append({
-            'btn':Create_boton('',25,configs['fuente_simbolos'],(self.input.rect2.right,150), (20,7), 'left','black','white', border_width=1, border_radius=0, border_top_right_radius=20, border_bottom_right_radius=20),
+            'btn':Create_boton('',25,configs['fuente_simbolos'],self.input.topright, (20,7), 'topleft','black','white', border_width=1, border_radius=0, border_top_right_radius=20, border_bottom_right_radius=20),
             'return':'function',
             'result': lambda: self.input.set(pyperclip.paste())
         })
