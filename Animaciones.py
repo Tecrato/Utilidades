@@ -1,7 +1,20 @@
-from numpy import pi
+from numpy import pi, sin, cos, radians
 from math import comb
+from .optimize import memosize
+from .hipotenuza import Angulo_normalized, Angulo
+from dataclasses import dataclass
 
 from pygame.math import Vector2
+
+class Simple_acceleration:
+    def __init__(self,vel,pos) -> None:
+        self.vel: Vector2 = Vector2(vel)
+        self.pos = Vector2(pos)
+    def update(self,pos,dt=1) -> Vector2:
+        angle = Angulo(self.pos, pos)
+        self.vel = Vector2(cos(radians(angle)),sin(radians(angle)))
+        return self.pos + self.vel
+        return (self.pos+Vector2(Angulo_normalized(self.pos,Vector2(pos))*self.vel))
 
 
 class Second_Order_Dinamics:
