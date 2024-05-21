@@ -136,7 +136,7 @@ class desicion_popup(Base):
             })
 
 class select(Base):
-    def __init__(self, pos, options:list, dir = 'topleft', captured = None) -> None:
+    def __init__(self, pos, options:list, dir = 'topleft', captured = None,min_width =0) -> None:
 
         self.pos = Vector2(pos)
         self.dir = dir
@@ -144,12 +144,12 @@ class select(Base):
         self.captured = captured
         self.botones: list[Create_text] = []
 
-        self.txt_tama_h = Create_boton(f'{max(options)}',16,None,(0,280), 6, 'topleft','white', (20,20,20), 'darkgrey', 0, 0, border_width=1, border_color='white').rect.h
-        self.txt_tama_w = 0
+        self.txt_tama_h = Create_boton(f'{max([f'{x}' for x in options])}',16,None,(0,280), 6, 'topleft','white', (20,20,20), 'darkgrey', 0, 0, border_width=1, border_color='white').rect.h
+        self.txt_tama_w = min_width
         
         for i, op in enumerate(options):
             t = Create_text(f'{op}',16,None,(10,self.txt_tama_h*i +5), 'topleft','black', padding= (0,5))
-            self.txt_tama_w = max(self.txt_tama_w,t.rect.w + 20)
+            self.txt_tama_w = max(self.txt_tama_w,t.width + 20)
             self.botones.append(t.copy())
 
         self.size = (self.txt_tama_w,(self.txt_tama_h*len(options))+10)

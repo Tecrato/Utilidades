@@ -77,7 +77,7 @@ class Poligono_irregular:
 		self.x, self.y= pos
 		self.__pos = Vector2(pos)
 		self.__angle = angle
-		self.radio = radius
+		self.__radio = radius
 		self.type = type
 		if self.type == 'engranaje':
 			self.tamaño_diente =  otros.get('tamaño_diente')
