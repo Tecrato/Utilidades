@@ -7,14 +7,17 @@ from dataclasses import dataclass
 from pygame.math import Vector2
 
 class Simple_acceleration:
-    def __init__(self,vel,pos) -> None:
-        self.vel: Vector2 = Vector2(vel)
+    def __init__(self,vel, dir,pos) -> None:
+        self.vel: float = vel
+        self.dir: Vector2 = Vector2(dir)
         self.pos = Vector2(pos)
-    def update(self,pos,dt=1) -> Vector2:
-        angle = Angulo(self.pos, pos)
-        self.vel = Vector2(cos(radians(angle)),sin(radians(angle)))
-        return self.pos + self.vel
-        return (self.pos+Vector2(Angulo_normalized(self.pos,Vector2(pos))*self.vel))
+    def update(self,dt=1) -> Vector2:
+        self.pos += self.dir*self.vel*dt
+        return self.pos
+    def follow(self,pos,dt=1):
+        self.dir = Angulo_normalized(self.pos,pos)
+        self.pos += self.dir*self.vel*dt
+        return self.pos
 
 
 class Second_Order_Dinamics:
