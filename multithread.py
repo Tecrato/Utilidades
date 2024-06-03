@@ -43,5 +43,5 @@ class Funcs_pool:
         for i,f in enumerate(self.threads[f'{alias}']['funcs']):
             f()
         self.running[f'{alias}'].pop(f'{id}')
-        self.running_ids[f'{alias}'].remove(id)
+        self.running_ids[f'{alias}'].pop(id)
     

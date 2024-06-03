@@ -105,7 +105,6 @@ class Base:
         else:
             self.__pos = Vector2(pos)
             self.direccion(self.rect)
-        
     @property
     def dire(self) -> str:
         return self.__dire

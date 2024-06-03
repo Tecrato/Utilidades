@@ -1,4 +1,4 @@
-import win32gui, win32con, win32com.client, winreg
+import win32gui, winreg # , win32con, win32com.client
 
 
 def windowEnumerationHandler(hwnd, windows):
@@ -9,9 +9,10 @@ def front(win_name,sw_code=1) -> None:
     win32gui.EnumWindows(windowEnumerationHandler, windows)
     for i in windows:
         if i[1] == win_name:
-            shell = win32com.client.Dispatch("WScript.Shell")
-            shell.SendKeys('%')
+            # shell = win32com.client.Dispatch("WScript.Shell")
+            # shell.SendKeys('%')
             win32gui.ShowWindow(i[0],sw_code)# 5
+            win32gui.BringWindowToTop(i[0])
             win32gui.SetForegroundWindow(i[0])
             return True
     return False
@@ -24,10 +25,15 @@ def front2(hwnd,sw_code=1):
     # win32con.SW_MAXIMIZE
     # win32con.SW_SHOWMAXIMIZED
     # win32con.SW_MAX
-    shell = win32com.client.Dispatch("WScript.Shell")
-    shell.SendKeys('%')
-    win32gui.ShowWindow(hwnd,sw_code)# 5
-    win32gui.SetForegroundWindow(hwnd)
+    # shell = win32com.client.Dispatch("WScript.Shell")
+    # shell.SendKeys('%')
+    try:
+        win32gui.ShowWindow(hwnd,sw_code)# 5
+        win32gui.BringWindowToTop(hwnd)
+        win32gui.SetForegroundWindow(hwnd)
+        
+    except:
+        pass
 
 
 def check_win(name) -> bool:

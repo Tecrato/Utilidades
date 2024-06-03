@@ -1,12 +1,12 @@
 import pygame as pag, random
-# from numpy import array
 from pygame.math import Vector2
+from .hipotenuza import Hipotenuza
 
 
 class Particles:
     def __init__(self, surface,type:int=1,movent=True,radius:int=4,lighting_number:int=3, gravity = 0,pos=(0,0),vel=[0,0],
-        color = 'white', lighting_color = (20,20,20), degrad_vel= 0.1) -> None:
-        self.surface = surface
+        color = 'white', lighting_color = (255,255,255,255), degrad_vel= 0.1) -> None:
+        self.surface: pag.Surface = surface
         self.type = type
         self.movent = movent
         self.radius = radius
@@ -17,6 +17,7 @@ class Particles:
         self.color = color
         self.lighting_color = lighting_color
         self.degrad_vel = degrad_vel
+        self.light = self.lighting_func()
 
         self.last_pos = 0
 
@@ -30,14 +31,13 @@ class Particles:
                 self.con = 0
                 self.speed = self.last_pos - coord
 
-                if self.type == 1:
-                    if self.speed[0] != 0 or self.speed[1] != 0:
+                if self.speed[0] != 0 or self.speed[1] != 0:
+                    if self.type == 1:
                         self.particles.append([
                             Vector2(pos),
-                            [random.randint(int(self.speed[0]-1),int(self.speed[0]+1)),random.randint(int(self.speed[1]-1),int(self.speed[1]+1))],
+                            [random.random()*(self.speed[0] -1),random.random()*(self.speed[1] -1)],
                             (random.random()*(self.radius/2+self.radius*2)) - self.radius])
-                elif self.type == 2:
-                    if self.speed[0] != 0 or self.speed[1] != 0:
+                    elif self.type == 2:
                         self.particles.append([Vector2(pos), [0,0],self.radius])
             else:
                 self.con = 1
@@ -71,27 +71,33 @@ class Particles:
                     return True
         return False
 
-    def lighting_func(self,radius):
-        surf = pag.surface.Surface((radius*2,radius*2))
-        pag.draw.circle(surf, self.lighting_color, (radius,radius), radius)
-        surf.set_colorkey((0,0,0))
-        return surf
 
-    def apply_lighting(self, part):
-        for x in range(self.lighting_number):
-            radius = part[2]* (1.5*(x+1))
-            self.surface.blit(self.lighting_func(radius),part[0]-Vector2(radius), special_flags= pag.BLEND_RGB_ADD)
+    def lighting_func(self):
+        surf = pag.Surface((self.radius*2,self.radius*2), pag.SRCALPHA)
+        matriz_colores = []
+        for y in range(self.radius*2):
+            fila = []
+            for x in range(self.radius*2):
+                distancia = Vector2(Vector2(x,y)-Vector2(self.radius,self.radius)).length() / self.radius
+                color = (
+                        self.lighting_color[0] * (1-distancia),
+                        self.lighting_color[1] * (1-distancia),
+                        self.lighting_color[2] * (1-distancia),
+                        self.lighting_color[3] * (1-distancia),
+                    )
+                fila.append(color if color[0] > 1 else (0,0,0,0))
+            matriz_colores.append(fila)
+        
+        for y in range(self.radius*2):
+            for x in range(self.radius*2):
+                surf.set_at((x,y),matriz_colores[y][x])
+        return surf
 
 
     def draw(self) -> None:
-        if self.type == 1:
-            for i,part in sorted(enumerate(self.particles),reverse=True):
-                self.apply_lighting(part)
-                pag.draw.circle(self.surface, self.color, [*part[0]], int(part[2]))
-        elif self.type == 2 or self.type == 3:
-            for i,part in sorted(enumerate(self.particles),reverse=True):
-                self.apply_lighting(part)
-                pag.draw.circle(self.surface, self.color, [int(part[0][0]),int(part[0][1])], int(part[2]))
+        for i,part in sorted(enumerate(self.particles),reverse=True):
+            pag.draw.circle(self.surface, self.color, [int(part[0][0]),int(part[0][1])], int(part[2])/7)
+            self.surface.blit(self.light,part[0]-Vector2(self.radius))
 
 
 

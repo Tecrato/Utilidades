@@ -1,22 +1,19 @@
 import pygame as pag, math
 
 from ..text import Create_boton, Create_text
+from ..obj_Base import Base as primary_base
 from pygame.math import Vector2
 
 
 
 class mini_GUI_admin:
-    def __init__(self, limit_rect: pag.Rect) -> None:
+    def __init__(self, limit: pag.Rect) -> None:
         self.__list = []
-        self.limit_rect = limit_rect
+        self.__limit = limit
     
-    
-    def get_limit_rect(self) -> pag.Rect:
-        return self.limit_rect
-    
-    def add(self,mini_GUI,func=None):
-        self.__list.append({'GUI':mini_GUI,'func':func})
-        self.__list[-1]['GUI'].limits = self.limit_rect
+    def add(self,mini_GUI,func=None,raw_pos=None):
+        self.__list.append({'GUI':mini_GUI,'func':func,'raw_pos':raw_pos})
+        self.__list[-1]['GUI'].limits = self.limit
         self.__list[-1]['GUI'].direccion(self.__list[-1]['GUI'].rect)
 
     
@@ -41,14 +38,27 @@ class mini_GUI_admin:
     
     def clear(self):
         self.__list.clear()
+    
+    @property
+    def limit(self):
+        return self.__limit
+    @limit.setter
+    def limit(self,limit):
+        self.__limit = limit
+        for x in self.__list:
+            x['GUI'].limits = self.__limit
+            if x['raw_pos']:
+                x['GUI'].pos = x['raw_pos']
+            else:
+                x['GUI'].pos = x['GUI'].pos
 
 
 
-class Base:
-    def __init__(self,pos,dir = 'center', size = (200,125), border_radius = 10) -> None:
-        self.pos = Vector2(pos)
-        self.dir = dir
-
+class Base(primary_base):
+    def __init__(self,pos,dir = 'center', size = (200,125), border_radius = 10, inside_limits=True) -> None:
+        self.limits = pag.Rect(0,0,600,550)
+        self.inside_limits = inside_limits
+        super().__init__(pos,dir)
 
         self.botones = [{
             'btn':Create_boton('X',24,None,(size[0],0),10,'topright', 'black', color_rect='lightgrey', color_rect_active='darkgrey', border_radius=0, border_top_right_radius=border_radius, border_width=-1),
@@ -64,27 +74,9 @@ class Base:
 
     def direccion(self, rect) -> None:
         rect.center = self.pos
-        
-        if self.dir == 'left':
-            rect.left = self.pos[0]
-        elif self.dir == 'right':
-            rect.right = self.pos[0]
-        elif self.dir == 'top':
-            rect.top = self.pos[1]
-        elif self.dir == 'bottom':
-            rect.bottom = self.pos[1]
-        elif self.dir == 'topleft':
-            rect.left = self.pos[0]
-            rect.top = self.pos[1]
-        elif self.dir == 'topright':
-            rect.right = self.pos[0]
-            rect.top = self.pos[1]
-        elif self.dir == 'bottomleft':
-            rect.left = self.pos[0]
-            rect.bottom = self.pos[1]
-        elif self.dir == 'bottomright':
-            rect.right = self.pos[0]
-            rect.bottom = self.pos[1]
+        primary_base.direccion(self,rect)
+        if not self.inside_limits:
+            return
         if rect.right > self.limits.right:
             rect.right = self.limits.right
         elif rect.left < self.limits.left:
@@ -105,9 +97,9 @@ class Base:
         surface.blit(self.surf,self.rect)
 
 class simple_popup(Base):
-    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui', size= (200,80)) -> None:
+    def __init__(self, pos, dir = 'center', title= 'Titulo', text= 'Texto aqui', size= (200,80), border_radius=10, inside_limits=True) -> None:
 
-        super().__init__(pos,dir, size)
+        super().__init__(pos,dir, size, border_radius, inside_limits)
 
         Create_text(title, 16, None, (0,0), 'topleft', 'black').draw(self.surf)
         Create_text(text, 16, None, (10,40), 'left', 'black').draw(self.surf)
@@ -118,9 +110,9 @@ class simple_popup(Base):
             'result': 'exit'
             })
 class desicion_popup(Base):
-    def __init__(self, pos, title= 'Titulo', text= 'Texto aqui', size= (200,80),accept_boton_text= 'aceptar', dir = 'center') -> None:
+    def __init__(self, pos, title= 'Titulo', text= 'Texto aqui', size= (200,80),accept_boton_text= 'aceptar', dir = 'center', border_radius=10, inside_limits=True) -> None:
 
-        super().__init__(pos,dir, size)
+        super().__init__(pos,dir, size, border_radius, inside_limits)
 
         Create_text(title, 16, None, (0,0), 'topleft', 'black').draw(self.surf)
         Create_text(text, 16, None, (10,40), 'left', 'black').draw(self.surf)
@@ -136,10 +128,8 @@ class desicion_popup(Base):
             })
 
 class select(Base):
-    def __init__(self, pos, options:list, dir = 'topleft', captured = None,min_width =0) -> None:
-
-        self.pos = Vector2(pos)
-        self.dir = dir
+    def __init__(self, pos, options:list, dir = 'topleft', captured = None,min_width =0, border_radius=10, inside_limits=True) -> None:
+        super().__init__(pos,dir, border_radius=border_radius, inside_limits=inside_limits)
         self.texts = options
         self.captured = captured
         self.botones: list[Create_text] = []

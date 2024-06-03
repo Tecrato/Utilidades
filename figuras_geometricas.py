@@ -83,7 +83,7 @@ class Poligono_irregular:
 			self.tamaño_diente =  otros.get('tamaño_diente')
 			self.num_dientes = otros.get('num_dientes')
 		elif self.type == 'export':
-			self.archive_name = otros.get('name')
+			self.archive_name = otros.get('file')
 		self.color =  otros.get('color') if otros.get('color') != None else 'white'
 		self.__generate()
 

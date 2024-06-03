@@ -172,7 +172,7 @@ class Create_text(Base):
 
     def draw(self, surface, only_move=False) -> None:
         # if self.smothmove_bool:
-        #     self.update()
+        # self.update()
         self.rect_text.center = self.rect.center
         if only_move: return 0
 
@@ -259,7 +259,7 @@ class Create_boton(Create_text):
                     self.with_rect = False
         super().draw(surface)
 
-    def click(self,pos) -> None:
+    def click(self,pos) -> bool:
         if not self.rect.collidepoint(pos):
             return False
         if self.sound_to_click:
@@ -596,7 +596,7 @@ class List_Box(Base):
 
         if self.header:
             self.text_header: Create_text = Create_text(self.text_header, 23, None, self.pos, 'bottomleft', 'black', True, 'darkgrey',
-            padding=(20,15),border_width=1, border_top_left_radius=self.header_top_left_radius,
+            padding=(5,15),border_width=1, border_top_left_radius=self.header_top_left_radius,
             border_top_right_radius=self.header_top_right_radius, border_color=self.header_border_color, width=self.size[0])
             self.rect = pag.rect.Rect(self.pos[0], self.pos[1]+self.text_header.rect.h, self.size[0], self.size[1]-self.text_header.rect.h)
         else:
@@ -709,7 +709,7 @@ class List_Box(Base):
                 self.select(index, False)
                 return {'index': index,'text': te.text}
         self.select(-2000)
-    def select(self, index: int = -2000, driff = True) -> str:
+    def select(self, index: int = -2000, driff = True) -> dict|bool:
         if index != -2000:
             self.select_box.centery = self.lista_objetos[index].rect.centery
             self.selected_num=index
@@ -787,13 +787,9 @@ class List_Box(Base):
 
         self.desplazamiento = 0
         self.rodar(0)
-        self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
-        self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/self.lista_objetos[-1].rect.bottom))
+        self.total_height = (self.lista_objetos[-1].pos.y+self.lista_objetos[-1].height) - self.lista_surface_rect.h
+        self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/(self.lista_objetos[-1].pos.y+self.lista_objetos[-1].height)))
         self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
-
-        if self.scroll_bar_active:
-            self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/self.lista_objetos[-1].rect.bottom))
-            self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
             
         self.draw_surf()
     
@@ -985,10 +981,11 @@ class Multi_list(Base):
 
 
     def select(self, index: int = -2000) -> str:
-        for i,x in sorted(enumerate(self.listas),reverse=True):
-            a = x.select(index=index)
-            minilista = [l.select(index=int(a['index']))['text'] for l in self.listas]
-            return minilista
+        return [l.select(index=int(index))['text'] for l in self.listas]
+        # for i,x in sorted(enumerate(self.listas),reverse=True):
+        #     a = x.select(index=index)
+        #     minilista = [l.select(index=int(a['index']))['text'] for l in self.listas]
+        #     return minilista
 
     def detener_scroll(self) -> None:
         self.scroll = False
