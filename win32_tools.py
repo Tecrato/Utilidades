@@ -1,5 +1,4 @@
-import win32gui, winreg # , win32con, win32com.client
-
+import win32gui, winreg# ,win32con, win32com.client
 
 def windowEnumerationHandler(hwnd, windows):
     windows.append((hwnd, win32gui.GetWindowText(hwnd)))

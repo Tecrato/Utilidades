@@ -72,14 +72,16 @@ class Base:
         elif pos:
             self.smothmove_pos = Vector2(pos)
             
+        if self.__pos == self.smothmove_pos:
+            return self.__pos
         if self.smothmove_type == 'Second order dinamics':
+            if -(self.movimiento.yd[0]+self.movimiento.yd[1]) < (self.__pos[0]+self.__pos[1]) - (self.smothmove_pos[0]+self.smothmove_pos[1]) < (self.movimiento.yd[0]+self.movimiento.yd[1]):
+                self.__pos = self.smothmove_pos
             self.__pos = Vector2(self.movimiento.update(self.smothmove_pos))
-        elif self.smothmove_type == 'Simple Acceleration':
-            if self.__pos == self.smothmove_pos:
-                return self.__pos
-            self.__pos = self.movimiento.follow(self.smothmove_pos)
+        elif self.smothmove_type == 'Simple Acceleration':    
             if -self.vel < (self.__pos[0]+self.__pos[1]) - (self.smothmove_pos[0]+self.smothmove_pos[1]) < self.vel:
                 self.__pos = self.smothmove_pos
+            self.__pos = self.movimiento.follow(self.smothmove_pos)
         elif self.smothmove_type == 'Cubic Bezier':
             r = self.movimiento.update()
             

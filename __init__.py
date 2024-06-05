@@ -5,9 +5,17 @@ from .hipotenuza import Angulo, Hipotenuza
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .particles import Particles
 from .sparks import Spark
-from .text import Create_text,Create_boton,Input_text,List_Box,Multi_list
 from .optimize import memosize
 from .multithread import Funcs_pool
 from .web_tools import check_update, get_mediafire_url
+from .tinify_API import Compress_img
 
-configs = {}
+from . import win32_tools
+from . import GUI
+from . import mini_GUI
+
+from .texts import Text
+from .texts import Button
+from .texts import Input
+from .texts import List
+from .texts import Multi_list

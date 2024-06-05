@@ -1,6 +1,5 @@
 import pygame as pag, random
 from pygame.math import Vector2
-from .hipotenuza import Hipotenuza
 
 
 class Particles:
