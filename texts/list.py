@@ -178,6 +178,10 @@ class List(Base):
         self.actualizar_lista()
         if not self.smothscroll:
             self.draw_surf()
+
+    def mover_textos(self):
+        for num ,text in enumerate(self.lista_objetos):
+            text.pos = (self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento)
     
     def clear(self) -> None:
         self.selected_num = -1
@@ -235,8 +239,8 @@ class List(Base):
         else:
             self.barra.top = 0
 
-        for num ,text in enumerate(self.lista_objetos):
-            text.pos = (self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento)
+        self.mover_textos()
+        
         if self.selected_num >= 0:
             self.select_box.centery = self.lista_objetos[self.selected_num].centery
         else:

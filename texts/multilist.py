@@ -62,15 +62,23 @@ class Multi_list(Base):
         for x in range(num_lists):
             separar = Text('Hola|', self.text_size, self.fonts[-1], (0,0)).rect.h - Text('Hola|', self.text_size, self.fonts[0], (0,0)).rect.h
 
-            self.listas.append(List(((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y),
-                (self.size.x*self.colums_witdh[x],0), [self.lista_palabras[x]], self.text_size, self.separation+(separar if x != num_lists-1 else 0),
-                self.selected_color, self.text_color, background_color=self.background_color, smothscroll=self.smothscroll, 
-                padding_top=self.padding_top-(separar//2 if x == num_lists-1 else 0), padding_left=self.padding_left, 
-                with_index=self.with_index if x == 0 and self.with_index else False,
-                scroll_bar_active=False if x != num_lists-1 else True,
-                header=True, text_header=self.text_header[x], header_top_left_radius=20 if x == 0 else 0, 
-                header_top_right_radius=20 if x == self.num_list-1 else 0, font=self.fonts[x], header_border_color=self.border_color))
+            l_size = ((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y)
+            l_pos = (self.size.x*self.colums_witdh[x],0)
+            l_list = [self.lista_palabras[x]]
+            l_separacion = self.separation+(separar if x != num_lists-1 else 0)
+            l_padding_top = self.padding_top-(separar//2 if x == num_lists-1 else 0)
+            l_with_index = self.with_index if x == 0 and self.with_index else False
+            l_scroll_bar_active = False if x != num_lists-1 else True
+            l_header_top_left_radius = 20 if x == 0 else 0
+            l_header_top_right_radius = 20 if x == self.num_list-1 else 0
+
+            self.listas.append(List(l_size, l_pos, l_list, self.text_size, l_separacion, self.selected_color, self.text_color, 
+                background_color=self.background_color, smothscroll=self.smothscroll, padding_top=l_padding_top,
+                padding_left=self.padding_left, with_index=l_with_index, scroll_bar_active=l_scroll_bar_active,
+                header=True, text_header=self.text_header[x], header_top_left_radius=l_header_top_left_radius, 
+                header_top_right_radius=l_header_top_right_radius, font=self.fonts[x], header_border_color=self.border_color))
             self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
+        
         self.create_border(self.rect, 2)
 
     def resize(self,size):
@@ -146,12 +154,8 @@ class Multi_list(Base):
 
 
 
-    def select(self, index: int = -2000) -> str:
-        return [l.select(index=int(index))['text'] for l in self.listas]
-        # for i,x in sorted(enumerate(self.listas),reverse=True):
-        #     a = x.select(index=index)
-        #     minilista = [l.select(index=int(a['index']))['text'] for l in self.listas]
-        #     return minilista
+    def select(self, index: int = -2000, driff: bool=True) -> str:
+        return [l.select(index=int(index),driff=driff)['text'] for l in self.listas]
 
     def detener_scroll(self) -> None:
         self.scroll = False

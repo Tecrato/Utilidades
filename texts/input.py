@@ -77,7 +77,8 @@ class Input(Base):
         else:
             self.text.draw(self.input_surface)
         if self.typing_line:
-            pag.draw.line(self.input_surface, self.pointer_color, (sum(self.letter_pos[:self.typing_pos])+self.text.left,0),(sum(self.letter_pos[:self.typing_pos])+self.text.left,self.input_surface.get_height()))
+            pag.draw.line(self.input_surface, self.pointer_color, (sum(self.letter_pos[:self.typing_pos])+self.text.left,0),
+                          (sum(self.letter_pos[:self.typing_pos])+self.text.left,self.input_surface.get_height()))
 
 
     def draw(self, surface) -> None:
@@ -92,45 +93,49 @@ class Input(Base):
                 self.to_right()
                 self.right_time = time.time()
             self.draw_surf()
-        pag.draw.rect(surface, self.background_color, self.rect, 0, self.border_radius, self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-        pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
-            , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+        pag.draw.rect(surface, self.background_color, self.rect, 0, self.border_radius, self.border_top_left_radius, 
+                      self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+        pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius, 
+                      self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, 
+                      self.border_bottom_right_radius)
     
-        if self.typing:
-            if time.time()-self.typing_line_time > .7:
-                self.typing_line = not self.typing_line
-                self.typing_line_time = time.time()
-                self.draw_surf()
+        if self.typing and time.time()-self.typing_line_time > .7:
+            self.typing_line = not self.typing_line
+            self.typing_line_time = time.time()
+            self.draw_surf()
+
         self.surf_rect.center = self.rect.center
         surface.blit(self.input_surface, self.surf_rect)
 
     def eventos_teclado(self, eventos):
         for evento in eventos:
-            if self.typing:
-                if evento.type == pag.KEYDOWN and not (self.backspace or self.left_b or self.right_b):
-                    if evento.key == pag.K_LEFT:
-                        self.to_left()
-                    elif evento.key == pag.K_RIGHT:
-                        self.to_right()
-                    elif evento.key == pag.K_BACKSPACE:
-                        self.del_letter()
-                    # elif evento.key == pag.K_DELETE:
-                    #     self.del_letter()
-                    elif evento.key == pag.K_RETURN:
-                        return "enter"
-                    self.button_pressed_time = time.time()
-                elif evento.type == pag.TEXTINPUT:
-                    self.add_letter(evento.text)
-                    self.draw_surf()
-                elif evento.type == pag.KEYUP:
-                    if evento.key == pag.K_BACKSPACE:
-                        self.backspace = False
-                    elif evento.key == pag.K_LEFT:
-                        self.left_b = False
-                    elif evento.key == pag.K_RIGHT:
-                        self.right_b = False
             if evento.type == pag.MOUSEBUTTONDOWN and evento.button == 1:
                 self.click(evento.pos)
+            if not self.typing:
+                continue
+            
+            if evento.type == pag.KEYDOWN and not (self.backspace or self.left_b or self.right_b):
+                if evento.key == pag.K_LEFT:
+                    self.to_left()
+                elif evento.key == pag.K_RIGHT:
+                    self.to_right()
+                elif evento.key == pag.K_BACKSPACE:
+                    self.del_letter()
+                # elif evento.key == pag.K_DELETE:
+                #     self.del_letter()
+                elif evento.key == pag.K_RETURN:
+                    return "enter"
+                self.button_pressed_time = time.time()
+            elif evento.type == pag.TEXTINPUT:
+                self.add_letter(evento.text)
+                self.draw_surf()
+            elif evento.type == pag.KEYUP:
+                if evento.key == pag.K_BACKSPACE:
+                    self.backspace = False
+                elif evento.key == pag.K_LEFT:
+                    self.left_b = False
+                elif evento.key == pag.K_RIGHT:
+                    self.right_b = False
 
     def check_pos_letter_click(self,x):
         acumulacion = 0

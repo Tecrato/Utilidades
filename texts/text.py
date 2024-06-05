@@ -105,6 +105,41 @@ class Text(Base):
         self.__width = self.rect.w
         self.__height = self.rect.h
 
+    def update(self, pos = None):
+        super().update(pos)
+
+        if self.mode == 1:
+            self.rect_text.center = self.rect.center
+        elif self.mode == 2:
+            self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
+            for i, txt in enumerate(self.lista_text):
+                txt.pos = (self.pos[0],self.pos[1] + self.text_height*i)
+
+    def draw(self, surface, only_move=False) -> None:
+        # if self.smothmove_bool:
+        # self.update()
+        self.rect_text.center = self.rect.center
+        if only_move: return 0
+
+        if self.mode == 2:
+            if self.with_rect:
+                pag.draw.rect(surface, self.color_rect, self.rect, self.rect_width,self.border_radius
+                    , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+            pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
+                ,self.border_top_left_radius,self.border_top_right_radius,self.border_bottom_left_radius,self.border_bottom_right_radius)
+            for txt in self.lista_text:
+                txt.draw(surface)
+            return
+        
+        if self.with_rect:
+            pag.draw.rect(surface, self.color_rect, self.rect, self.rect_width,self.border_radius
+                , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+        pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
+            , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+
+        surface.blit(self.text_surf, self.rect_text)
+
+
     @property
     def text(self):
         return self.raw_text
@@ -157,42 +192,7 @@ class Text(Base):
         self.rect.height = self.height
         self.create_border(self.rect,self.border_width)
         self.direccion(self.rect)
-
-    def update(self, pos = None):
-        super().update(pos)
-
-        self.direccion(self.rect)
-
-        if self.mode == 1:
-            self.rect_text.center = self.rect.center
-        elif self.mode == 2:
-            self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
-            for i, txt in enumerate(self.lista_text):
-                txt.pos = (self.pos[0],self.pos[1] + self.text_height*i)
-
-    def draw(self, surface, only_move=False) -> None:
-        # if self.smothmove_bool:
-        # self.update()
-        self.rect_text.center = self.rect.center
-        if only_move: return 0
-
-        if self.mode == 2:
-            if self.with_rect:
-                pag.draw.rect(surface, self.color_rect, self.rect, self.rect_width,self.border_radius
-                    , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-            pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
-                ,self.border_top_left_radius,self.border_top_right_radius,self.border_bottom_left_radius,self.border_bottom_right_radius)
-            for txt in self.lista_text:
-                txt.draw(surface)
-            return
         
-        if self.with_rect:
-            pag.draw.rect(surface, self.color_rect, self.rect, self.rect_width,self.border_radius
-                , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-        pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius
-            , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
-
-        surface.blit(self.text_surf, self.rect_text)
-
     def __str__(self) -> str:
         return f'{self.raw_text = } - {self.pos = }'
+    

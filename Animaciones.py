@@ -1,7 +1,7 @@
 from numpy import pi, sin, cos, radians
 from math import comb
 from .optimize import memosize
-from .hipotenuza import Angulo_normalized, Angulo
+from .maths import Angulo_normalized, Angulo
 from dataclasses import dataclass
 
 from pygame.math import Vector2
