@@ -1,5 +1,4 @@
 import pygame as pag, random
-# from numpy import array
 from pygame.math import Vector2
 
 

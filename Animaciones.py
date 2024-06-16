@@ -1,8 +1,5 @@
-from numpy import pi, sin, cos, radians
-from math import comb
-from .optimize import memosize
-from .maths import Angulo_normalized, Angulo
-from dataclasses import dataclass
+from math import comb, pi
+from .maths import Angulo_normalized
 
 from pygame.math import Vector2
 
@@ -35,11 +32,12 @@ class Second_Order_Dinamics:
 
     def update(self, x, xd = None) -> list:
         x = Vector2(x)
-        xd = Vector2(xd) if xd != None else None
 
-        if xd == None:
+        if xd is None:
             xd = (x-self.xp) / self.__T
             self.xp = x
+        else:
+            xd = Vector2(xd)
         
 
         k2_stable = max(self.k2,self.__T*self.__T/2 + self.__T*self.k1/2, self.__T*self.k1)

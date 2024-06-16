@@ -1,5 +1,7 @@
-import pygame as pag, numpy,random
+import pygame as pag
+from math import pi, cos, sin
 from pygame.math import Vector2
+from .maths import Angulo
 
 class Spark():
 	def __init__(self, surface, loc, angle, speed, color, scale=1):
@@ -12,7 +14,7 @@ class Spark():
 		self.alive = True
 
 	def point_towards(self, angle, rate):
-		rotate_direction = ((angle - self.angle + numpy.pi * 3) % (numpy.pi * 2)) - numpy.pi
+		rotate_direction = ((angle - self.angle + pi * 3) % (pi * 2)) - pi
 		try:
 			rotate_sign = -rotate_direction / rotate_direction
 		except ZeroDivisionError:
@@ -23,15 +25,15 @@ class Spark():
 			self.angle += rate * rotate_sign
 
 	def calculate_movement(self, dt):
-		return [numpy.cos(self.angle) * self.speed * dt, numpy.sin(self.angle) * self.speed * dt]
+		return [cos(self.angle) * self.speed * dt, sin(self.angle) * self.speed * dt]
 
 
     # gravity and friction
 	def velocity_adjust(self, friction, force, terminal_velocity, dt):
 		movement = self.calculate_movement(dt)
-		movement[1] = numpy.min(terminal_velocity, movement[1] + force * dt)
+		movement[1] = min(terminal_velocity, movement[1] + force * dt)
 		movement[0] *= friction
-		self.angle = numpy.arctan2(movement[1], movement[0])
+		self.angle = Angulo(movement[1], movement[0])
         # if you want to get more realistic, the speed should be adjusted here
 
 	def move(self, dt):
@@ -53,9 +55,9 @@ class Spark():
 	def draw(self, surf, offset=[0, 0]):
 		if self.alive:
 			points = [
-				[self.loc[0] + numpy.cos(self.angle) * self.speed * self.scale, self.loc[1] + numpy.sin(self.angle) * self.speed * self.scale],
-				[self.loc[0] + numpy.cos(self.angle + numpy.pi / 2) * self.speed * self.scale * 0.3, self.loc[1] + numpy.sin(self.angle + numpy.pi / 2) * self.speed * self.scale * 0.3],
-				[self.loc[0] - numpy.cos(self.angle) * self.speed * self.scale * 3.5, self.loc[1] - numpy.sin(self.angle) * self.speed * self.scale * 3.5],
-				[self.loc[0] + numpy.cos(self.angle - numpy.pi / 2) * self.speed * self.scale * 0.3, self.loc[1] - numpy.sin(self.angle + numpy.pi / 2) * self.speed * self.scale * 0.3],
+				[self.loc[0] + cos(self.angle) * self.speed * self.scale, self.loc[1] + sin(self.angle) * self.speed * self.scale],
+				[self.loc[0] + cos(self.angle + pi / 2) * self.speed * self.scale * 0.3, self.loc[1] + sin(self.angle + pi / 2) * self.speed * self.scale * 0.3],
+				[self.loc[0] - cos(self.angle) * self.speed * self.scale * 3.5, self.loc[1] - sin(self.angle) * self.speed * self.scale * 3.5],
+				[self.loc[0] + cos(self.angle - pi / 2) * self.speed * self.scale * 0.3, self.loc[1] - sin(self.angle + pi / 2) * self.speed * self.scale * 0.3],
 			]
 			pag.draw.polygon(self.surface, self.color, points)

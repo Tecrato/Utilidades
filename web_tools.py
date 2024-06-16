@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 
 def check_update(program_name:str,version_actual:str,version_deseada='last'):
-    response = requests.get(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}')
+    response = requests.get(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30)
 
     resultado = response.json()
     if resultado['status'] == 'error':
