@@ -6,6 +6,7 @@ from dataclasses import dataclass,field
 class Deltatime:
 	dt:int = field(default=0,init=False,compare=False)
 	FPS:int = 60
+	smothfix:int = 5
 
 	def __post_init__(self) -> None:
 		self.last_time = time.time()
@@ -14,7 +15,7 @@ class Deltatime:
 	def update(self) -> None:
 		self.dt = (time.time()-self.last_time) * self.FPS
 		self.last_time = time.time()
-		if self.dt > 5:
+		if self.dt > self.smothfix:
 			self.dt = 1
 	def reset(self) -> None:
 		self.last_time = time.time()
