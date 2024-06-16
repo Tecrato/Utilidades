@@ -8,8 +8,7 @@ class Image(Base):
         super().__init__(pos,direccion)
         self.path: str = image
         if size:
-            im = img.open(self.path)
-            im = im.resize(size)
+            im = img.open(self.path).resize(size)
             img_bytes = BytesIO()
             im.save(img_bytes,'PNG')
             img_bytes.seek(0)

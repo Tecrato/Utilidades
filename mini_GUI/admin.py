@@ -11,24 +11,24 @@ class mini_GUI_admin:
         self.__list[-1]['GUI'].direccion(self.__list[-1]['GUI'].rect)
 
     
-    def draw(self, surface,pos):
+    def draw(self, surface,pos, update=True):
         for x in self.__list:
-            x['GUI'].draw(surface,pos)
+            x['GUI'].draw(surface,pos,update)
 
     def click(self, pos):
         for i, g in sorted(enumerate(self.__list),reverse=True):
             result = g['GUI'].click(pos)
+            rect1 = self.__list[i]['GUI'].rect.copy()
             if result == 'exit':
                 self.__list.pop(i)
-                return False
             elif result or result == 0:
                 self.__list.pop(i)
-                if g['func']: g['func'](result)
-                return result
+                if g['func']:
+                    g['func'](result)
             elif self.__list[i]['GUI'].rect.collidepoint(pos):
                 self.__list.pop(i)
                 self.__list.append(g)
-                return False
+            return rect1
     
     def clear(self):
         self.__list.clear()

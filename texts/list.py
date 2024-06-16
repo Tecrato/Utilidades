@@ -125,21 +125,25 @@ class List(Base):
         if self.scroll_bar_active and self.total_height + self.lista_surface_rect.h > self.rect.h:
             pag.draw.rect(self.lista_surface, 'white', self.barra,border_radius=5)
 
-    def draw(self,surface) -> None:
-        if self.header:
-            self.text_header.draw(surface)
-
-        if self.smothmove_bool:
-            self.update()
-            
+    def update(self):
+        super().update()
         if self.smothscroll and self.selected_num >= 0:
             self.select_box.centery = self.lista_objetos[self.selected_num].centery
         else:
             self.select_box.centery = -100
+
         if self.smothscroll:
             self.draw_surf()
 
+    def draw(self,surface,update=True) -> None:
+        if self.header:
+            self.text_header.draw(surface)
+            
         surface.blit(self.lista_surface,self.rect)
+        
+        if update:
+            # pag.display.update(self.rect)
+            return self.rect
     
     def actualizar_lista(self) -> None:
         self.lista_objetos.clear()
@@ -193,9 +197,7 @@ class List(Base):
     def click(self,pos):
         m = Vector2(pos)
         m -= self.pos
-        # m -= (0,self.text_header.height)
-        if self.header: m += (0,5)
-        if self.scroll_bar_active and self.barra.collidepoint(m-(0,self.barra.h/1.5)): # 
+        if self.scroll_bar_active and self.barra.collidepoint(m):
             self.scroll = True
             self.last_mouse_pos = pag.mouse.get_pos()
             return 'scrolling'
@@ -212,12 +214,13 @@ class List(Base):
             if driff:
                 self.desplazamiento = (-self.letter_size*index + self.padding_top) + self.lista_surface_rect.h/2
             self.rodar(0)
+            self.draw_surf()
             return {'text': self.lista_objetos[index].raw_text, 'index': index}
         
         self.select_box.top = self.lista_surface_rect.h
         self.selected_num=-1
-        if not self.smothscroll:
-            self.draw_surf()
+        # if not self.smothscroll:
+        self.draw_surf()
         return False
 
     def rodar(self,y) -> None:

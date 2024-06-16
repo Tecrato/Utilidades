@@ -42,7 +42,7 @@ class Button(Text):
             self.with_rect = False
         self.hover = False
 
-    def draw(self, surface, pos=False) -> None:
+    def draw(self, surface, pos=False, update=False) -> None:
         pos = pos if pos else pag.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if not self.hover:
@@ -62,7 +62,7 @@ class Button(Text):
                 self.border_color = self.border_color_inactive
                 if self.toggle_rect and self.with_rect2:
                     self.with_rect = False
-        super().draw(surface)
+        return super().draw(surface,update)
 
     def click(self,pos) -> bool:
         if not self.rect.collidepoint(pos):

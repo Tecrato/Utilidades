@@ -42,7 +42,9 @@ class Base(primary_base):
             if btn['btn'].rect.collidepoint(Vector2(pos)-self.rect.topleft):
                 return btn['result']
 
-    def draw(self, surface,pos):
+    def draw(self, surface,pos,update=True):
         for btn in self.botones:
             btn['btn'].draw(self.surf,Vector2(pos)-self.rect.topleft)
         surface.blit(self.surf,self.rect)
+        if update:
+            return self.rect

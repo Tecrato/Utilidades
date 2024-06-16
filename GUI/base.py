@@ -30,12 +30,15 @@ class Base_win:
         self.inputs:list[Input] = []
         
 
-    def draw(self, surface: pag.Surface, mouse_pos) -> None:
+    def draw(self, surface: pag.Surface, mouse_pos, update=True) -> None|pag.Surface:
         mx,my = Vector2(mouse_pos)-self.rect.topleft
         [inp.draw(self.surface) for inp in self.inputs]
         [btn['btn'].draw(self.surface,(mx,my)) for btn in self.botones]
         surface.blit(self.surface,self.rect)
         pag.draw.rect(surface,'black', self.rect,3, 20)
+        if update:
+            # pag.display.update(self.rect)
+            return self.rect
 
     def click(self, pos):
         mx,my = Vector2(pos)-self.rect.topleft

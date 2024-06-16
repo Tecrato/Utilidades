@@ -99,19 +99,27 @@ class Multi_list(Base):
             self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
         self.create_border(self.rect, 2)
 
-    def draw(self,surface) -> None:
+    def draw(self,surface,update=True) -> None:
         if self.smothmove_bool:
             self.update()
         
+        
         for x in self.listas:
-            x.draw(self.lista_surface)
+            x.update()
+            
+        for x in self.listas:
+            x.draw(self.lista_surface,False)
 
         for x in self.listas:
             pag.draw.rect(self.lista_surface, self.border_color, x.rect, 1)
         surface.blit(self.lista_surface,self.rect)
-        
+    
         for line in self.lineas[1:]:
             pag.draw.line(surface, self.border_color, Vector2(line[0])+self.raw_pos-(0,0)-(0,30), Vector2(line[1])+self.raw_pos-(0,1), 2)
+        
+        if update:
+            # pag.display.update(self.rect)
+            return self.rect
 
     def rodar(self,y) -> None:
         for x in self.listas:

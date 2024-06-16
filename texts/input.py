@@ -73,26 +73,17 @@ class Input(Base):
     def draw_surf(self):
         self.input_surface.fill(self.background_color)
         if self.raw_text == '':
-            self.text_value.draw(self.input_surface)
+            self.text_value.draw(self.input_surface,False)
         else:
-            self.text.draw(self.input_surface)
+            self.text.draw(self.input_surface,False)
         if self.typing_line:
             pag.draw.line(self.input_surface, self.pointer_color, (sum(self.letter_pos[:self.typing_pos])+self.text.left,0),
                           (sum(self.letter_pos[:self.typing_pos])+self.text.left,self.input_surface.get_height()))
 
 
-    def draw(self, surface) -> None:
-        if time.time() - self.button_pressed_time > .5:
-            if self.backspace and time.time() - self.del_time > .03:
-                self.del_letter()
-                self.del_time = time.time()
-            elif self.left_b and time.time() - self.left_time > .03:
-                self.to_left()
-                self.left_time = time.time()
-            elif self.right_b and time.time() - self.right_time > .03:
-                self.to_right()
-                self.right_time = time.time()
-            self.draw_surf()
+    def draw(self, surface,update=True) -> None:
+        self.update_pressed_keys()
+
         pag.draw.rect(surface, self.background_color, self.rect, 0, self.border_radius, self.border_top_left_radius, 
                       self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
         pag.draw.rect(surface, self.border_color, self.rect_border, self.border_width,self.border_radius, 
@@ -106,6 +97,23 @@ class Input(Base):
 
         self.surf_rect.center = self.rect.center
         surface.blit(self.input_surface, self.surf_rect)
+        
+        if update:
+            return self.rect
+
+
+    def update_pressed_keys(self):
+        if time.time() - self.button_pressed_time > .5:
+            if self.backspace and time.time() - self.del_time > .03:
+                self.del_letter()
+                self.del_time = time.time()
+            elif self.left_b and time.time() - self.left_time > .03:
+                self.to_left()
+                self.left_time = time.time()
+            elif self.right_b and time.time() - self.right_time > .03:
+                self.to_right()
+                self.right_time = time.time()
+            self.draw_surf()
 
     def eventos_teclado(self, eventos):
         for evento in eventos:

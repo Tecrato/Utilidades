@@ -115,11 +115,10 @@ class Text(Base):
             for i, txt in enumerate(self.lista_text):
                 txt.pos = (self.pos[0],self.pos[1] + self.text_height*i)
 
-    def draw(self, surface, only_move=False) -> None:
+    def draw(self, surface, update=True) -> None:
         # if self.smothmove_bool:
         # self.update()
         self.rect_text.center = self.rect.center
-        if only_move: return 0
 
         if self.mode == 2:
             if self.with_rect:
@@ -138,6 +137,10 @@ class Text(Base):
             , self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
 
         surface.blit(self.text_surf, self.rect_text)
+        
+        if update:
+            # pag.display.update(self.rect)
+            return self.rect_border
 
 
     @property

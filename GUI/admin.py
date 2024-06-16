@@ -24,14 +24,15 @@ class GUI_admin:
     def add(self,clase, func= None) -> None:
         self.__list.append({'GUI':clase.copy(), 'func':func})
         self.active = len(self.__list)-1
-    def draw(self,surface, mouse_pos) -> None:
+    def draw(self,surface, mouse_pos, update=True) -> None:
         if self.active >= 0:
-            self.__list[self.active]['GUI'].draw(surface, mouse_pos)
+            return self.__list[self.active]['GUI'].draw(surface, mouse_pos, update)
     def click(self, pos):
         mx,my = pos
         result = self.__list[self.active]['GUI'].click((mx,my))
         if result and result['return'] in ['aceptar','cancelar']:
-            if self.__list[self.active]['func']: self.__list[self.active]['func'](result['result']())
+            if self.__list[self.active]['func']: 
+                self.__list[self.active]['func'](result['result']())
             self.pop(self.active)
             self.active = -1 if not self.__list else 0
             return (self.active,result['result']())

@@ -59,7 +59,7 @@ class select(Base):
         self.rect = self.surf.get_rect()
 
     
-    def draw(self,surface,pos):
+    def draw(self,surface,pos,update=True):
         pag.draw.rect(self.surf, (240,240,240), [0,0,*self.size], 0, self.border_radius)
         if self.rect.collidepoint(pos):
             new_pos = Vector2(pos)-self.rect.topleft
@@ -68,6 +68,8 @@ class select(Base):
         for btn in self.botones:
             btn.draw(self.surf)
         surface.blit(self.surf,self.rect)
+        if update:
+            return self.rect
 
     def click(self, pos):
         if self.rect.collidepoint(pos):
