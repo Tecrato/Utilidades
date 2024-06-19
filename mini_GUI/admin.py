@@ -12,8 +12,11 @@ class mini_GUI_admin:
 
     
     def draw(self, surface,pos, update=True):
+        l = []
         for x in self.__list:
-            x['GUI'].draw(surface,pos,update)
+            if update and (r := x['GUI'].draw(surface,pos,update)):
+                l.append(r)
+        return l
 
     def click(self, pos):
         for i, g in sorted(enumerate(self.__list),reverse=True):

@@ -106,19 +106,18 @@ class Multi_list(Base):
         
         for x in self.listas:
             x.update()
-            
+
         for x in self.listas:
             x.draw(self.lista_surface,False)
 
         for x in self.listas:
             pag.draw.rect(self.lista_surface, self.border_color, x.rect, 1)
         surface.blit(self.lista_surface,self.rect)
-    
+
         for line in self.lineas[1:]:
             pag.draw.line(surface, self.border_color, Vector2(line[0])+self.raw_pos-(0,0)-(0,30), Vector2(line[1])+self.raw_pos-(0,1), 2)
         
         if update:
-            # pag.display.update(self.rect)
             return self.rect
 
     def rodar(self,y) -> None:

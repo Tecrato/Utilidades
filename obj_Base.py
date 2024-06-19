@@ -71,11 +71,11 @@ class Base:
             return self.__pos
         elif pos:
             self.smothmove_pos = Vector2(pos)
-            
-        if self.__pos == self.smothmove_pos:
+        elif self.__pos == self.smothmove_pos:
             return self.__pos
+
         if self.smothmove_type == 'Second order dinamics':
-            if -(self.movimiento.yd[0]+self.movimiento.yd[1]) < (self.__pos[0]+self.__pos[1]) - (self.smothmove_pos[0]+self.smothmove_pos[1]) < (self.movimiento.yd[0]+self.movimiento.yd[1]):
+            if abs(sum(self.movimiento.yd.xy)) > 0.1:
                 self.__pos = self.smothmove_pos
             self.__pos = Vector2(self.movimiento.update(self.smothmove_pos))
         elif self.smothmove_type == 'Simple Acceleration':    
