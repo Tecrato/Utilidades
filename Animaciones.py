@@ -26,6 +26,8 @@ class Second_Order_Dinamics:
 
         self.__T = 1/T
 
+        self.k2_stable = max(self.k2,self.__T*self.__T/2 + self.__T*self.k1/2, self.__T*self.k1)
+
         self.xp = Vector2(coord)
         self.y = Vector2(coord)
         self.yd = Vector2(0,0)
@@ -38,12 +40,9 @@ class Second_Order_Dinamics:
             self.xp = x
         else:
             xd = Vector2(xd)
-        
-
-        k2_stable = max(self.k2,self.__T*self.__T/2 + self.__T*self.k1/2, self.__T*self.k1)
 
         self.y = self.y + self.__T * self.yd
-        self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / k2_stable
+        self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / self.k2_stable
         return self.y
         
 
