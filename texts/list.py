@@ -3,6 +3,8 @@ from pygame.math import Vector2
 from ..obj_Base import Base
 from .text import Text
 
+
+
 class List(Base):
     '''
     ### More options
@@ -91,7 +93,7 @@ class List(Base):
         self.size = Vector2(self.__width,self.__height)
         if self.header:
             # self.text_header.width = self.size.x
-            self.rect = pag.rect.Rect(self.pos[0], self.pos[1]+self.text_header.height, self.size[0], self.size[1]-self.text_header.rect.h)
+            self.rect = pag.rect.Rect(self.pos[0], self.pos[1]+self.text_header.height, self.size[0], self.size[1]-self.text_header.height)
             self.text_header.width = self.size[0]
             self.text_header.bottomleft = self.pos
         else:
@@ -102,6 +104,8 @@ class List(Base):
         self.lista_surface_rect.topleft = self.pos
         self.lista_surface.fill((254,1,1))
         self.lista_surface.set_colorkey((254,1,1))
+
+        self.lista_objetos_cached = []
         
         self.select_box = pag.rect.Rect(0,-5000,self.lista_surface_rect.w,self.letter_size)
 
@@ -116,9 +120,6 @@ class List(Base):
     def draw_surf(self):
         self.lista_surface.fill(self.background_color)
         pag.draw.rect(self.lista_surface, self.selected_color, self.select_box)
-        for te in self.lista_objetos:
-            te.update()
-        #     te.draw(self.lista_surface, only_move=False if -self.padding_top-30 < te.raw_pos.y < self.rect.h else True)
 
         self.lista_surface.blits([(te.text_surf,te.rect_text) for te in self.lista_objetos])
             
@@ -126,30 +127,33 @@ class List(Base):
             pag.draw.rect(self.lista_surface, 'white', self.barra,border_radius=5)
 
     def update(self):
-        super().update()
+
+        for te in self.lista_objetos:
+            te.update()
         if self.smothscroll and self.selected_num >= 0:
             self.select_box.centery = self.lista_objetos[self.selected_num].centery
         else:
             self.select_box.centery = -100
 
-        if self.smothscroll:
+        if self.smothscroll and self.lista_objetos and abs(sum(self.lista_objetos[0].movimiento.yd.xy)) > 0.2:
             self.draw_surf()
 
-    def draw(self,surface,update=True) -> None:
+        super().update()
+    def draw(self,surface: pag.Surface,update=True) -> None:
+
         if self.header:
             self.text_header.draw(surface)
-            
+
         surface.blit(self.lista_surface,self.rect)
-        
+
         if update:
-            # pag.display.update(self.rect)
             return self.rect
     
     def actualizar_lista(self) -> None:
         self.lista_objetos.clear()
         for num ,text in enumerate(self.lista_palabras):
             self.lista_objetos.append(Text(text, self.text_size, self.font, (self.padding_left,(self.letter_size*num) + self.padding_top), 'topleft', self.text_color, padding=20))
-        
+
         self.total_height = 0
         if self.smothscroll:
             for x in self.lista_objetos:

@@ -63,7 +63,7 @@ class Multi_list(Base):
             separar = Text('Hola|', self.text_size, self.fonts[-1], (0,0)).rect.h - Text('Hola|', self.text_size, self.fonts[0], (0,0)).rect.h
 
             l_size = ((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y)
-            l_pos = (self.size.x*self.colums_witdh[x],0)
+            l_pos = Vector2(self.size.x*self.colums_witdh[x],0) + self.pos
             l_list = [self.lista_palabras[x]]
             l_separacion = self.separation+(separar if x != num_lists-1 else 0)
             l_padding_top = self.padding_top-(separar//2 if x == num_lists-1 else 0)
@@ -94,10 +94,16 @@ class Multi_list(Base):
         self.lineas.clear()
         for x in range(self.num_list):
             self.listas[x].resize(((self.size.x*self.colums_witdh[x+1]) - (self.size.x*self.colums_witdh[x]), self.size.y))
-            self.listas[x].pos = (self.size.x*self.colums_witdh[x],30)
+            self.listas[x].pos = Vector2(self.size.x*self.colums_witdh[x],30) + self.pos
             
             self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
         self.create_border(self.rect, 2)
+
+    def update(self,pos=None):
+        super().update(pos)
+        for x in range(self.num_list):
+            self.listas[x].pos = Vector2(self.size.x*self.colums_witdh[x],30) + self.pos
+
 
     def draw(self,surface,update=True) -> None:
         if self.smothmove_bool:
@@ -108,11 +114,11 @@ class Multi_list(Base):
             x.update()
 
         for x in self.listas:
-            x.draw(self.lista_surface,False)
+            x.draw(surface,update)
 
         for x in self.listas:
-            pag.draw.rect(self.lista_surface, self.border_color, x.rect, 1)
-        surface.blit(self.lista_surface,self.rect)
+            pag.draw.rect(surface, self.border_color, x.rect, 1)
+        # surface.blit(self.lista_surface,self.rect)
 
         for line in self.lineas[1:]:
             pag.draw.line(surface, self.border_color, Vector2(line[0])+self.raw_pos-(0,0)-(0,30), Vector2(line[1])+self.raw_pos-(0,1), 2)
@@ -145,7 +151,9 @@ class Multi_list(Base):
         [x.clear() for x in self.listas]
 
     def click(self,pos):
-        m = Vector2(pos) - self.pos
+        m = Vector2(pos)
+        if not self.rect.collidepoint(m):
+            return
         
         for i,x in sorted(enumerate(self.listas),reverse=True):
             a = x.click(m)
