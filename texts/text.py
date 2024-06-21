@@ -139,7 +139,6 @@ class Text(Base):
         surface.blit(self.text_surf, self.rect_text)
         
         if update:
-            # pag.display.update(self.rect)
             return self.rect_border
 
 

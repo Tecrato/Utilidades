@@ -20,8 +20,9 @@ class mini_GUI_admin:
 
     def click(self, pos):
         for i, g in sorted(enumerate(self.__list),reverse=True):
-            result = g['GUI'].click(pos)
-            rect1 = self.__list[i]['GUI'].rect.copy()
+            if not (result := g['GUI'].click(pos)):
+                continue
+            rect1 = g['GUI'].rect.copy()
             if result == 'exit':
                 self.__list.pop(i)
             elif result or result == 0:
@@ -31,7 +32,10 @@ class mini_GUI_admin:
             elif self.__list[i]['GUI'].rect.collidepoint(pos):
                 self.__list.pop(i)
                 self.__list.append(g)
-            return rect1
+            else:
+                continue
+            return True
+        return False
     
     def clear(self):
         self.__list.clear()
