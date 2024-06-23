@@ -199,9 +199,6 @@ class Input(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
-        # if suma > self.rect2.w-5:
-        #     self.text.pos = (self.rect2.w-2,self.input_surface.get_height()/2)
-        #     self.text.dire = 'right'
         if self.text.left+self.letter_pos[self.typing_pos-1] > 0:
             self.text.pos = (0,self.input_surface.get_height()/2)
             self.text.dire = 'left'
@@ -218,10 +215,9 @@ class Input(Base):
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
         suma_neg = sum(self.letter_pos[self.typing_pos:])
-        # if suma_neg < self.rect2.w*.2:
         if suma > self.rect2.w*.9:
             self.text.pos -= (self.letter_pos[self.typing_pos],0)
-        if self.text.width>self.rect2.w and suma_neg < self.rect2.w*.2:
+        if self.text.right < self.rect2.w:
             self.text.pos = (self.rect2.w-1,self.input_surface.get_height()/2)
             self.text.dire = 'right'
         self.draw_surf()
