@@ -11,7 +11,7 @@ class Button(Text):
      - color_active: pygame.Color
      - color_rect_active: pygame.Color
     '''
-    def __init__(self, text, size: int, font: str, pos: tuple, padding: int|list|tuple = 20,
+    def __init__(self, text, size: int, font: str|None, pos: tuple = (0,0), padding: int|list|tuple = 20,
         dire: Literal["center","left","right","top","bottom","topleft","topright","bottomleft","bottomright"] = 'center', color = 'black', color_rect = 'darkgrey',
         color_rect_active='lightgrey',rect_width=0,border_radius:int=15,border_top_left_radius:int=-1,
         border_top_right_radius: int = -1, border_bottom_left_radius: int = -1,
@@ -42,7 +42,7 @@ class Button(Text):
             self.with_rect = False
         self.hover = False
 
-    def draw(self, surface, pos=False, update=False) -> None:
+    def draw(self, surface: pag.Surface, pos: tuple[int,int] =False) -> pag.Rect:
         pos = pos if pos else pag.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if not self.hover:
@@ -62,7 +62,7 @@ class Button(Text):
                 self.border_color = self.border_color_inactive
                 if self.toggle_rect and self.with_rect2:
                     self.with_rect = False
-        return super().draw(surface,update)
+        return super().draw(surface)
 
     def click(self,pos) -> bool:
         if not self.rect.collidepoint(pos):

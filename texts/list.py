@@ -139,15 +139,14 @@ class List(Base):
             self.draw_surf()
 
         super().update()
-    def draw(self,surface: pag.Surface,update=True) -> None:
+    def draw(self,surface: pag.Surface) -> None:
 
         if self.header:
             self.text_header.draw(surface)
 
         surface.blit(self.lista_surface,self.rect)
-
-        if update:
-            return self.rect
+        
+        return self.rect
     
     def actualizar_lista(self) -> None:
         self.lista_objetos.clear()

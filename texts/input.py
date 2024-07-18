@@ -73,15 +73,15 @@ class Input(Base):
     def draw_surf(self):
         self.input_surface.fill(self.background_color)
         if self.raw_text == '':
-            self.text_value.draw(self.input_surface,False)
+            self.text_value.draw(self.input_surface)
         else:
-            self.text.draw(self.input_surface,False)
+            self.text.draw(self.input_surface)
         if self.typing_line:
             pag.draw.line(self.input_surface, self.pointer_color, (sum(self.letter_pos[:self.typing_pos])+self.text.left,0),
                           (sum(self.letter_pos[:self.typing_pos])+self.text.left,self.input_surface.get_height()))
 
 
-    def draw(self, surface,update=True) -> None:
+    def draw(self, surface) -> None:
         self.update_pressed_keys()
 
         pag.draw.rect(surface, self.background_color, self.rect, 0, self.border_radius, self.border_top_left_radius, 
@@ -98,8 +98,7 @@ class Input(Base):
         self.surf_rect.center = self.rect.center
         surface.blit(self.input_surface, self.surf_rect)
         
-        if update:
-            return self.rect
+        self.rect
 
 
     def update_pressed_keys(self):

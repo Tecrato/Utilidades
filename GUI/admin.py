@@ -1,3 +1,4 @@
+import pygame as pag
 from .objs import Text_return
 
 class GUI_admin:
@@ -24,7 +25,7 @@ class GUI_admin:
     def add(self,clase, func= None) -> None:
         self.__list.append({'GUI':clase.copy(), 'func':func})
         self.active = len(self.__list)-1
-    def draw(self,surface, mouse_pos, update=True) -> None:
+    def draw(self,surface, mouse_pos, update=True) -> pag.Rect:
         if self.active >= 0:
             return self.__list[self.active]['GUI'].draw(surface, mouse_pos, update)
     def click(self, pos):

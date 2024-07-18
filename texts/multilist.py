@@ -105,7 +105,7 @@ class Multi_list(Base):
             self.listas[x].pos = Vector2(self.size.x*self.colums_witdh[x],30) + self.pos
 
 
-    def draw(self,surface,update=True) -> None:
+    def draw(self,surface) -> pag.Rect:
         if self.smothmove_bool:
             self.update()
         
@@ -114,7 +114,7 @@ class Multi_list(Base):
             x.update()
 
         for x in self.listas:
-            x.draw(surface,update)
+            x.draw(surface)
 
         for x in self.listas:
             pag.draw.rect(surface, self.border_color, x.rect, 1)
@@ -123,8 +123,7 @@ class Multi_list(Base):
         for line in self.lineas[1:]:
             pag.draw.line(surface, self.border_color, Vector2(line[0])+self.raw_pos-(0,0)-(0,30), Vector2(line[1])+self.raw_pos-(0,1), 2)
         
-        if update:
-            return self.rect
+        return self.rect
 
     def rodar(self,y) -> None:
         for x in self.listas:

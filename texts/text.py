@@ -23,7 +23,7 @@ class Text(Base):
     - smothmove() - permite una transicion suave en el movimiento utilizando la clase Second Order Dinamics
     """
     
-    def __init__(self,text: str,size: int,font: str, pos: tuple,
+    def __init__(self,text: str,size: int,font: str|None, pos: tuple = (0,0),
                  dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] ='center',
                  color='white',with_rect = False, color_rect ='black', border_width = -1, padding: int|list|tuple = 20, 
                  width = 0, height = 0, rect_width= 0, **kwargs) -> None:
@@ -115,7 +115,7 @@ class Text(Base):
             for i, txt in enumerate(self.lista_text):
                 txt.pos = (self.pos[0],self.pos[1] + self.text_height*i)
 
-    def draw(self, surface, update=True) -> None:
+    def draw(self, surface) -> None:
         # if self.smothmove_bool:
         # self.update()
         self.rect_text.center = self.rect.center
@@ -138,8 +138,7 @@ class Text(Base):
 
         surface.blit(self.text_surf, self.rect_text)
         
-        if update:
-            return self.rect_border
+        return self.rect_border
 
 
     @property
