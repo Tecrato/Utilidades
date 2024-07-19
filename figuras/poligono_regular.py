@@ -1,5 +1,5 @@
 from .base import Base
-from numpy import cos, sin, radians
+from math import cos, sin, radians
 from pygame import Vector2
 
 class Poligono_regular(Base):

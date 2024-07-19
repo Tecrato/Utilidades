@@ -1,5 +1,5 @@
 from typing import Self
-from numpy import sin,cos,radians
+from math import sin,cos,radians
 from io import open
 from pygame import draw
 from pygame import Vector2

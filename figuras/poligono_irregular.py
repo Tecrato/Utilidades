@@ -1,6 +1,6 @@
 from pathlib import Path
 from .base import Base
-from numpy import cos, sin, radians
+from math import cos, sin, radians
 
 class Poligono_irregular(Base):
 	'''

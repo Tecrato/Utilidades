@@ -1,6 +1,6 @@
 from pygame import draw
 from .base import Base
-from numpy import cos, sin, radians
+from math import cos, sin, radians
 from .poligono_regular import Poligono_regular
 
 class Engranaje(Base):
