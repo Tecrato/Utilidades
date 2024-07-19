@@ -5,8 +5,8 @@ class mini_GUI_admin:
         self.__list = []
         self.__limit = limit
     
-    def add(self,mini_GUI,func=None,raw_pos=None):
-        self.__list.append({'GUI':mini_GUI,'func':func,'raw_pos':raw_pos})
+    def add(self,mini_GUI,func=None,raw_pos=None,group:str=''):
+        self.__list.append({'GUI':mini_GUI,'func':func,'raw_pos':raw_pos,'group':group})
         self.__list[-1]['GUI'].limits = self.limit
         self.__list[-1]['GUI'].direccion(self.__list[-1]['GUI'].rect)
 
@@ -39,6 +39,11 @@ class mini_GUI_admin:
     
     def clear(self):
         self.__list.clear()
+
+    def clear_group(self,group:str):
+        for i, g in sorted(enumerate(self.__list),reverse=True):
+            if g['group'] == group:
+                self.__list.pop(i)
     
     @property
     def limit(self):

@@ -304,6 +304,7 @@ class List(Base):
     def __setitem__(self,index,value):
         self.lista_palabras[index] = value
         self.lista_objetos[index].text = value
+        self.draw_surf()
     def __repr__(self):
         return '\n'.join(self.lista_palabras)
     def __str__(self) -> str:
