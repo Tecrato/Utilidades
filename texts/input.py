@@ -98,7 +98,7 @@ class Input(Base):
         self.surf_rect.center = self.rect.center
         surface.blit(self.input_surface, self.surf_rect)
         
-        self.rect
+        return self.rect
 
 
     def update_pressed_keys(self):
