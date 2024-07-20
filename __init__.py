@@ -5,7 +5,7 @@ from .mytime import Deltatime, tener_el_tiempo, format_date
 from .particles import Particles
 from .sparks import Spark
 from .optimize import memosize
-from .multithread import Funcs_pool
+from .multithread import Funcs_pool, Semaforo
 from .web_tools import check_update, get_mediafire_url
 # from .tinify_API import Compress_img
 # from .image import Image

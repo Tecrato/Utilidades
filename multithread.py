@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Lock, Condition
 
 class Funcs_pool:
     def __init__(self) -> None:
@@ -44,4 +44,21 @@ class Funcs_pool:
             f()
         self.running[f'{alias}'].pop(f'{id}')
         self.running_ids[f'{alias}'].pop(id)
-    
+
+class Semaforo:
+    def __init__(self,count,limit=1) -> None:
+        self.count = count
+        self.limit = limit
+        self.lock = Lock()
+        self.condition_v = Condition(self.lock)
+
+    def acquire(self):
+        with self.lock:
+            while self.count < self.limit:
+                self.condition_v.wait()
+            self.count -= 1
+
+    def release(self):
+        with self.lock:
+            self.count += 1
+            self.condition_v.notify()
