@@ -32,7 +32,7 @@ class Second_Order_Dinamics:
         self.y = Vector2(coord)
         self.yd = Vector2(0,0)
 
-    def update(self, x, xd = None) -> list:
+    def update(self, x, xd = None) -> Vector2:
         x = Vector2(x)
 
         if xd is None:
@@ -44,7 +44,7 @@ class Second_Order_Dinamics:
         self.y = self.y + self.__T * self.yd
         self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / self.k2_stable
         return self.y
-        
+
 
 
 class Curva_de_Bezier:
@@ -67,8 +67,8 @@ class Curva_de_Bezier:
         self.__T += 1/self.timer
         if self.__T > self.extra_time:
             return True
-        result = Vector2([0,0])
+        result = Vector2(0,0)
         for i,p in enumerate(self.points):
             coeff = comb(len(self.points)-1,i) * self.__T**i * (1-self.__T)**(len(self.points)-1-i)
             result += coeff * p
-        return list(result)
+        return result

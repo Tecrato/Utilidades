@@ -24,3 +24,12 @@ from .texts import Multi_list
 from .figuras.poligono_regular import Poligono_regular
 from .figuras.poligono_irregular import Poligono_irregular
 from .figuras.engranajes import Engranaje
+
+
+print(
+    "\n"
+    "Bienvenido a las utilidades para pygame, Hecho por Edouard Sandoval\n"
+    "\n"
+    "Para Empezar puedes copiar el codigo del archivo inicio aplicacion dentro de la libreria\n"
+    "te facilitara el codigo necesario para iniciar la aplicacion por primera vez"
+)
