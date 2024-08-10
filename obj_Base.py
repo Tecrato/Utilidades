@@ -56,7 +56,7 @@ class Base:
 
         self.direccion(self.rect)
 
-    
+      
     def update(self,pos=None):
         if self.smothmove_bool is False:
             return self.__pos
