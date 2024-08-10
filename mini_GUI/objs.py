@@ -58,6 +58,7 @@ class select(Base):
         self.surf = pag.Surface(self.size,pag.SRCALPHA)
         self.rect = self.surf.get_rect()
 
+
     
     def draw(self,surface,pos,update=True):
         pag.draw.rect(self.surf, (240,240,240), [0,0,*self.size], 0, self.border_radius)
@@ -67,6 +68,7 @@ class select(Base):
             pag.draw.rect(self.surf, 'darkgrey', [0,new_pos_selection,self.size[0],self.txt_tama_h], 0, self.border_radius)
         for btn in self.botones:
             btn.draw(self.surf)
+        pag.draw.rect(self.surf, 'black', [0,0,*self.size], 1, self.border_radius)
         surface.blit(self.surf,self.rect)
         if update:
             return self.rect
