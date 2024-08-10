@@ -196,4 +196,5 @@ class Text(Base):
         
     def __str__(self) -> str:
         return f'{self.raw_text = } - {self.pos = }'
-    
+    def __repr__(self):
+        return self.__str__()

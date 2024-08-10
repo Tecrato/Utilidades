@@ -108,12 +108,9 @@ class Multi_list(Base):
     def draw(self,surface) -> pag.Rect:
         if self.smothmove_bool:
             self.update()
-        
-        
-        for x in self.listas:
-            x.update()
 
         for x in self.listas:
+            x.update()
             x.draw(surface)
 
         for x in self.listas:
@@ -149,19 +146,19 @@ class Multi_list(Base):
     def clear(self) -> None:
         [x.clear() for x in self.listas]
 
-    def click(self,pos):
+    def click(self,pos,shift=False,button=1):
         m = Vector2(pos)
         if not self.rect.collidepoint(m):
             return
         
         for i,x in sorted(enumerate(self.listas),reverse=True):
-            a = x.click(m)
+            a = x.click(m,shift)
             if a == 'scrolling' and i==len(self.listas)-1:
                 self.scroll = True
                 x.scroll = False
                 return
             elif isinstance(a,dict):
-                minilista = {'index':a['index'],'result':[l.select(a['index'], False)['text'] for l in self.listas]}
+                minilista = {'index':a['index'],'result':[l.select(a['index'], False,shift,button)['text'] for l in self.listas]}
                 return minilista
         for x in self.listas:
             x.select(-2000)
@@ -179,6 +176,17 @@ class Multi_list(Base):
     def get_list(self) -> list:
         var1 = [x.get_list() for x in self.listas]
         return list([list(x) for x in zip(*var1)])
+
+    def pop(self, index=-1):
+        for i,x in sorted(enumerate(self.listas),reverse=True):
+            x.pop(index)
+
+    def get_selects(self):
+        # return self.listas[0].get_selects()
+        # return [x.get_selects() for x in self.listas]
+        seleccionados = self.listas[0].get_selects()
+        return [dict([('index',y)]+[(self.text_header[i],x[y]) for i,x in enumerate(self.listas)]) for y in seleccionados]
+
 
     @property
     def smothscroll(self):
