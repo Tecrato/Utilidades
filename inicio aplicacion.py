@@ -4,8 +4,8 @@ import datetime
 import Utilidades as uti
 
 TITLE: str = 'Program'
-RESOLUCION = (800, 550)
-
+RESOLUCION = [800, 550]
+MIN_RESOLUTION = [550,450]
 
 class Clicker_game:
     def __init__(self) -> None:
@@ -68,6 +68,9 @@ class Clicker_game:
         # El resto de textos y demas cosas
         ...
 
+        # Y se mueven los objetos a su posicion en pantalla
+        self.move_objs()
+
     # Para mover los objetos denuevo, por ejemplo cuando la ventana cambie de tamaño
     def move_objs(self):
         ...
@@ -85,7 +88,7 @@ class Clicker_game:
                     if x.listas[0].lista_palabras:
                         x.draw(self.ventana)
                 else:
-                    x.draw(self.ventana, False)
+                    x.draw(self.ventana)
             self.GUI_manager.draw(self.ventana, (mx, my))
             self.Mini_GUI_manager.draw(self.ventana, (mx, my))
             pag.display.update()
@@ -105,7 +108,7 @@ class Clicker_game:
             for x in self.Mini_GUI_manager.draw(self.ventana, (mx, my)):
                 self.updates.append(x)
 
-            self.updates = list(filter(lambda ele: isinstance(ele, pag.Rect),self.updates))
+            # self.updates = list(filter(lambda ele: isinstance(ele, pag.Rect),self.updates))
 
             pag.display.update(self.updates)
             
@@ -116,7 +119,7 @@ class Clicker_game:
             sys.exit()
         elif evento.type == pag.KEYDOWN and evento.key == pag.K_F12:
             momento = datetime.datetime.today().strftime('%y%m%d_%f')
-            pag.image.save(self.display,'screenshot_{}_{}.png'.format(TITLE,momento))
+            pag.image.save(self.ventana,'screenshot_{}_{}.png'.format(TITLE,momento))
         elif evento.type == pag.WINDOWRESTORED:
             return True
         elif self.GUI_manager.active >= 0:
@@ -125,10 +128,7 @@ class Clicker_game:
             elif evento.type == pag.MOUSEBUTTONDOWN and evento.button == 1:
                 self.GUI_manager.click((mx, my))
             return True
-        elif evento.type == pag.MOUSEBUTTONDOWN and evento.button == 1:
-            if self.Mini_GUI_manager.click(evento.pos):
-                return True
-        elif evento.type == pag.MOUSEBUTTONDOWN and evento.button == 3:
+        elif evento.type == pag.MOUSEBUTTONDOWN and evento.button in [1,3]:
             if self.Mini_GUI_manager.click(evento.pos):
                 return True
         elif evento.type == pag.WINDOWMINIMIZED:
@@ -141,15 +141,12 @@ class Clicker_game:
             self.framerate = 60
             self.drawing = True
             return True
-        elif evento.type in [pag.WINDOWRESIZED,pag.WINDOWMAXIMIZED,pag.WINDOWSIZECHANGED,pag.WINDOWMINIMIZED]:
-            size = pag.display.get_window_size()
-            self.ventana = pag.display.set_mode(size, pag.RESIZABLE|pag.DOUBLEBUF)
-            self.ventana_rect = self.ventana.get_rect()
-
-            self.move_objs()
-            return True
-        elif evento.type == pag.WINDOWSHOWN or evento.type == pag.WINDOWMOVED:
-            size = pag.display.get_window_size()
+        elif evento.type in [pag.WINDOWRESIZED,pag.WINDOWMAXIMIZED,pag.WINDOWSIZECHANGED,pag.WINDOWMINIMIZED,pag.WINDOWSHOWN,pag.WINDOWMOVED]:
+            size = Vector2(pag.display.get_window_size())
+            if size.x < MIN_RESOLUTION[0]:
+                size.x = MIN_RESOLUTION[0]
+            if size.y < MIN_RESOLUTION[1]:
+                size.y = MIN_RESOLUTION[1]
             self.ventana = pag.display.set_mode(size, pag.RESIZABLE|pag.DOUBLEBUF)
             self.ventana_rect = self.ventana.get_rect()
 
