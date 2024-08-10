@@ -22,7 +22,7 @@ class Image(Base):
         self.surf.blit(self.image,(0,0))
         self.rect = self.image.get_rect()
 
-        self.vel = pag.Vector2(dir)*vel
+        self.simple_acceleration_move(vel,dir,'forward')
 
         self.direccion(self.rect)
 

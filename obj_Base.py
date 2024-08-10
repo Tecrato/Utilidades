@@ -1,3 +1,4 @@
+from typing import Literal
 import pygame as pag
 from pygame import Vector2
 
@@ -23,25 +24,14 @@ class Base:
         if self.dire == 'center':
             self.rect_border.center = rect.center
             return
-        if self.dire == 'left':
+        if self. dire in ['left','topleft','bottomleft']:
             rect.left = self.__pos.x
-        elif self.dire == 'right':
+        elif self.dire in ['right','topright','bottomright']:
             rect.right = self.__pos.x
-        elif self.dire == 'top':
+
+        if self.dire in ['top','topleft','topright']:
             rect.top = self.__pos.y
-        elif self.dire == 'bottom':
-            rect.bottom = self.__pos.y
-        elif self.dire == 'topleft':
-            rect.left = self.__pos.x
-            rect.top = self.__pos.y
-        elif self.dire == 'topright':
-            rect.right = self.__pos.x
-            rect.top = self.__pos.y
-        elif self.dire == 'bottomleft':
-            rect.left = self.__pos.x
-            rect.bottom = self.__pos.y
-        elif self.dire == 'bottomright':
-            rect.right = self.__pos.x
+        elif self.dire in ['bottom','bottomleft','bottomright']:
             rect.bottom = self.__pos.y
         self.rect_border.center = rect.center
             
@@ -55,13 +45,14 @@ class Base:
         self.smothmove_bool = True
         self.smothmove_type = 'Cubic Bezier'
         self.movimiento = Curva_de_Bezier(fps,puntos,multiplicador)
-    def simple_acceleration_move(self, vel,dir=[1,0]) -> None:
+    def simple_acceleration_move(self, vel,dir=[1,0],tipo: Literal['follow','forward']='follow') -> None:
         self.smothmove_pos = self.pos
         self.movimiento = Simple_acceleration(vel, dir, self.pos)
         self.smothmove_bool = True
         self.smothmove_type = 'Simple Acceleration'
+        self.simple_acceleration_type = tipo
 
-        self.vel = vel
+        self.vel = float(vel)
 
         self.direccion(self.rect)
 
@@ -79,9 +70,12 @@ class Base:
             #     self.__pos = self.smothmove_pos
             self.__pos = Vector2(self.movimiento.update(self.smothmove_pos))
         elif self.smothmove_type == 'Simple Acceleration':
-            if -self.vel < (self.__pos[0]+self.__pos[1]) - (self.smothmove_pos[0]+self.smothmove_pos[1]) < self.vel:
-                self.__pos = self.smothmove_pos
-            self.__pos = self.movimiento.follow(self.smothmove_pos)
+            if self.simple_acceleration_type == 'follow':
+                if -self.vel < (self.__pos[0]+self.__pos[1]) - (self.smothmove_pos[0]+self.smothmove_pos[1]) < self.vel:
+                    self.__pos = self.smothmove_pos
+                self.__pos = self.movimiento.follow(self.smothmove_pos)
+            else:
+                self.__pos = self.movimiento.update()
         elif self.smothmove_type == 'Cubic Bezier':
             r = self.movimiento.update()
 

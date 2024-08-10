@@ -17,6 +17,33 @@ class Simple_acceleration:
         return self.pos
 
 
+class Curva_de_Bezier:
+    def __init__(self, timer, points, extra_time: int = 1) -> None:
+        self.__T = 0
+        self.timer = timer
+        self.extra_time = extra_time
+        self.points = [Vector2(ag) for ag in points]
+        if len(self.points) < 2:
+            raise 'Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)'
+
+    def move(self, points) -> None:
+        self.points = [Vector2(ag) for ag in points]
+
+    def set(self,progress:float) -> None:
+        ' - Define en que % de la animacion estara'
+        self.__T = progress
+
+    def update(self) -> Vector2:
+        self.__T += 1/self.timer
+        if self.__T > self.extra_time:
+            return True
+        result = Vector2(0,0)
+        for i,p in enumerate(self.points):
+            coeff = comb(len(self.points)-1,i) * self.__T**i * (1-self.__T)**(len(self.points)-1-i)
+            result += coeff * p
+        return result
+
+
 class Second_Order_Dinamics:
     def __init__(self, T, f, z, r, coord:list) -> None:
 
@@ -46,29 +73,3 @@ class Second_Order_Dinamics:
         return self.y
 
 
-
-class Curva_de_Bezier:
-    def __init__(self, timer, points, extra_time: int = 1) -> None:
-        self.__T = 0
-        self.timer = timer
-        self.extra_time = extra_time
-        self.points = [Vector2(ag) for ag in points]
-        if len(self.points) < 2:
-            raise 'Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)'
-
-    def move(self, points) -> None:
-        self.points = [Vector2(ag) for ag in points]
-
-    def set(self,progress:float) -> None:
-        ' - Define en que % de la animacion estara'
-        self.__T = progress
-
-    def update(self) -> bool|list[float,float]:
-        self.__T += 1/self.timer
-        if self.__T > self.extra_time:
-            return True
-        result = Vector2(0,0)
-        for i,p in enumerate(self.points):
-            coeff = comb(len(self.points)-1,i) * self.__T**i * (1-self.__T)**(len(self.points)-1-i)
-            result += coeff * p
-        return result
