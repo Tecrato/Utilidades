@@ -27,13 +27,11 @@ class List(Base):
         self.__width = size[0]
         self.__height = size[1]
         self.text_size = text_size
-        self.separation = separation
         self.__smothscroll = smothscroll
         self.background_color = background_color
         self.selected_color = selected_color
         self.padding_top = kwargs.get('padding_top',10)
         self.padding_left = kwargs.get('padding_left',20)
-        self.with_index = kwargs.get('with_index',False)
         self.text_color = text_color
         self.header = header
         self.text_header = text_header
@@ -50,9 +48,7 @@ class List(Base):
         self.lista_objetos: list[Text] = []
         
         self.desplazamiento = 0
-        self.total_height = 0
-        self.movimiento = None
-        self.smothmove_bool = False
+        self.total_content_height = 0
         self.last_mouse_pos = (0,0)
         self.first_insert = True
 
@@ -96,7 +92,6 @@ class List(Base):
         self.__height = max(size[1],5)
         self.size = Vector2(self.__width,self.__height)
         if self.header:
-            # self.text_header.width = self.size.x
             self.rect = pag.rect.Rect(self.pos[0], self.pos[1]+self.text_header.height, self.size[0], self.size[1]-self.text_header.height)
             self.text_header.width = self.size[0]
             self.text_header.bottomleft = self.pos
@@ -116,13 +111,13 @@ class List(Base):
         self.desplazamiento = 0
         self.rodar(0)
 
-        self.total_height = (self.lista_objetos[-1].pos.y+self.lista_objetos[-1].height) - self.lista_surface_rect.h
+        self.total_content_height = (self.lista_objetos[-1].pos.y + self.lista_objetos[-1].height) - self.lista_surface_rect.h
         self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/(self.lista_objetos[-1].pos.y+self.lista_objetos[-1].height)))
         self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
 
         self.rodar(0)
-        if self.scroll_bar_active and self.total_height>0:
-            self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento/self.total_height)
+        if self.scroll_bar_active and self.total_content_height>0:
+            self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento / self.total_content_height)
         else:
             self.barra.top = 0
 
@@ -139,7 +134,7 @@ class List(Base):
 
         self.lista_surface.blits([(te.text_surf,te.rect_text) for te in self.lista_objetos])
             
-        if self.scroll_bar_active and self.total_height + self.lista_surface_rect.h > self.rect.h:
+        if self.scroll_bar_active and self.total_content_height + self.lista_surface_rect.h > self.rect.h:
             pag.draw.rect(self.lista_surface, 'white', self.barra,border_radius=5)
 
     def update(self):
@@ -164,11 +159,11 @@ class List(Base):
         for num ,text in enumerate(self.lista_palabras):
             self.lista_objetos.append(Text(text, self.text_size, self.font, (self.padding_left,(self.letter_size*num) + self.padding_top), 'topleft', self.text_color, padding=20))
 
-        self.total_height = 0
+        self.total_content_height = 0
         if self.smothscroll:
             for x in self.lista_objetos:
                 x.smothmove(60, 1.4, 1, 1.5)
-        self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
+        self.total_content_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
         self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/self.lista_objetos[-1].rect.bottom))
         self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
         self.draw_surf()
@@ -181,7 +176,7 @@ class List(Base):
         self.lista_objetos.append(Text(texto, self.text_size, self.font, (self.padding_left,(self.letter_size*(len(self.lista_palabras)-1)) + self.padding_top), 'topleft', self.text_color, padding=20))
         if self.smothscroll:
             self.lista_objetos[-1].smothmove(60, 1.5, 1, 1.5)
-        self.total_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
+        self.total_content_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
         self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/self.lista_objetos[-1].rect.bottom))
         self.barra = pag.rect.Rect(self.lista_surface_rect.w - 10, 0, 10, self.bar_height)
         self.first_insert = False
@@ -190,18 +185,15 @@ class List(Base):
     def change_list(self, lista: list) -> None:
         if not isinstance(lista, list) and len(lista) == 0:
             return
-        self.select_box.centery = -100
         self.lista_palabras: list[str] = lista
         self.first_insert = False
-        self.select_box.top = self.rect.bottom
         self.actualizar_lista()
         self.draw_surf()
 
     def mover_textos(self):
         for num ,text in enumerate(self.lista_objetos):
             text.pos = (self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento)
-        # self.draw_surf()
-    
+
     def clear(self) -> None:
         self.selected_nums.clear()
         self.lista_objetos.clear()
@@ -221,7 +213,6 @@ class List(Base):
             return 'scrolling'
         for index, te in enumerate(self.lista_objetos):
             if te.pos.y < m.y < te.pos.y+te.rect.h:
-                self.select_box.centery = te.rect.centery
                 self.select(index, False, shift)
                 return {'index': index,'text': te.text}
         self.select(-2000)
@@ -236,29 +227,22 @@ class List(Base):
             self.rodar(0)
             self.draw_surf()
             return {'text': self.lista_objetos[index].raw_text, 'index': index}
-        
-        self.select_box.top = self.lista_surface_rect.h
+
         self.selected_nums.clear()
         self.rodar(0)
         self.draw_surf()
         return False
 
     def rodar(self,y) -> None:
-        if self.total_height + self.lista_surface_rect.h < self.rect.h:
+        if self.total_content_height + self.lista_surface_rect.h < self.rect.h:
             return
 
         self.desplazamiento += y
-        if self.desplazamiento > 0:
-            self.desplazamiento = 0
-            if self.scroll_bar_active:
-                self.barra.top = 0
-        elif self.desplazamiento < -self.total_height:
-            self.desplazamiento = -self.total_height
-            if self.scroll_bar_active:
-                self.barra.bottom = self.rect.h
+        self.desplazamiento = min(0,self.desplazamiento)
+        self.desplazamiento = max(-self.total_content_height,self.desplazamiento)
                 
-        if self.scroll_bar_active and self.total_height>0:
-            self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento/self.total_height)
+        if self.scroll_bar_active and self.total_content_height>0:
+            self.barra.top = -(self.lista_surface_rect.h-self.barra.h) * (self.desplazamiento / self.total_content_height)
         else:
             self.barra.top = 0
 
@@ -272,7 +256,7 @@ class List(Base):
             self.desplazamiento = 0
             self.rodar(0)
             return
-        self.desplazamiento = -(self.total_height/((self.lista_surface_rect.h-self.barra.h)/self.barra.top))
+        self.desplazamiento = -(self.total_content_height / ((self.lista_surface_rect.h - self.barra.h) / self.barra.top))
         self.rodar(0)
 
     def get_list(self) -> list[str]:
