@@ -137,9 +137,12 @@ class List(Base):
         if self.scroll_bar_active and self.total_content_height + self.lista_surface_rect.h > self.rect.h:
             pag.draw.rect(self.lista_surface, 'white', self.barra,border_radius=5)
 
-    def update(self):
+    def update_texts(self):
         for te in self.lista_objetos:
             te.update()
+
+    def update(self):
+        self.update_texts()
 
         if self.smothscroll and self.lista_objetos and abs(sum(self.lista_objetos[-1].movimiento.yd.xy)) > 0.1:
             self.draw_surf()
@@ -203,7 +206,7 @@ class List(Base):
         if not self.smothscroll:
             self.draw_surf()
 
-    def click(self,pos, shift=False):
+    def click(self,pos, shift=False, button=1):
         m = Vector2(pos)
         m -= self.pos
         m += (0,5)
@@ -213,12 +216,12 @@ class List(Base):
             return 'scrolling'
         for index, te in enumerate(self.lista_objetos):
             if te.pos.y < m.y < te.pos.y+te.rect.h:
-                self.select(index, False, shift)
+                self.select(index, False, shift, button)
                 return {'index': index,'text': te.text}
         self.select(-2000)
     def select(self, index: int = -2000, diff = True, more = False,button=1) -> dict|bool:
         if index != -2000:
-            if not more and index not in self.selected_nums:
+            if (not more and index not in self.selected_nums) or (button == 1 and not more):
                 self.selected_nums.clear()
             if index not in self.selected_nums:
                 self.selected_nums.append(index)
@@ -247,8 +250,10 @@ class List(Base):
             self.barra.top = 0
 
         self.mover_textos()
+        self.update_texts()
 
-        self.draw_surf()
+        if not self.smothscroll:
+            self.draw_surf()
     def rodar_mouse(self,rel):
         self.barra.centery += rel
         if self.barra.top <= 0:
@@ -282,12 +287,12 @@ class List(Base):
         return self.__smothscroll
     @smothscroll.setter
     def smothscroll(self,smothscroll):
-        self.__smothscroll = smothscroll
+        self.__smothscroll = bool(smothscroll)
         for x in self.lista_objetos:
-            if self.smothscroll:
+            if self.__smothscroll:
                 x.smothmove(60, 1.5, 1, 1.5)
             else:
-                x.smothmove_bool = self.smothscroll
+                x.smothmove_bool = self.__smothscroll
                 
     @property
     def width(self):
