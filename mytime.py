@@ -19,7 +19,7 @@ class Deltatime:
 			self.dt = 1
 	def reset(self) -> None:
 		self.last_time = time.time()
-		self.dt = (time.time()-self.last_time) * self.FPS
+		self.dt = 0
 		
 
 def tener_el_tiempo(func):

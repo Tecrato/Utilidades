@@ -24,7 +24,7 @@ class Text(Base):
     """
     
     def __init__(self,text: str,size: int,font: str|None, pos: tuple = (0,0),
-                 dire: Literal["center","left","right","topleft","topright","bottomleft","bottomright"] ='center',
+                 dire: Literal["center","left","right","top","bottom","topleft","topright","bottomleft","bottomright"] ='center',
                  color='white',with_rect = False, color_rect ='black', border_width = -1, padding: int|list|tuple = 20, 
                  width = 0, height = 0, rect_width= 0, **kwargs) -> None:
         super().__init__(pos,dire)
