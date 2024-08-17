@@ -175,9 +175,21 @@ class Clicker_game:
                     sys.exit()
                 elif evento.type == pag.MOUSEBUTTONDOWN and evento.button == 1:
                     for i,x in sorted(enumerate(self.list_to_click), reverse=True):
-                        if x.click((mx, my)):
+                        if isinstance(x, Multi_list):
+                            if x.click((mx,my),pag.key.get_pressed()[pag.K_LCTRL]):
+                                self.redraw = True
+                                break
+                        elif x.click((mx, my)):
                             self.redraw = True
                             break
+                # elif evento.type == MOUSEBUTTONDOWN and evento.button == 3:
+                #     if self.lista_descargas.click((mx, my),pag.key.get_pressed()[pag.K_LCTRL],button=3) and (result := self.lista_descargas.get_selects()):
+                #         self.Mini_GUI_manager.add(mini_GUI.select((mx, my),
+                #                                                   [self.txts['descargar'], self.txts['eliminar'],
+                #                                                    self.txts['actualizar_url'], 'get url', self.txts['añadir a la cola'], self.txts['remover de la cola'], self.txts['limpiar cola'],
+                #                                                    self.txts['reiniciar'], self.txts['cambiar nombre']],
+                #                                                   captured=result),
+                #                                   self.func_select_box)
             if self.drawing:
                 self.draw_objs(self.list_to_draw)  # La lista a dibujar de esta pantalla
 
