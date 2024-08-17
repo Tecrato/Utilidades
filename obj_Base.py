@@ -10,7 +10,7 @@ class Base:
         self.smothmove_bool = False
 
         self.__dire: str = dire
-        self.__pos = Vector2(0)
+        self.__pos = Vector2(pos)
         self.smothmove_pos = Vector2(0)
         self.rect_border = pag.rect.Rect(0,0,0,0)
         self.pos = pos
