@@ -146,19 +146,19 @@ class Multi_list(Base):
     def clear(self) -> None:
         [x.clear() for x in self.listas]
 
-    def click(self,pos,shift=False,button=1):
+    def click(self,pos,ctrl=False,button=1):
         m = Vector2(pos)
         if not self.rect.collidepoint(m):
             return
         
         for i,x in sorted(enumerate(self.listas),reverse=True):
-            a = x.click(m,shift)
+            a = x.click(m,ctrl,button)
             if a == 'scrolling' and i==len(self.listas)-1:
                 self.scroll = True
                 x.scroll = False
                 return
             elif isinstance(a,dict):
-                minilista = {'index':a['index'],'result':[l.select(a['index'], False,shift,button)['text'] for l in self.listas]}
+                minilista = {'index':a['index'],'result':[l.select(a['index'], False,ctrl,button)['text'] for l in self.listas]}
                 return minilista
         for x in self.listas:
             x.select(-2000)
