@@ -40,6 +40,9 @@ class Barra_de_progreso:
         pag.draw.rect(surface, 'green', self.rect)
         pag.draw.rect(surface, 'darkblue', self.rect2, width=2)
 
+    def update(self):
+        pass
+
 
     @property
     def volumen(self):
