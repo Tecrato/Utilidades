@@ -16,7 +16,7 @@ class Button(Text):
         color_rect_active='lightgrey',rect_width=0,border_radius:int=15,border_top_left_radius:int=-1,
         border_top_right_radius: int = -1, border_bottom_left_radius: int = -1,
         border_bottom_right_radius: int = -1, border_width = 2, border_color = 'black', with_rect = True,
-        func = None|Callable, width = 0, height = 0, **kwargs) -> None:
+        func:None|Callable = None, width = 0, height = 0, **kwargs) -> None:
 
         self.color_rect_active = color_rect_active if color_rect_active != None else color_rect
         self.color_rect_inactive = color_rect
