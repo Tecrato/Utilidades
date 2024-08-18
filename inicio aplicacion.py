@@ -3,6 +3,8 @@ import sys
 import datetime
 import Utilidades as uti
 
+from pygame import Vector2
+
 TITLE: str = 'Program'
 RESOLUCION = [800, 550]
 MIN_RESOLUTION = [550,450]
@@ -28,8 +30,8 @@ class Clicker_game:
 
         # Variables por pantalla
         # Principal:
-        self.list_to_draw: list[uti.Text|uti.Button|uti.Input|uti.Multi_list|uti.List] = []
-        self.list_to_click: list[uti.Button] = []
+        self.list_to_draw: list[uti.Text|uti.Button|uti.Input|uti.Multi_list|uti.List|uti.Bloque] = []
+        self.list_to_click: list[uti.Button|uti.Bloque] = []
         ...
 
         # Iniciar el programa
@@ -82,7 +84,7 @@ class Clicker_game:
             if self.draw_background:
                 self.ventana.fill(self.background_color)
             for x in lista:
-                if isinstance(x, uti.Button):
+                if isinstance(x, (uti.Button|uti.Bloque)):
                     x.draw(self.ventana, (mx,my))
                 elif isinstance(x, uti.Multi_list):
                     if x.listas[0].lista_palabras:
@@ -96,7 +98,7 @@ class Clicker_game:
         else:
             self.updates.clear()
             for x in lista:
-                if isinstance(x, uti.Button):
+                if isinstance(x, (uti.Button|uti.Bloque)):
                     self.updates.append(x.draw(self.ventana, (mx,my)))
                 elif isinstance(x, uti.Multi_list):
                     if self.lista_descargas.listas[0].lista_palabras:
@@ -175,7 +177,7 @@ class Clicker_game:
                     sys.exit()
                 elif evento.type == pag.MOUSEBUTTONDOWN and evento.button == 1:
                     for i,x in sorted(enumerate(self.list_to_click), reverse=True):
-                        if isinstance(x, Multi_list):
+                        if isinstance(x, uti.Multi_list):
                             if x.click((mx,my),pag.key.get_pressed()[pag.K_LCTRL]):
                                 self.redraw = True
                                 break

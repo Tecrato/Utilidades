@@ -7,6 +7,7 @@ from .sparks import Spark
 from .optimize import memosize
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import check_update, get_mediafire_url
+from .bloque import Bloque
 # from .tinify_API import Compress_img
 # from .image import Image
 
