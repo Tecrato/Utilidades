@@ -44,24 +44,24 @@ class Button(Text):
 
     def draw(self, surface: pag.Surface, pos: tuple[int,int] =False) -> pag.Rect:
         pos = pos if pos else pag.mouse.get_pos()
-        if self.rect.collidepoint(pos):
-            if not self.hover:
-                if self.sound_to_hover:
-                    self.sound_to_hover.play()
-                self.hover = True
-                self.color_rect = self.color_rect_active
-                self.color = self.color_active if self.color_active else self.color_inactive
-                self.border_color = self.color_border_active
-                if self.toggle_rect and self.with_rect2:
-                    self.with_rect = True
-        else:
-            if self.hover:
-                self.hover = False
-                self.color_rect = self.color_rect_inactive
-                self.color = self.color_inactive
-                self.border_color = self.border_color_inactive
-                if self.toggle_rect and self.with_rect2:
-                    self.with_rect = False
+        if not self.rect.collidepoint(pos):
+            return super().draw(surface)
+        if not self.hover:
+            if self.sound_to_hover:
+                self.sound_to_hover.play()
+            self.hover = True
+            self.color_rect = self.color_rect_active
+            self.color = self.color_active if self.color_active else self.color_inactive
+            self.border_color = self.color_border_active
+            if self.toggle_rect and self.with_rect2:
+                self.with_rect = True
+        elif self.hover:
+            self.hover = False
+            self.color_rect = self.color_rect_inactive
+            self.color = self.color_inactive
+            self.border_color = self.border_color_inactive
+            if self.toggle_rect and self.with_rect2:
+                self.with_rect = False
         return super().draw(surface)
 
     def click(self,pos) -> bool:
