@@ -78,7 +78,7 @@ class Particles:
 
     def apply_lighting(self, part):
         for x in range(self.lighting_number):
-            radius = part[2]* (1.5*(x+1))
+            radius = (part[2]/2)* (2*(x+1))
             self.surface.blit(self.lighting_func(radius),part[0]-Vector2(radius), special_flags= pag.BLEND_RGB_ADD)
 
 
