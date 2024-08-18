@@ -33,8 +33,8 @@ class Curva_de_Bezier:
         ' - Define en que % de la animacion estara'
         self.__T = progress
 
-    def update(self) -> Vector2:
-        self.__T += 1/self.timer
+    def update(self,dt=1) -> Vector2:
+        self.__T += (1/self.timer) * dt
         if self.__T > self.extra_time:
             return True
         result = Vector2(0,0)
@@ -45,7 +45,7 @@ class Curva_de_Bezier:
 
 
 class Second_Order_Dinamics:
-    def __init__(self, T, f, z, r, coord:list) -> None:
+    def __init__(self, T, f, z, r, coord:list|tuple|Vector2) -> None:
 
         self.k1 = z/ (pi*f)
         self.k2 = 1/ ((2*pi*f)**2)
@@ -59,7 +59,7 @@ class Second_Order_Dinamics:
         self.y = Vector2(coord)
         self.yd = Vector2(0,0)
 
-    def update(self, x, xd = None) -> Vector2:
+    def update(self, x, xd = None, dt=1) -> Vector2:
         x = Vector2(x)
 
         if xd is None:
@@ -68,7 +68,7 @@ class Second_Order_Dinamics:
         else:
             xd = Vector2(xd)
 
-        self.y = self.y + self.__T * self.yd
+        self.y = self.y + self.__T * (self.yd * dt)
         self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / self.k2_stable
         return self.y
 
