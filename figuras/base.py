@@ -1,9 +1,7 @@
 from typing import Self
-from math import sin,cos,radians
-from io import open
 from pygame import draw
 from pygame import Vector2
-from pathlib import Path
+from pygame import Rect
 
 class Base:
 	def __init__(self,pos,radio,angle,color) -> None:
@@ -11,12 +9,12 @@ class Base:
 		self.__angle = angle
 		self.__radio = radio
 		self.__color = color
+		self.max_radio = 0
 
-	def draw(self,surface):
+	def draw(self,surface) -> Rect:
 		draw.polygon(surface,self.color,self.figure)
+		return Rect(0,0,self.radio*2,self.radio*2).move(self.pos.x-self.radio,self.pos.y-self.radio)
 	
-
-
 	@property
 	def pos(self) -> Vector2:
 		return self.__pos
