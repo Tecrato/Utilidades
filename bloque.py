@@ -38,6 +38,8 @@ class Bloque(Base):
 
         return self
 
+    def clear(self):
+        self.list_objs.clear()
 
     def move_objs(self):
         for x in self.list_objs:

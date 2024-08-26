@@ -1,6 +1,6 @@
 from .Animaciones import Curva_de_Bezier, Second_Order_Dinamics
 from .Barras_progreso import Barra_de_progreso
-from .maths import Angulo, Hipotenuza
+from .maths import Angulo, Hipotenuza, format_size_bits_to_bytes, UNIDADES_BYTES
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .particles import Particles
 from .sparks import Spark

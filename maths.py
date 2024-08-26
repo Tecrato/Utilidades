@@ -1,9 +1,8 @@
 import math
-from pygame import Vector2
 
 def Hipotenuza(vector1, vector2) -> int:
-    vector1 = Vector2(*vector1)
-    vector2 = Vector2(*vector2)
+    vector1 = vector1
+    vector2 = vector2
     return math.dist(vector1,vector2)
 
 def Angulo(vector1, vector2) -> float:
@@ -12,7 +11,23 @@ def Angulo(vector1, vector2) -> float:
     angulo = math.atan2(y,x) * (180.0 / math.pi)
     return angulo if angulo > 0 else 180 + (180+angulo)
 
-def Angulo_normalized(vector1, vector2) -> Vector2:
-    x = vector2[0] - vector1[0]
-    y = vector2[1] - vector1[1]
-    return (Vector2(x,y).normalize() if x != 0 or y != 0 else Vector2(0,0))
+
+def format_size_bits_to_bytes(size) -> list:
+    count = 0
+    while size > 1024:
+        size /= 1024
+        count += 1
+    return [count, size]
+
+
+UNIDADES_BYTES = {
+    0: 'B',
+    1: 'KB',
+    2: 'MB',
+    3: 'GB',
+    4: 'TB',
+    5: 'PB',
+    6: 'EB',
+    7: 'ZB',
+    8: 'YB'
+}

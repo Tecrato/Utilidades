@@ -1,5 +1,5 @@
 from math import comb, pi
-from .maths import Angulo_normalized
+from .maths import Angulo
 
 from pygame.math import Vector2
 
@@ -12,7 +12,7 @@ class Simple_acceleration:
         self.pos += self.dir*self.vel*dt
         return self.pos
     def follow(self,pos,dt=1):
-        self.dir = Angulo_normalized(self.pos,pos)
+        self.dir = Vector2(Angulo(self.pos,pos)).normalize()
         self.pos += self.dir*self.vel*dt
         return self.pos
 
