@@ -19,12 +19,14 @@ class Clicker_game:
         self.drawing: bool = True
         self.draw_background: bool = True
         self.framerate: int = 60
+        self.loading: int = 0
         self.redraw: bool = True
         self.relog: pag.time.Clock = pag.time.Clock()
         self.updates: list[pag.Rect] = []
         self.background_color: tuple[int,int,int] = (20,20,20)
 
         # Otras variables
+        self.delta_time: uti.Deltatime = uti.Deltatime(self.framerate)
         ...
         ...
 
@@ -154,6 +156,8 @@ class Clicker_game:
 
             self.move_objs()
             return True
+        elif self.loading > 0:
+            return True
         return False
     
     def main_cycle(self):
@@ -164,6 +168,7 @@ class Clicker_game:
         
         while self.screen_main_bool:
             self.relog.tick(self.framerate)
+            self.delta_time.update()
 
             mx, my = pag.mouse.get_pos()
             eventos = pag.event.get()
@@ -177,13 +182,16 @@ class Clicker_game:
                     sys.exit()
                 elif evento.type == pag.MOUSEBUTTONDOWN and evento.button == 1:
                     for i,x in sorted(enumerate(self.list_to_click), reverse=True):
-                        if isinstance(x, uti.Multi_list):
-                            if x.click((mx,my),pag.key.get_pressed()[pag.K_LCTRL]):
-                                self.redraw = True
-                                break
+                        if isinstance(x, (uti.Multi_list,uti.List)) and x.click((mx,my),pag.key.get_pressed()[pag.K_LCTRL]):
+                            self.redraw = True
+                            break
                         elif x.click((mx, my)):
                             self.redraw = True
                             break
+                elif evento.type == pag.MOUSEWHEEL and self.lista_descargas.rect.collidepoint((mx,my)):
+                    self.lista_descargas.rodar(evento.y*15)
+                elif evento.type == pag.MOUSEMOTION and self.lista_descargas.scroll:
+                    self.lista_descargas.rodar_mouse(evento.rel[1])
                 # elif evento.type == MOUSEBUTTONDOWN and evento.button == 3:
                 #     if self.lista_descargas.click((mx, my),pag.key.get_pressed()[pag.K_LCTRL],button=3) and (result := self.lista_descargas.get_selects()):
                 #         self.Mini_GUI_manager.add(mini_GUI.select((mx, my),
@@ -192,6 +200,9 @@ class Clicker_game:
                 #                                                    self.txts['reiniciar'], self.txts['cambiar nombre']],
                 #                                                   captured=result),
                 #                                   self.func_select_box)
+                
+            for x in self.list_to_draw:
+                x.update(dt=self.delta_time.dt)
             if self.drawing:
                 self.draw_objs(self.list_to_draw)  # La lista a dibujar de esta pantalla
 
