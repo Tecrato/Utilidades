@@ -56,6 +56,7 @@ class Text(Base):
         self.__font = pag.font.Font(self.raw_font, size)
 
         self.smothmove_bool = False
+        self.movimiento = None
 
         self.__generate()
     
@@ -105,8 +106,8 @@ class Text(Base):
         self.__width = self.rect.w
         self.__height = self.rect.h
 
-    def update(self, pos = None):
-        super().update(pos)
+    def update(self, pos = None,dt=1):
+        super().update(pos,dt=dt)
 
         if self.mode == 1:
             self.rect_text.center = self.rect.center
@@ -181,6 +182,7 @@ class Text(Base):
     @width.setter
     def width(self,width):
         self.__width = max(width,self.rect_text.w + self.padding[0]*2)
+        self.default_width = self.__width
         self.rect.width = self.width
         self.create_border(self.rect,self.border_width)
         self.direccion(self.rect)

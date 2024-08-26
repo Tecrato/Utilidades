@@ -19,7 +19,7 @@ class Multi_list(Base):
     '''
     def __init__(self, size:tuple,pos:tuple,num_lists:int=2,lista: list[list] = None, text_size: int = 20, separation: int = 0,
         background_color = 'black', selected_color = (100,100,100,100), text_color= 'white', colums_witdh= -1, header: bool =True,
-        header_text: list = None, dire: str = 'topleft', fonts: list['str']|None = None, default: list[list]=None,
+        header_text: list = None, dire: str = 'topleft', fonts: list[str]|None = None, default: list[list]=None,
         smothscroll=False, **kwargs) -> None:
         
         super().__init__(pos,dire)
@@ -76,7 +76,8 @@ class Multi_list(Base):
                 background_color=self.background_color, smothscroll=self.smothscroll, padding_top=l_padding_top,
                 padding_left=self.padding_left, with_index=l_with_index, scroll_bar_active=l_scroll_bar_active,
                 header=True, text_header=self.text_header[x], header_top_left_radius=l_header_top_left_radius, 
-                header_top_right_radius=l_header_top_right_radius, font=self.fonts[x], header_border_color=self.border_color))
+                header_top_right_radius=l_header_top_right_radius, font=self.fonts[x], header_border_color=self.border_color,
+                border_width=-1))
             self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
         
         self.create_border(self.rect, 2)
@@ -99,24 +100,23 @@ class Multi_list(Base):
             self.lineas.append([((self.size.x*self.colums_witdh[x] -1),self.listas[0].text_header.rect.h+1), ((self.size.x*self.colums_witdh[x] -1),self.rect.h)])
         self.create_border(self.rect, 2)
 
-    def update(self,pos=None):
-        super().update(pos)
+    def update(self,pos=None,dt=1):
+        super().update(pos,dt=1)
         for x in range(self.num_list):
             self.listas[x].pos = Vector2(self.size.x*self.colums_witdh[x],30) + self.pos
+        
+        for x in self.listas:
+            x.update()
 
 
     def draw(self,surface) -> pag.Rect:
-        if self.smothmove_bool:
-            self.update()
 
         for x in self.listas:
-            x.update()
             x.draw(surface)
 
         for x in self.listas:
             pag.draw.rect(surface, self.border_color, x.rect, 1)
-        # surface.blit(self.lista_surface,self.rect)
-
+            
         for line in self.lineas[1:]:
             pag.draw.line(surface, self.border_color, Vector2(line[0])+self.raw_pos-(0,0)-(0,30), Vector2(line[1])+self.raw_pos-(0,1), 2)
         
@@ -152,6 +152,8 @@ class Multi_list(Base):
             return
         
         for i,x in sorted(enumerate(self.listas),reverse=True):
+            if not x.rect.collidepoint(pos):
+                continue
             a = x.click(m,ctrl,button)
             if a == 'scrolling' and i==len(self.listas)-1:
                 self.scroll = True
@@ -163,10 +165,8 @@ class Multi_list(Base):
         for x in self.listas:
             x.select(-2000)
 
-
-
-    def select(self, index: int = -2000, driff: bool=True) -> str:
-        return [l.select(index=int(index),driff=driff)['text'] for l in self.listas]
+    def select(self, index: int = -2000, diff: bool=True) -> str:
+        return [l.select(index=int(index),diff=diff)['text'] for l in self.listas]
 
     def detener_scroll(self) -> None:
         self.scroll = False
@@ -185,7 +185,7 @@ class Multi_list(Base):
         # return self.listas[0].get_selects()
         # return [x.get_selects() for x in self.listas]
         seleccionados = self.listas[0].get_selects()
-        return [dict([('index',y)]+[(self.text_header[i],x[y]) for i,x in enumerate(self.listas)]) for y in seleccionados]
+        return [dict([('index',j)]+[(self.text_header[i],x[j]) for i,x in enumerate(self.listas)]) for j,y in seleccionados]
 
 
     @property
@@ -197,6 +197,8 @@ class Multi_list(Base):
         for x in self.listas:
             x.smothscroll = self.smothscroll
         
+    def __len__(self) -> int:
+        return len(self.listas[0])
 
     def __getitem__(self,index: int):
         return self.listas[index]
