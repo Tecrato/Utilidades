@@ -6,10 +6,13 @@ from pygame import Rect
 class Base:
 	def __init__(self,pos,radio,angle,color) -> None:
 		self.__pos = Vector2(pos)
+		self.x = self.__pos.x
+		self.y = self.__pos.y
 		self.__angle = angle
 		self.__radio = radio
 		self.__color = color
 		self.max_radio = 0
+		self.figure: list[dict] = []
 
 	def draw(self,surface) -> Rect:
 		draw.polygon(surface,self.color,self.figure)
