@@ -12,7 +12,7 @@ class Simple_acceleration:
         self.pos += self.dir*self.vel*dt
         return self.pos
     def follow(self,pos,dt=1):
-        self.dir = Vector2(Angulo(self.pos,pos)).normalize()
+        self.dir = (Vector2(pos)-self.pos).normalize()
         self.pos += self.dir*self.vel*dt
         return self.pos
 
