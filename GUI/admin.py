@@ -27,7 +27,7 @@ class GUI_admin:
         self.active = len(self.__list)-1
     def draw(self,surface, mouse_pos, update=True) -> pag.Rect:
         if self.active >= 0:
-            return self.__list[self.active]['GUI'].draw(surface, mouse_pos, update)
+            return self.__list[self.active]['GUI'].draw(surface, mouse_pos)
     def click(self, pos):
         mx,my = pos
         result = self.__list[self.active]['GUI'].click((mx,my))
