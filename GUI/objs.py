@@ -45,9 +45,9 @@ class Text_return(Base_win):
         
         Text(texto,30,None,(250,50),'center', 'black').draw(self.surface)
         if large:
-            self.input = Input((50,150),(20,375), None, border_top_left_radius=20, border_bottom_left_radius=20, max_letter=400)
+            self.input = Input((50,150), 20, None, width=375, height=40, border_top_left_radius=20, border_bottom_left_radius=20, max_letter=400)
         else:
-            self.input = Input((size[0]-(150*2.25),150),(20,150), None, border_top_left_radius=20, border_bottom_left_radius=20, max_letter=40)
+            self.input = Input((size[0]-(150*2.25),150), 20, None, width=150, height=40, border_top_left_radius=20, border_bottom_left_radius=20, max_letter=40)
 
         self.input.draw(self.surface)
 

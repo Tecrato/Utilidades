@@ -1,5 +1,4 @@
 from math import comb, pi
-from .maths import Angulo
 
 from pygame.math import Vector2
 
@@ -71,5 +70,3 @@ class Second_Order_Dinamics:
         self.y = self.y + self.__T * (self.yd * dt)
         self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / self.k2_stable
         return self.y
-
-

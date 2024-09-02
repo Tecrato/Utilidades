@@ -114,7 +114,7 @@ class Text(Base):
         elif self.mode == 2:
             self.rect.centery = self.rect_text.centery + (self.rect_text.h * (len(self.raw_text)-1))/2
             for i, txt in enumerate(self.lista_text):
-                txt.pos = (self.pos[0],self.pos[1] + self.text_height*i)
+                txt.update((self.pos[0],self.pos[1] + self.text_height*i))
 
     def draw(self, surface) -> None:
         # if self.smothmove_bool:
