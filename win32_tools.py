@@ -10,9 +10,12 @@ def front(win_name,sw_code=1) -> None:
     win32gui.EnumWindows(windowEnumerationHandler, windows)
     for i in windows:
         if i[1] == win_name:
-            win32gui.ShowWindow(i[0],sw_code)# 5
-            win32gui.BringWindowToTop(i[0])
-            win32gui.SetForegroundWindow(i[0])
+            try:
+                win32gui.ShowWindow(i[0],sw_code)# 5
+                win32gui.BringWindowToTop(i[0])
+                win32gui.SetForegroundWindow(i[0])
+            except:
+                pass
             return True
     return False
 
@@ -34,12 +37,29 @@ def front2(hwnd,sw_code=1):
     except:
         pass
 
+def get_hwnd(win_name) -> int:
+    windows = []
+    win32gui.EnumWindows(windowEnumerationHandler, windows)
+    for i in windows:
+        if i[1] == win_name:
+            return i[0]
+        
+def get_actual_focus_win() -> int:
+    return win32gui.GetForegroundWindow()
 
 def check_win(name) -> bool:
     windows = []
     win32gui.EnumWindows(windowEnumerationHandler, windows)
     for i in windows:
         if i[1] == name:
+            return i[0]
+    return False
+
+def check_process(name) -> bool:
+    import psutil
+    for proc in psutil.process_iter(['name']):
+        print(proc.info['name'])
+        if proc.info['name'] == name:
             return True
     return False
 
