@@ -263,6 +263,7 @@ class List(Base):
         self.lista_palabras.clear()
         self.lista_objetos.clear()
         self.selected_nums.clear()
+        self.desplazamiento = 0
         self.set_height()
         self.rodar(0)
 
