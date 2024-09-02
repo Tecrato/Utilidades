@@ -7,7 +7,7 @@ class Image(Base):
     def __init__(self,image,pos,direccion: str = 'center', size = None,color_key=(254,1,1), dir=[1,0],vel=1):
         super().__init__(pos,direccion)
         self.path: str = image
-        self.__size = (int(size[0]),int(size[1]))
+        self.__size = (int(size[0]),int(size[1])) if size else None
         self.color_key = color_key
 
         self.raw_image = img.open(self.path)
@@ -22,8 +22,9 @@ class Image(Base):
 
     def generate_img(self):
         if str(self.__size)+str(self.color_key) in self.cache:
-            self.surf = self.cache[str(self.__size) + str(self.color_key)]
-            self.rect = self.surf.get_rect()
+            self.surf: pag.Surface = self.cache[str(self.__size) + str(self.color_key)]
+            self.rect = self.surf.get_rect().copy()
+            self.rect.center = self.pos
             self.direccion(self.rect)
             return
 
@@ -41,8 +42,10 @@ class Image(Base):
         self.surf.fill(self.color_key)
         self.surf.set_colorkey(self.color_key)
         self.surf.blit(self.image,(0,0))
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect().copy()
 
+
+        self.rect.center = self.pos
         self.direccion(self.rect)
 
         self.cache[str(self.__size) + str(self.color_key)] = self.surf
@@ -56,6 +59,7 @@ class Image(Base):
     def size(self,size):
         self.__size = (int(size[0]),int(size[1]))
         self.generate_img()
+
 
 
     def draw(self,surface: pag.Surface):
