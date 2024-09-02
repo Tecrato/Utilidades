@@ -13,7 +13,6 @@ class Base:
         self.__pos = Vector2(pos)
         self.smothmove_pos = Vector2(0)
         self.rect_border = pag.rect.Rect(0,0,0,0)
-        self.pos = pos
 
     def create_border(self, rect, border_width) -> None:
         self.rect_border = pag.rect.Rect(0,0,rect.size[0] + border_width,rect.size[1] + border_width)
@@ -57,13 +56,13 @@ class Base:
         self.direccion(self.rect)
 
       
-    def update(self,pos=None,dt=1):
-        if self.smothmove_bool is False:
-            return self.__pos
+    def update(self,pos=None,dt=1) -> bool:
+        if self.smothmove_bool is False or pos is None:
+            return False
         elif pos:
-            self.smothmove_pos = Vector2(pos)
+            self.pos = pos
         elif self.__pos == self.smothmove_pos:
-            return self.__pos
+            return False
 
         if self.smothmove_type == 'Second order dinamics':
             if abs(sum(self.movimiento.yd.xy)) < 0.01:
@@ -86,7 +85,7 @@ class Base:
                 self.__pos = Vector2(r)
         
         self.direccion(self.rect)
-        return self.__pos
+        return True
 
     @property
     def pos(self):

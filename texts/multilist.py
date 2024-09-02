@@ -163,9 +163,9 @@ class Multi_list(Base):
                 minilista = {'index':a['index'],'result':[l.select(a['index'], False,ctrl,button)['text'] for l in self.listas]}
                 return minilista
         for x in self.listas:
-            x.select(-2000)
+            x.select(False)
 
-    def select(self, index: int = -2000, diff: bool=True) -> str:
+    def select(self, index: int = False, diff: bool=True) -> str:
         return [l.select(index=int(index),diff=diff)['text'] for l in self.listas]
 
     def detener_scroll(self) -> None:
