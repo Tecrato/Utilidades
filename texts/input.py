@@ -213,8 +213,7 @@ class Input(Base):
         self.typing_line = True
         self.typing_line_time = time.time()
         suma = sum(self.letter_pos[:self.typing_pos])
-        suma_neg = sum(self.letter_pos[self.typing_pos:])
-        if suma > self.rect2.w*.9:
+        if suma+self.text.left > self.rect2.w*.9 :
             self.text.pos -= (self.letter_pos[self.typing_pos],0)
         if self.text.right < self.rect2.w:
             self.text.pos = (self.rect2.w-1,self.input_surface.get_height()/2)
