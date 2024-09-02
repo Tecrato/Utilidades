@@ -2,7 +2,7 @@ import pygame as pag
 from pygame.math import Vector2
 from ..obj_Base import Base
 from .text import Text
-from pprint import pprint
+from ..Animaciones import Second_Order_Dinamics
 
 
 
@@ -60,6 +60,8 @@ class List(Base):
         
         self.desplazamiento = 0
         self.total_content_height = 0
+        self.smothscroll_movent = Second_Order_Dinamics(60, 1.5, 1, 1.5,0)
+        self.desplazamiento_smoth = 0
         
         self.scroll = False
 
@@ -152,19 +154,22 @@ class List(Base):
             pag.draw.rect(self.lista_surface, 'white', self.barra,border_radius=5)
 
 
-    def update_texts(self,dt=1):
-        for te in self.lista_objetos:
-            te.update(dt=dt)
+    def mover_textos(self):
+        for num ,text in enumerate(self.lista_objetos):
+            text.update((self.padding_left,(self.letter_size*num) + self.padding_top + (self.desplazamiento_smoth if self.smothscroll else self.desplazamiento)))
 
     def update(self,dt=1):
-        self.update_texts(dt=dt)
+
+        if self.smothscroll:
+            self.desplazamiento_smoth = self.smothscroll_movent.update(self.desplazamiento,dt=dt).x
+            self.mover_textos()
         super().update(dt=dt)
         self.text_header.bottomleft = self.rect.topleft
         self.rect_border.bottom = self.rect.bottom
 
     def draw(self,surface: pag.Surface) -> None:
 
-        if self.smothscroll and self.lista_objetos and self.lista_objetos[-1].movimiento and abs(sum(self.lista_objetos[-1].movimiento.yd.xy)) > 0.1:
+        if self.smothscroll and self.lista_objetos and abs(sum(self.smothscroll_movent.yd.xy)) > 0.1:
             self.draw_surf()
 
         if self.header:
@@ -176,9 +181,13 @@ class List(Base):
         return self.rect
 
     def reset_height(self):
-        # self.total_content_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
-        self.total_content_height = (self.letter_size*len(self.lista_palabras)) + self.padding_top - self.rect.height + 10
-        self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/self.lista_objetos[-1].rect.bottom))
+        if self.lista_objetos:
+            # self.total_content_height = self.lista_objetos[-1].rect.bottom - self.lista_surface_rect.h
+            self.total_content_height = (self.letter_size*len(self.lista_palabras)) + self.padding_top - self.rect.height + 10
+            # self.total_content_height = (self.lista_objetos[-1].height*len(self.lista_palabras)) + self.padding_top - self.rect.height*2 + 10
+        else:
+            self.total_content_height = 0
+        self.bar_height = max(10,self.lista_surface_rect.h*(self.lista_surface_rect.h/(self.total_content_height + self.rect.height)))
         self.barra.h = self.bar_height
 
     def actualizar_lista(self) -> None:
@@ -186,9 +195,6 @@ class List(Base):
         for num ,text in enumerate(self.lista_palabras):
             self.lista_objetos.append(Text(text, self.text_size, self.font, (self.padding_left,(self.letter_size*num) + self.padding_top), 'topleft', self.text_color, padding=20))
 
-        if self.smothscroll:
-            for x in self.lista_objetos:
-                x.smothmove(60, 1.4, 1, 1.5)
         self.reset_height()
         self.rodar(0)
         self.draw_surf()
@@ -199,11 +205,9 @@ class List(Base):
             self.lista_objetos.clear()
         self.lista_palabras.append(str(texto))
         self.lista_objetos.append(Text(texto, self.text_size, self.font, (self.padding_left,(self.letter_size*(len(self.lista_palabras)-1)) + self.padding_top), 'topleft', self.text_color, padding=20))
-        if self.smothscroll:
-            self.lista_objetos[-1].smothmove(60, 1.5, 1, 1.5)
+
         self.reset_height()
         self.first_insert = False
-        self.mover_textos()
         self.rodar(0)
         self.draw_surf()
 
@@ -214,10 +218,6 @@ class List(Base):
         self.first_insert = False
         self.selected_nums.clear()
         self.actualizar_lista()
-
-    def mover_textos(self):
-        for num ,text in enumerate(self.lista_objetos):
-            text.pos = (self.padding_left,(self.letter_size*num) + self.padding_top + self.desplazamiento)
 
     def clear(self) -> None:
         self.selected_nums.clear()
@@ -277,10 +277,8 @@ class List(Base):
         self.mover_textos()
 
         if not self.smothscroll:
-            self.update_texts()
             self.draw_surf()
-            
-        # self.mover_textos()
+
 
     def rodar_mouse(self,rel):
         self.barra.centery += rel
@@ -320,11 +318,6 @@ class List(Base):
     @smothscroll.setter
     def smothscroll(self,smothscroll):
         self.__smothscroll = bool(smothscroll)
-        for x in self.lista_objetos:
-            if self.__smothscroll:
-                x.smothmove(60, 1.5, 1, 1.5)
-            else:
-                x.smothmove_bool = self.__smothscroll
                 
     @property
     def size(self):
