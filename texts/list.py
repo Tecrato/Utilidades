@@ -209,13 +209,16 @@ class List(Base):
         self.rodar(0)
 
     def select(self, index: int = False, diff = True, more = False,button=1) -> str:
+        if isinstance(index,int) and index > len(self.lista_palabras)-1 or index < 0:
+            index = False
+
         if index is False:
             self.selected_nums.clear()
             self.select_box.top = -200
             if not self.smothscroll or abs(sum(self.desplazamiento_movent.yd.xy)) < 0.1:
                 self.draw_surf()
             return False
-        if isinstance(index,int):
+        elif isinstance(index,int):
             if (not more and index not in self.selected_nums) or (button == 1 and not more):
                 self.selected_nums.clear()
             if index not in self.selected_nums:
@@ -239,7 +242,8 @@ class List(Base):
             return 'scrolling'
         touch = round((m.y-self.padding_top - self.desplazamiento_smoth)//(self.letter_size+self.separacion))
         self.select(touch if touch > -1 else False,False, ctrl, button)
-        return {'text': self.lista_palabras[touch], 'index': touch}
+
+        return {'text': self.lista_palabras[touch], 'index': touch} if touch > -1 and touch < len(self.lista_palabras) else False
 
     def append(self, text: str):
         self.lista_palabras.append(text)
@@ -293,7 +297,6 @@ class List(Base):
     @size.setter
     def size(self, size):
         self.resize(size)
-        # self.__size = size
 
     @property
     def width(self):
