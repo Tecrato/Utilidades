@@ -16,4 +16,4 @@ class Compress_img:
         source = tinify.from_file(img)
         source.to_file(destino)
 
-Compress_img().compress_file(img,'C:/Users/Edouard/Pictures/logo-nobg.png')
+# Compress_img().compress_file(img,'C:/Users/Edouard/Pictures/logo-nobg.png')
