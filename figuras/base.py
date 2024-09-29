@@ -1,11 +1,10 @@
 from typing import Self
-from pygame import draw
-from pygame import Vector2
-from pygame import Rect
+
+from array import array
 
 class Base:
-	def __init__(self,pos,radio,angle,color) -> None:
-		self.__pos = Vector2(pos)
+	def __init__(self,pos: list[int|float]|tuple[int|float],angle: float,radio: int,color: tuple[int,int,int]):
+		self.__pos = array('f',pos)
 		self.x = self.__pos.x
 		self.y = self.__pos.y
 		self.__angle = angle
@@ -14,18 +13,14 @@ class Base:
 		self.max_radio = 0
 		self.figure: list[dict] = []
 
-	def draw(self,surface) -> Rect:
-		draw.polygon(surface,self.color,self.figure)
-		return Rect(0,0,self.radio*2,self.radio*2).move(self.pos.x-self.radio,self.pos.y-self.radio)
-	
 	@property
-	def pos(self) -> Vector2:
+	def pos(self) -> array:
 		return self.__pos
 	@pos.setter
 	def pos(self,pos):
 		self.x = pos[0]
 		self.y = pos[1]
-		self.__pos = Vector2(pos)
+		self.__pos = array('f',pos)
 		self.generate()
 	@property
 	def angle(self) -> float:

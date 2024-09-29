@@ -1,8 +1,6 @@
 import math
 
 def Hipotenuza(vector1, vector2) -> int:
-    vector1 = vector1
-    vector2 = vector2
     return math.dist(vector1,vector2)
 
 def Angulo(vector1, vector2) -> float:

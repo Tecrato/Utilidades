@@ -1,5 +1,3 @@
-pygame
-pynput
 bs4
 requests
 pywin32

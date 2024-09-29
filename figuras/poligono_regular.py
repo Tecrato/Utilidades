@@ -1,9 +1,9 @@
 from .base import Base
 from math import cos, sin, radians
-from pygame import Vector2
+from array import array
 
 class Poligono_regular(Base):
-	def __init__(self, pos = Vector2(0,0), radio=20, lados=4, angle= 0,color='white') -> None:
+	def __init__(self, pos = array('f',[0,0]), lados = 4, type = 0, radio = 10, angle = 0, color = 'white') -> None:
 		super().__init__(pos,radio,angle,color)
 		self.__lados = lados
 		self.type = type

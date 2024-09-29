@@ -1,18 +1,42 @@
 from math import comb, pi
+from array import array
 
-from pygame.math import Vector2
+from typing import Callable
+
+def arrays_operation(arr1, arr2, operation: Callable):
+    arr1 = list(arr1) if type(arr1) in [list,tuple,array] else [arr1]
+    arr2 = list(arr2) if type(arr2) in [list,tuple,array] else [arr2]
+    arr1 = array('f',arr1) if len(arr1) >= len(arr2) else array('f',list(arr1) + [arr1[0]]*(len(arr2)-len(arr1)))
+    arr2 = array('f',arr2) if len(arr2) >= len(arr1) else array('f',list(arr2) + [arr2[0]]*(len(arr1)-len(arr2)))
+    # return [operation(x, y) for x, y in zip(arr1, arr2)]
+    return operation(arr1, arr2)
+    
+    
+
+def sumar_arrays(arr1, arr2):
+    return [x + y for x, y in zip(arr1, arr2)]
+def restar_arrays(arr1, arr2):
+    return [x - y for x, y in zip(arr1, arr2)]
+def multiplicar_arrays(arr1, arr2):
+    return [x * y for x, y in zip(arr1, arr2)]
+def divide_arrays(arr1, arr2):
+    return [x / y for x, y in zip(arr1, arr2)]
 
 class Simple_acceleration:
     def __init__(self,vel, dir,pos) -> None:
         self.vel: float = vel
-        self.dir: Vector2 = Vector2(dir)
-        self.pos = Vector2(pos)
-    def update(self,dt=1) -> Vector2:
-        self.pos += self.dir*self.vel*dt
+        self.dir: array = array('f',dir)
+        self.pos = array('f',pos)
+    def update(self,dt=1) -> array:
+        self.pos[0] += self.dir[0]*self.vel*dt
+        self.pos[1] += self.dir[1]*self.vel*dt
         return self.pos
-    def follow(self,pos,dt=1):
-        self.dir = (Vector2(pos)-self.pos).normalize()
-        self.pos += self.dir*self.vel*dt
+    def follow(self,pos,dt=1) -> array[float]:
+        el_max = max(self.pos[0]-pos[0],self.pos[1]-pos[1])
+        self.dir = (self.pos[0] - pos[0]) - (self.pos[1] - pos[1]) / el_max
+        self.pos[0] += self.dir[0]*self.vel*dt
+        self.pos[1] += self.dir[1]*self.vel*dt
+
         return self.pos
 
 
@@ -21,30 +45,31 @@ class Curva_de_Bezier:
         self.__T = 0
         self.timer = timer
         self.extra_time = extra_time
-        self.points = [Vector2(ag) for ag in points]
+        self.points = [array('f',ag) for ag in points]
         if len(self.points) < 2:
             raise 'Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)'
 
     def move(self, points) -> None:
-        self.points = [Vector2(ag) for ag in points]
+        self.points = [array('f',ag) for ag in points]
 
     def set(self,progress:float) -> None:
         ' - Define en que % de la animacion estara'
         self.__T = progress
 
-    def update(self,dt=1) -> Vector2:
+    def update(self,dt=1) -> array:
         self.__T += (1/self.timer) * dt
         if self.__T > self.extra_time:
             return True
-        result = Vector2(0,0)
+        result = array('f',[0,0])
         for i,p in enumerate(self.points):
             coeff = comb(len(self.points)-1,i) * self.__T**i * (1-self.__T)**(len(self.points)-1-i)
-            result += coeff * p
+            result[0] += coeff * p[0]
+            result[1] += coeff * p[1]
         return result
 
 
 class Second_Order_Dinamics:
-    def __init__(self, T, f, z, r, coord:list|tuple|Vector2) -> None:
+    def __init__(self, T, f, z, r, coord:list|tuple) -> None:
 
         self.k1 = z/ (pi*f)
         self.k2 = 1/ ((2*pi*f)**2)
@@ -54,19 +79,24 @@ class Second_Order_Dinamics:
 
         self.k2_stable = max(self.k2,self.__T*self.__T/2 + self.__T*self.k1/2, self.__T*self.k1)
 
-        self.xp = Vector2(coord)
-        self.y = Vector2(coord)
-        self.yd = Vector2(0,0)
+        self.xp = array('f',coord)
+        self.y = array('f',coord)
+        self.yd = array('f',[0,0])
 
-    def update(self, x, xd = None, dt=1) -> Vector2:
-        x = Vector2(x)
+    def update(self, x, xd = None, dt=1) -> array:
+        x = array('f',x)
 
         if xd is None:
-            xd = (x-self.xp) / self.__T
+            xd = arrays_operation(arrays_operation(x, self.xp, restar_arrays), self.__T, divide_arrays)
             self.xp = x
         else:
-            xd = Vector2(xd)
+            xd = array('f',xd)
 
-        self.y = self.y + self.__T * (self.yd * dt)
-        self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / self.k2_stable
+        self.y = sumar_arrays(self.y, multiplicar_arrays([self.__T,self.__T], self.yd))
+        a = arrays_operation(self.k3, xd, multiplicar_arrays)
+        b = arrays_operation(x, a, sumar_arrays)
+        c = arrays_operation(b,self.y, restar_arrays)
+        d = arrays_operation(self.k1, self.yd, multiplicar_arrays)
+        e = arrays_operation(c, d, restar_arrays)
+        self.yd = sumar_arrays(self.yd, arrays_operation(arrays_operation(self.__T, e,multiplicar_arrays),self.__T, divide_arrays))
         return self.y

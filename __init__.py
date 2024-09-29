@@ -1,25 +1,13 @@
-from .Animaciones import Curva_de_Bezier, Second_Order_Dinamics
-from .Barras_progreso import Barra_de_progreso
 from .maths import Angulo, Hipotenuza, format_size_bits_to_bytes, UNIDADES_BYTES
 from .mytime import Deltatime, tener_el_tiempo, format_date
-from .particles import Particles
-from .sparks import Spark
 from .optimize import memosize
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import check_update, get_mediafire_url, Download
-from .bloque import Bloque
+from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dinamics
 # from .tinify_API import Compress_img
 # from .image import Image
 
 from . import win32_tools
-from . import GUI
-from . import mini_GUI
-
-from .texts import Text
-from .texts import Button
-from .texts import Input
-from .texts import List
-from .texts import Multi_list
 
 
 from .figuras.poligono_regular import Poligono_regular
