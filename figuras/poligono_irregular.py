@@ -16,8 +16,8 @@ class Poligono_irregular(Base):
 	- coordenadas en una lista mediante la variable type
 	- nombre del archivo con un formato valido.
 	'''
-	def __init__(self, type: list[dict[Literal["angle"],Literal["radio"]]]|Literal['flecha','x','rectangulo','estrella']|Path|str, pos = (0,0), radio=20, angle=0,color='white') -> None:
-		super().__init__(pos,radio,angle,color)
+	def __init__(self, type: list[dict[Literal["angle"],Literal["radio"]]]|Literal['flecha','x','rectangulo','estrella']|Path|str, pos = (0,0), radio=20, angle=0) -> None:
+		super().__init__(pos,radio,angle)
 		self.type = type
 		if self.type in ['flecha','x','rectangulo','estrella']:
 			self.import_file(f'{self.type}.txt')
@@ -41,4 +41,11 @@ class Poligono_irregular(Base):
 
 	def __str__(self):
 		return f'Poligono irregular tipo={self.type} en={self.pos} angulo={self.angle}'
+	
+	def __len__(self):
+		return len(self.figure)
+	def __getitem__(self, index):
+		return self.figure[index]
+	def __setitem__(self, index, value: list[int,int]):
+		self.figure[index] = value
 	

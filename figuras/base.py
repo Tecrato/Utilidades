@@ -3,13 +3,12 @@ from typing import Self
 from array import array
 
 class Base:
-	def __init__(self,pos: list[int|float]|tuple[int|float],angle: float,radio: int,color: tuple[int,int,int]):
-		self.__pos = array('f',pos)
-		self.x = self.__pos.x
-		self.y = self.__pos.y
+	def __init__(self,pos: list[int|float]|tuple[int|float],radio: int,angle: float):
 		self.__angle = angle
+		self.__pos = array('f',pos)
+		self.x = self.__pos[0]
+		self.y = self.__pos[1]
 		self.__radio = radio
-		self.__color = color
 		self.max_radio = 0
 		self.figure: list[dict] = []
 
@@ -36,12 +35,6 @@ class Base:
 	def radio(self,radio):
 		self.__radio = int(radio)
 		self.generate()
-	@property
-	def color(self):
-		return self.__color
-	@color.setter
-	def color(self,color):
-		self.__color = color
 
 	def copy(self) -> Self:
 		return self

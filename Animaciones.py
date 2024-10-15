@@ -1,26 +1,6 @@
 from math import comb, pi
 from array import array
-
-from typing import Callable
-
-def arrays_operation(arr1, arr2, operation: Callable):
-    arr1 = list(arr1) if type(arr1) in [list,tuple,array] else [arr1]
-    arr2 = list(arr2) if type(arr2) in [list,tuple,array] else [arr2]
-    arr1 = array('f',arr1) if len(arr1) >= len(arr2) else array('f',list(arr1) + [arr1[0]]*(len(arr2)-len(arr1)))
-    arr2 = array('f',arr2) if len(arr2) >= len(arr1) else array('f',list(arr2) + [arr2[0]]*(len(arr1)-len(arr2)))
-    # return [operation(x, y) for x, y in zip(arr1, arr2)]
-    return operation(arr1, arr2)
-    
-    
-
-def sumar_arrays(arr1, arr2):
-    return [x + y for x, y in zip(arr1, arr2)]
-def restar_arrays(arr1, arr2):
-    return [x - y for x, y in zip(arr1, arr2)]
-def multiplicar_arrays(arr1, arr2):
-    return [x * y for x, y in zip(arr1, arr2)]
-def divide_arrays(arr1, arr2):
-    return [x / y for x, y in zip(arr1, arr2)]
+from .maths import arrays_operation
 
 class Simple_acceleration:
     def __init__(self,vel, dir,pos) -> None:
@@ -87,16 +67,16 @@ class Second_Order_Dinamics:
         x = array('f',x)
 
         if xd is None:
-            xd = arrays_operation(arrays_operation(x, self.xp, restar_arrays), self.__T, divide_arrays)
+            xd = arrays_operation(arrays_operation(x, self.xp, 'restar'), (self.__T,self.__T), 'dividir')
             self.xp = x
         else:
             xd = array('f',xd)
 
-        self.y = sumar_arrays(self.y, multiplicar_arrays([self.__T,self.__T], self.yd))
-        a = arrays_operation(self.k3, xd, multiplicar_arrays)
-        b = arrays_operation(x, a, sumar_arrays)
-        c = arrays_operation(b,self.y, restar_arrays)
-        d = arrays_operation(self.k1, self.yd, multiplicar_arrays)
-        e = arrays_operation(c, d, restar_arrays)
-        self.yd = sumar_arrays(self.yd, arrays_operation(arrays_operation(self.__T, e,multiplicar_arrays),self.__T, divide_arrays))
+        self.y = arrays_operation(self.y, arrays_operation([self.__T,self.__T], self.yd,'multiplicar'),'sumar')
+        a = arrays_operation((self.k3,self.k3), xd, 'multiplicar')
+        b = arrays_operation(x, a, 'sumar')
+        c = arrays_operation(b,self.y, 'restar')
+        d = arrays_operation((self.k1,self.k1), self.yd, 'multiplicar')
+        e = arrays_operation(c, d, 'restar')
+        self.yd = arrays_operation(self.yd, arrays_operation(arrays_operation((self.__T,self.__T), e,'multiplicar'),(self.__T,self.__T), 'dividir'),'sumar')
         return self.y
