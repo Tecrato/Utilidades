@@ -26,7 +26,16 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
         return False
 
 def get_mediafire_url(url):
-    return BeautifulSoup(requests.get(url, allow_redirects=True,timeout=20).content, 'html.parser').find(id='downloadButton').get('href',False)
+    a = requests.get(url, allow_redirects=True,timeout=20,headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'}).content
+    print(a)
+    soup = BeautifulSoup(a, 'html.parser')
+    print(soup)
+    try:
+        link = soup.find(id='downloadButton').get('href',False)
+        print(link)
+        return link
+    except:
+        return False
 
 
 
@@ -181,7 +190,7 @@ class DownloadThread(Thread):
                     file.write(chunk)
                     self.progress += len(chunk)
                     self.downloader.progress += len(chunk)
-        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError) as err:
+        except Exception as err:
             print(f"Error de lectura en el hilo {self.index}: {err}")
             # self.intentos += 1
             # if self.intentos < 5:
