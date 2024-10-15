@@ -1,7 +1,6 @@
 import time
 from dataclasses import dataclass,field
 
-
 @dataclass
 class Deltatime:
 	dt:int = field(default=0,init=False,compare=False)
