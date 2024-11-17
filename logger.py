@@ -1,4 +1,4 @@
-import datetime
+import datetime, os
 from typing import Union, Self
 from pathlib import Path
 
@@ -7,20 +7,25 @@ StrOrPath = Union[str, Path]
 class Logger:
     """
     Logger
-        - name: Nombre del logger
-        - path: Ruta donde se guardará el log
+        - name: Nombre del programa
+        - path: Ruta de la carpeta donde se guardarán los logs
     """
     def __init__(self, name: str, path: StrOrPath) -> None:
         self.name = name
         self.path = Path(path)
+        fecha = datetime.datetime.now()
         if not self.path.exists():
             self.path.mkdir(parents=True, exist_ok=True)
-        self.path.joinpath(f'{name} {datetime.datetime.now().strftime("%d-%m-%y")}.log').touch(exist_ok=True)
-        self.logger = open(path / f'{name} {datetime.datetime.now().strftime("%d-%m-%y")}.log', 'r+')
-        self.logger.write(f'Logger: {name} iniciado\n')
+        self.path.joinpath(f'{name} {fecha.strftime("%d-%m-%y")}.log').touch(exist_ok=True)
+        self.logger = open(path / f'{name} {fecha.strftime("%d-%m-%y")}.log', 'r+')
+        self.logger.read()
+        # self.logger.write(f'Logger: {name} iniciado {fecha.strftime("%d-%m-%y %H:%M:%S")} \n')
 
     def write(self, text) -> None:
         self.logger.write(str(text)+'\n')
+    
+    def open(self):
+        os.startfile(self.path)
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.logger.close()
