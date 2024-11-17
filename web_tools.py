@@ -1,4 +1,4 @@
-import requests, os, time
+import requests, time
 from bs4 import BeautifulSoup
 from urllib.parse import quote, urlparse, unquote
 from threading import Thread

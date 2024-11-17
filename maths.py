@@ -95,3 +95,19 @@ def media_entre_coordenadas(coordenadas: list[tuple]):
             suma[i] += x[i]
     media = [x/len(coordenadas) for x in suma]
     return media
+
+
+# Integración numérica por el método del trapecio
+def integral_de_una_funcion(a, b, func, steps=1000):
+    step_size = (b - a) / steps
+    total_area = 0
+
+    for i in range(steps):
+        x1 = a + i * step_size
+        x2 = x1 + step_size
+        y1 = func(x1)
+        y2 = func(x2)
+        # Área bajo la curva
+        total_area += (y1 + y2) * step_size / 2
+
+    return total_area
