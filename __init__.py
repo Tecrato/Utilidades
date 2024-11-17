@@ -12,8 +12,9 @@ from .maths import (
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .optimize import memosize
 from .multithread import Funcs_pool, Semaforo
-from .web_tools import check_update, get_mediafire_url, Download
+# from .web_tools import check_update, get_mediafire_url, Download
 from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dinamics
+from .logger import Logger
 # from .tinify_API import Compress_img
 # from .image import Image
 

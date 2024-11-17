@@ -22,13 +22,10 @@ def front(win_name,sw_code=1) -> None:
     return False
 
 def front2(hwnd,sw_code=1):
-    # win32con.SW_SHOW
-    # win32con.SW_SHOWMINIMIZED
-    # win32con.SW_SHOWNORMAL
-    # win32con.SW_MINIMIZE
-    # win32con.SW_MAXIMIZE
-    # win32con.SW_SHOWMAXIMIZED
-    # win32con.SW_MAX
+    # win32con.SW_NORMAL -> 1
+    # win32con.SW_MINIMIZE -> 6
+    # win32con.SW_MAXIMIZE -> 3
+    # win32con.SW_MAX -> 11
     # shell = win32com.client.Dispatch("WScript.Shell")
     # shell.SendKeys('%')
     try:
@@ -65,8 +62,7 @@ def check_process(name) -> bool:
             return True
     return False
 
-def moveWin(win,coordinates):
-    hwnd = win
+def moveWin(hwnd,coordinates):
     win32gui.MoveWindow(hwnd, -coordinates[0], -coordinates[1], 0,0, False)
 def resizeWin(win,coordinates,size):
     hwnd = win
@@ -75,6 +71,9 @@ def resizeWin(win,coordinates,size):
 def topmost(win):
     win32gui.SetWindowPos(win, win32con.HWND_TOPMOST, 0, 0, 0, 0,
                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+def get_screen_size():
+    return win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
 
 def get_is_dark_mode_enabled():
     registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize")
