@@ -1,6 +1,6 @@
 from math import comb, pi
 from array import array
-from .maths import arrays_operation
+from .maths import arrays_operation, Vector2
 
 class Simple_acceleration:
     def __init__(self,vel, dir,pos) -> None:
@@ -49,7 +49,7 @@ class Curva_de_Bezier:
 
 
 class Second_Order_Dinamics:
-    def __init__(self, T, f, z, r, coord:list|tuple) -> None:
+    def __init__(self, T, f, z, r, coord:list|tuple|Vector2) -> None:
 
         self.k1 = z/ (pi*f)
         self.k2 = 1/ ((2*pi*f)**2)
@@ -59,24 +59,19 @@ class Second_Order_Dinamics:
 
         self.k2_stable = max(self.k2,self.__T*self.__T/2 + self.__T*self.k1/2, self.__T*self.k1)
 
-        self.xp = array('f',coord)
-        self.y = array('f',coord)
-        self.yd = array('f',[0,0])
+        self.xp = Vector2(coord)
+        self.y = Vector2(coord)
+        self.yd = Vector2(0,0)
 
-    def update(self, x, xd = None, dt=1) -> array:
-        x = array('f',x)
+    def update(self, x, xd = None, dt=1) -> Vector2:
+        x = Vector2(x)
 
         if xd is None:
-            xd = arrays_operation(arrays_operation(x, self.xp, 'restar'), (self.__T,self.__T), 'dividir')
+            xd = (x-self.xp) / self.__T
             self.xp = x
         else:
-            xd = array('f',xd)
+            xd = Vector2(xd)
 
-        self.y = arrays_operation(self.y, arrays_operation([self.__T,self.__T], self.yd,'multiplicar'),'sumar')
-        a = arrays_operation((self.k3,self.k3), xd, 'multiplicar')
-        b = arrays_operation(x, a, 'sumar')
-        c = arrays_operation(b,self.y, 'restar')
-        d = arrays_operation((self.k1,self.k1), self.yd, 'multiplicar')
-        e = arrays_operation(c, d, 'restar')
-        self.yd = arrays_operation(self.yd, arrays_operation(arrays_operation((self.__T,self.__T), e,'multiplicar'),(self.__T,self.__T), 'dividir'),'sumar')
+        self.y = self.y + self.__T * (self.yd * dt)
+        self.yd = self.yd + self.__T * (x + self.k3*xd - self.y - self.k1*self.yd) / self.k2_stable
         return self.y

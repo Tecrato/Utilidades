@@ -111,3 +111,37 @@ def integral_de_una_funcion(a, b, func, steps=1000):
         total_area += (y1 + y2) * step_size / 2
 
     return total_area
+
+    
+class Vector2:
+    __slots__ = ('x', 'y')
+    def __init__(self, x=0, y=0):
+        self.x = x if not isinstance(x, (list, tuple)) else x[0]
+        self.y = y if not isinstance(x, (list, tuple)) else x[1]
+
+    def __add__(self, other):
+        return Vector2(self.x + other.x, self.y + other.y)
+
+    def __rsub__(self, other):
+        return Vector2(other.x - self.x,other.y - self.y)
+
+    def __mul__(self, scalar):
+        return Vector2(self.x * scalar, self.y * scalar)
+
+    def __rmul__(self, scalar):
+        return Vector2(self.x * scalar, self.y * scalar)
+
+    def __truediv__(self, scalar):
+        return Vector2(self.x / scalar, self.y / scalar)
+
+    def __rtruediv__(self, other):
+        return Vector2(other.x / self.x,other.y / self.y)
+
+    def __repr__(self):
+        return f"Vector2({self.x}, {self.y})"
+
+    def __iter__(self):
+        return iter((self.x, self.y))
+
+    def __getitem__(self, item):
+        return self.x if item == 0 else self.y
