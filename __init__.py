@@ -1,7 +1,8 @@
 from .maths import (
     Angulo, 
     Hipotenuza, 
-    format_size_bits_to_bytes, 
+    format_size_bits_to_bytes,
+    format_size_bits_to_bytes_str,
     UNIDADES_BYTES, 
     arrays_operation,
     line_intersect, 

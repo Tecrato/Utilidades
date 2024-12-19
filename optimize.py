@@ -5,7 +5,7 @@ def memosize(funcion):
     cache = {}
     @wraps(funcion)
     def wrapper(*args,**kwargs):
-        key = str(args) + str(kwargs)
+        key = funcion.__name__ + str(args) + str(kwargs)
         l = len(cache)
         if l >= CACHE_LIMIT:
             cache.clear()

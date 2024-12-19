@@ -19,6 +19,12 @@ def format_size_bits_to_bytes(size) -> list:
         size /= 1024
         count += 1
     return [count, size]
+def format_size_bits_to_bytes_str(size) -> str:
+    count = 0
+    while size > 1024:
+        size /= 1024
+        count += 1
+    return f"{size:.2f}{UNIDADES_BYTES[count]}"
 
 
 UNIDADES_BYTES = {
@@ -45,7 +51,10 @@ def line_intersect_con_pendiente(a,c,b,d):
         return [0,0]
     return [(d-c)/(a-b),(a*d-b*c)/(a-b)]
 
-def line_intersect(p1,p2,p3,p4):
+# @memosize
+def line_intersect(p1,p2,p3,p4) -> tuple:
+    if ((p3[1] == p4[1] or p1[0] == p2[0]) and (p1[1] == p2[1] or p3[0] == p4[0])):
+        return False
     a1 = p1[1] - p2[1]
     b1 = p1[0] - p2[0]
     c1 = a1*p1[0] - b1*p1[1]
@@ -56,12 +65,12 @@ def line_intersect(p1,p2,p3,p4):
     y = (a2*c1 - a1*c2) / (a1*b2 - a2*b1)
     return (x,y)
 
-
+# @memosize
 def line_to_polygon_intersection(line, polygon, center, max_radio):
     intersections = []
     for i in range(len(polygon)):
         r=line_intersect(*line, polygon[i-1],polygon[i])
-        if Hipotenuza(center,r) < max_radio:
+        if r and Hipotenuza(center,r) < max_radio:
             intersections.append(r)
     return sorted(intersections, key=lambda x: Hipotenuza(line[0],x))
 

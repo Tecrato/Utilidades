@@ -9,7 +9,7 @@ class Engranaje(Base):
 		self.size_diente = size_diente
 		self.dientes = []
 
-	def generate(self):
+	def generate(self) -> None:
 		self.dientes = [Poligono_regular((self.pos[0] + cos(radians(360/self.n_dientes*a +self.angle+45)) * self.radio,self.pos[1] - sin(radians(360/self.n_dientes*a +self.angle+45)) * self.radio),4, self.size_diente,360/self.n_dientes*a +self.angle) for a in range(self.n_dientes)]
 		
 	# def draw(self,surface) -> Rect:
