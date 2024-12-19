@@ -46,7 +46,7 @@ class Funcs_pool:
         self.running_ids[f'{alias}'].pop(id)
 
 class Semaforo:
-    def __init__(self,count,limit=1) -> None:
+    def __init__(self,count=1,limit=1) -> None:
         self.count = count
         self.limit = limit
         self.lock = Lock()
@@ -54,11 +54,12 @@ class Semaforo:
 
     def acquire(self):
         with self.lock:
-            while self.count < self.limit:
+            while self.count > self.limit:
                 self.condition_v.wait()
-            self.count -= 1
+            self.count += 1
 
     def release(self):
         with self.lock:
-            self.count += 1
+            self.count -= 1
             self.condition_v.notify()
+    
