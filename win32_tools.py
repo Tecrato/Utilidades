@@ -54,13 +54,6 @@ def check_win(name) -> bool:
             return i[0]
     return False
 
-def check_process(name) -> bool:
-    import psutil
-    for proc in psutil.process_iter(['name']):
-        print(proc.info['name'])
-        if proc.info['name'] == name:
-            return True
-    return False
 
 def moveWin(hwnd,coordinates):
     win32gui.MoveWindow(hwnd, -coordinates[0], -coordinates[1], 0,0, False)
