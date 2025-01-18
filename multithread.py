@@ -1,3 +1,5 @@
+from typing import Any, Callable
+import time
 from threading import Thread, Lock, Condition
 
 class Funcs_pool:
@@ -63,3 +65,33 @@ class Semaforo:
             self.count -= 1
             self.condition_v.notify()
     
+class Interval_funcs:
+    def __init__(self):
+        self.task_dict: dict[str,dict[str, Any]] = {}
+        self.tasks_threads = {}
+
+    def add(self, alias: str, func: Callable, time: float = 1, start = False):
+        self.task_dict[alias] = {'func': func, 'time': time}
+        if start:
+            self.start_task(alias)
+    
+    def start_task(self, alias):
+        alias = '{}'.format(alias)
+        if self.tasks_threads.get(alias, False):
+            return False
+        self.tasks_threads[alias] = Thread(target=self.__start_func, args=(alias,), daemon=True)
+        self.tasks_threads[alias].start()
+
+    def __start_func(self,alias):
+        time.sleep(self.task_dict[alias]['time'])
+        while True:
+            self.task_dict[alias]['func']()
+            time.sleep(self.task_dict[alias]['time'])
+    
+    def change_time(self, alias: str, new_time: float):
+        self.task_dict[alias]['time'] = new_time
+    
+    def join(self, alias: str):
+        self.tasks_threads['alias'].join(0.1)
+        del self.tasks_threads['alias']
+        

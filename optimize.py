@@ -1,6 +1,6 @@
 from functools import wraps
 
-CACHE_LIMIT = 3000
+CACHE_LIMIT = 4000
 def memosize(funcion):
     cache = {}
     @wraps(funcion)

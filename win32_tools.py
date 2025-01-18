@@ -36,6 +36,12 @@ def front2(hwnd,sw_code=1):
     except:
         pass
 
+def set_window_colorkey_transparent(hwnd, colorkey = (0,0,0)):
+    # Create layered window
+    win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
+                        win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+    win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(*colorkey), 0, win32con.LWA_COLORKEY)
+
 def get_hwnd(win_name) -> int:
     windows = []
     win32gui.EnumWindows(windowEnumerationHandler, windows)
@@ -56,14 +62,22 @@ def check_win(name) -> bool:
 
 
 def moveWin(hwnd,coordinates):
-    win32gui.MoveWindow(hwnd, -coordinates[0], -coordinates[1], 0,0, False)
-def resizeWin(win,coordinates,size):
-    hwnd = win
-    win32gui.MoveWindow(hwnd, -coordinates[0], -coordinates[1], size[0],size[1], False)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, *coordinates, 0, 0,
+                          win32con.SWP_NOSIZE)
+def resizeWin(hwnd,size):
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, *size,
+                          win32con.SWP_NOMOVE)
 
 def topmost(win):
     win32gui.SetWindowPos(win, win32con.HWND_TOPMOST, 0, 0, 0, 0,
                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+def hide_window(hwnd):
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, 0, 0,
+                          win32con.SWP_NOSIZE|win32con.SWP_NOSIZE|win32con.SWP_HIDEWINDOW)
+def show_window(hwnd):
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, 0, 0,
+                          win32con.SWP_NOSIZE|win32con.SWP_NOSIZE|win32con.SWP_SHOWWINDOW)
 
 def get_screen_size():
     return win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
@@ -73,6 +87,9 @@ def get_is_dark_mode_enabled():
     value, _ = winreg.QueryValueEx(registry_key, "AppsUseLightTheme")
     winreg.CloseKey(registry_key)
     return value == 0
+
+def get_cursor_pos():
+    return win32gui.GetCursorPos()
 
 def Clip_Cursor(left,top,right,bottom):
     win32gui.ClipCursor((left,top,right,bottom))
