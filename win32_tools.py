@@ -3,6 +3,7 @@ import winreg
 import win32con
 import win32ui
 import win32api
+from ctypes import windll
 
 def windowEnumerationHandler(hwnd, windows):
     windows.append((hwnd, win32gui.GetWindowText(hwnd)))
@@ -21,6 +22,11 @@ def front(win_name,sw_code=1) -> None:
             return True
     return False
 
+def ShowCursor(visible=True):
+    win32api.ShowCursor(visible)
+def GetDoubleClickTime():
+    return win32gui.GetDoubleClickTime()
+
 def front2(hwnd,sw_code=1):
     # win32con.SW_NORMAL -> 1
     # win32con.SW_MINIMIZE -> 6
@@ -35,6 +41,40 @@ def front2(hwnd,sw_code=1):
         
     except:
         pass
+
+def take_window_snapshot(hwnd):
+    left, top, right, bot = win32gui.GetWindowRect(hwnd)
+    w = right - left
+    h = bot - top
+
+    front2(hwnd)
+
+    hwndDC = win32gui.GetWindowDC(hwnd)
+    mfcDC  = win32ui.CreateDCFromHandle(hwndDC)
+    saveDC = mfcDC.CreateCompatibleDC()
+
+    saveBitMap = win32ui.CreateBitmap()
+    saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
+
+    saveDC.SelectObject(saveBitMap)
+
+    # Change the line below depending on whether you want the whole window
+    # or just the client area. 
+    # result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
+    # result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
+    # result = saveDC.BitBlt((0, 0), (w, h), mfcDC, (left, top), win32con.SRCCOPY)
+    result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 3)
+    # print result
+
+    bmpinfo = saveBitMap.GetInfo()
+    bmpstr = saveBitMap.GetBitmapBits(True)
+
+    win32gui.DeleteObject(saveBitMap.GetHandle())
+    saveDC.DeleteDC()
+    mfcDC.DeleteDC()
+    win32gui.ReleaseDC(hwnd, hwndDC)
+
+    return {'size':(w,h), 'buffer':bmpstr, 'bmpinfo':bmpinfo}
 
 def set_window_colorkey_transparent(hwnd, colorkey = (0,0,0)):
     # Create layered window
