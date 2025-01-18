@@ -1,5 +1,4 @@
 import requests, time
-from bs4 import BeautifulSoup
 from urllib.parse import quote, urlparse, unquote
 from threading import Thread
 from pathlib import Path
@@ -24,20 +23,6 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
             return False
     else:
         return False
-
-def get_mediafire_url(url):
-    a = requests.get(url, allow_redirects=True,timeout=20,headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'}).content
-    print(a)
-    soup = BeautifulSoup(a, 'html.parser')
-    print(soup)
-    try:
-        link = soup.find(id='downloadButton').get('href',False)
-        print(link)
-        return link
-    except:
-        return False
-
-
 
 class Download:
     """
