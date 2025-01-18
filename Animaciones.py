@@ -1,6 +1,6 @@
 from math import comb, pi
 from array import array
-from .maths import arrays_operation, Vector2
+from .maths import Vector2
 
 class Simple_acceleration:
     def __init__(self,vel, dir,pos) -> None:

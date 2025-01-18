@@ -4,7 +4,6 @@ from .maths import (
     format_size_bits_to_bytes,
     format_size_bits_to_bytes_str,
     UNIDADES_BYTES, 
-    arrays_operation,
     line_intersect, 
     line_intersect_con_pendiente, 
     line_to_polygon_intersection, 
