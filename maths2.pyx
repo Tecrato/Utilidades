@@ -1,18 +1,16 @@
 # distutils: language = c++
 # cython: language_level=3, boundscheck=False, wraparound=False, embedsignature=True
-import math
-from libcpp.math cimport sqrt, atan2, M_PI
+from libcpp.math cimport sqrt, atan2, M_PI, pow
 
 from .optimize import memosize
 
-def Hipotenuza(vector1, vector2) -> int:
-    return math.dist(vector1,vector2)
+cpdef Hipotenuza(vector1, vector2) -> int:
+    return sqrt(pow((vector1[0]-vector2[0]),2) + pow((vector1[1]-vector2[1]),2))
 
 cdef Angulo(int vector1[2], int vector2[2]):
     result = atan2(vector2[1] - vector1[1], vector2[0] - vector1[0]) * (180.0 / M_PI)
     return result if result > 0 else 180 + (180+result)
 
-@memosize
 def format_size_bits_to_bytes_str(size) -> str:
     count = 0
     while size > 1024:

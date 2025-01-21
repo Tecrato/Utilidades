@@ -17,7 +17,7 @@ class Funcs_pool:
 
     def join(self,alias, timeout=0) -> None:
         self.running[f'{alias}'][f'{self.running_ids[f'{alias}'][0]}'].join(timeout)
-        self.running_ids[f'{alias}'].pop(0)
+        # self.running_ids[f'{alias}'].pop(0)
 
     def stop_all(self):
         for x in self.running.keys():

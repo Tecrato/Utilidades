@@ -6,7 +6,6 @@ class Poligono_regular(Base):
 	def __init__(self, pos = array('f',[0,0]), lados = 4, radio = 10, angle = 0) -> None:
 		super().__init__(pos,radio,angle)
 		self.__lados = lados
-		self.__angle = angle
 		assert self.lados > 3
 		self.generate()
 

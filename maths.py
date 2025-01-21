@@ -1,6 +1,17 @@
 import math
-from array import array
 
+
+UNIDADES_BYTES = {
+    0: 'B',
+    1: 'KB',
+    2: 'MB',
+    3: 'GB',
+    4: 'TB',
+    5: 'PB',
+    6: 'EB',
+    7: 'ZB',
+    8: 'YB'
+}
 
 def Hipotenuza(vector1, vector2) -> int:
     return math.dist(vector1,vector2)
@@ -23,19 +34,24 @@ def format_size_bits_to_bytes_str(size) -> str:
         size /= 1024
         count += 1
     return f"{size:.2f}{UNIDADES_BYTES[count]}"
+def convertir_notacion_cientifica(n) -> str:
+    s  = str(n)
+    return s[0] + '.' + s[1:4] + 'x10^' + str(len(s[1:]))
 
+diccionario = {}
 
-UNIDADES_BYTES = {
-    0: 'B',
-    1: 'KB',
-    2: 'MB',
-    3: 'GB',
-    4: 'TB',
-    5: 'PB',
-    6: 'EB',
-    7: 'ZB',
-    8: 'YB'
-}
+def fibonacci(n):
+    '''
+    a los 200_000 ya empieza a consumir 2Gb de RAM, asi que lo limite mejor, no quiero lloros.
+    '''
+    if len(diccionario) > 200_000:
+        diccionario.clear()
+    if n in diccionario:
+        return diccionario[n]
+    if n < 2:
+        return n
+    diccionario[n] = fibonacci(n - 1) + fibonacci(n - 2)
+    return diccionario[n]
 
 def pendiente_entre_2_puntos(p1,p2):
     if p1[0] == p2[0]:
@@ -50,14 +66,14 @@ def line_intersect_con_pendiente(a,c,b,d):
     return [(d-c)/(a-b),(a*d-b*c)/(a-b)]
 
 def line_intersect(p1,p2,p3,p4) -> tuple:
-    if ((p3[1] == p4[1] or p1[0] == p2[0]) and (p1[1] == p2[1] or p3[0] == p4[0])):
-        return False
     a1 = p1[1] - p2[1]
     b1 = p1[0] - p2[0]
     c1 = a1*p1[0] - b1*p1[1]
     a2 = p3[1] - p4[1]
     b2 = p3[0] - p4[0]
     c2 = a2*p3[0] - b2*p3[1]
+    if a1*b2 - a2*b1 == 0:
+        return False
     x = (b2*c1 - b1*c2) / (a1*b2 - a2*b1)
     y = (a2*c1 - a1*c2) / (a1*b2 - a2*b1)
     return (x,y)
