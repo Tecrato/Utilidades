@@ -27,9 +27,5 @@ from .figuras.engranajes import Engranaje
 
 
 print(
-    "\n"
-    "Bienvenido a las utilidades para pygame, Hecho por Edouard Sandoval\n"
-    "\n"
-    "Para Empezar puedes copiar el codigo del archivo inicio aplicacion dentro de la libreria\n"
-    "te facilitara el codigo necesario para iniciar la aplicacion por primera vez"
+    "Bienvenido a las Utilidades Variadas, Hecho por Edouard Sandoval\n"
 )

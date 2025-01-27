@@ -8,6 +8,7 @@ def memosize(funcion):
         key = funcion.__name__ + str(args) + str(kwargs)
         if len(cache) > CACHE_LIMIT:
             cache.clear()
+            print("Limpieza de cache")
         if key not in cache:
             cache[key] = funcion(*args, **kwargs)
         return cache[key]
