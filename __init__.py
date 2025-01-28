@@ -18,7 +18,7 @@ from .logger import Logger
 # from .tinify_API import Compress_img
 # from .image import Image
 
-# from . import win32_tools
+from . import win32_tools
 
 
 from .figuras.poligono_regular import Poligono_regular
