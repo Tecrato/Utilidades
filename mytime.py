@@ -5,7 +5,7 @@ from dataclasses import dataclass,field
 class Deltatime:
 	dt:int = field(default=0,init=False,compare=False)
 	FPS:int = 60
-	smothfix:int = 5
+	smothfix:int = 2
 
 	def __post_init__(self) -> None:
 		self.last_time = time.time()

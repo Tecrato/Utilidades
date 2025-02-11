@@ -1,28 +1,26 @@
 from .maths import (
     Angulo, 
     Hipotenuza, 
-    format_size_bits_to_bytes,
     format_size_bits_to_bytes_str,
-    UNIDADES_BYTES, 
-    line_intersect, 
-    line_intersect_con_pendiente, 
+    lineal_interception, 
+    lineal_interception_func, 
     line_to_polygon_intersection, 
-    pendiente_entre_2_puntos
+    recta_entre_puntos,
+    Vector2
 )
 from .mytime import Deltatime, tener_el_tiempo, format_date
-from .optimize import memosize
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import check_update, Download
-from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dinamics
+from .Animaciones import DynamicMovement, Curva_de_Bezier, Second_Order_Dinamics
 from .logger import Logger
 # from .tinify_API import Compress_img
 # from .image import Image
 
-from . import win32_tools
+# from . import win32_tools
 
 
-from .figuras.poligono_regular import Poligono_regular
-from .figuras.poligono_irregular import Poligono_irregular
+from .figuras.poligono_regular import PoligonoRegular
+from .figuras.poligono_irregular import PoligonoIrregular
 from .figuras.engranajes import Engranaje
 
 

@@ -29,7 +29,12 @@ class Funcs_pool:
         self.running[f'{alias}'][f'{self.running_ids[f'{alias}'][0]}'].join(0.01)
         self.running_ids[f'{alias}'].pop(0)
 
-    def start(self,alias) -> None:
+    def start(self,alias: str) -> None:
+        '''
+        Inicia una secuencia de funciones guardadas segun el alias.
+        '''
+        if not alias in self.threads:
+            raise Exception('Thread con funciones no encontrado')
         self.__go(alias)
 
     def __go(self, alias, id=0) -> None:

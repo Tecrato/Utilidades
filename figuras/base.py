@@ -1,44 +1,156 @@
-from typing import Self
+from typing import List, Tuple, Dict, Union
+from math import hypot
+import itertools
 
-from array import array
+class BasePolygon:
+    """Clase base optimizada para polígonos con aceleración espacial."""
+    def __init__(self, 
+                 pos: Tuple[float, float], 
+                 radio: float, 
+                 angle: float, 
+                 cell_size: float = 50.0):
+        self._pos = pos
+        self._radio = radio
+        self._angle = angle
+        self.cell_size = cell_size
+        self._figure: List[Tuple[float, float]] = []
+        self._edges: List[Tuple[Tuple[float, float], Tuple[float, float]]] = []
+        self._spatial_grid: Dict[Tuple[int, int], List[int]] = {}
+        self.rect: Tuple[float, float, float, float] = (0, 0, 0, 0)
 
-class Base:
-	def __init__(self,pos: list[int|float]|tuple[int|float],radio: int,angle: float):
-		self.__angle = angle
-		self.__pos = array('f',pos)
-		self.x = self.__pos[0]
-		self.y = self.__pos[1]
-		self.__radio = radio
-		self.max_radio = 0
-		self.figure: list[dict] = []
+    # ==================== PROPIEDADES OPTIMIZADAS ====================
+    @property
+    def pos(self) -> Tuple[float, float]:
+        return self._pos
+    @pos.setter
+    def pos(self, value: Tuple[float, float]):
+        if self._pos != value:
+            self._pos = value
+            self._generate()
+            self._update_bounding_box()
 
-	@property
-	def pos(self) -> array:
-		return self.__pos
-	@pos.setter
-	def pos(self,pos):
-		self.x = pos[0]
-		self.y = pos[1]
-		self.__pos = array('f',pos)
-		self.generate()
-	@property
-	def angle(self) -> float:
-		return float(self.__angle)
-	@angle.setter
-	def angle(self,angle):
-		self.__angle = float(angle)
-		self.generate()
-	@property
-	def radio(self) -> int:
-		return self.__radio
-	@radio.setter
-	def radio(self,radio):
-		self.__radio = int(radio)
-		self.generate()
+    @property
+    def radio(self) -> float:
+        return self._radio
+    @radio.setter
+    def radio(self, value: float):
+        if self._radio != value:
+            self._radio = value
+            self._generate()
+            self._update_bounding_box()
 
-	def copy(self) -> Self:
-		return self
-	@property
-	def edges(self) -> list:
-		return self.figure
+    @property
+    def angle(self) -> float:
+        return self._angle
+    @angle.setter
+    def angle(self, value: float):
+        if self._angle != value:
+            self._angle = float(value)
+            self._generate()
+    @property
+    def height(self) -> float:
+        return self.rect[3]-self.rect[1]
 
+    # ==================== MÉTODOS DE CACHÉ Y ACELERACIÓN ====================
+
+    def _build_spatial_grid(self):
+        """Construye una malla espacial para acelerar consultas de colisión"""
+        self._spatial_grid.clear()
+        for idx, ((x1, y1), (x2, y2)) in enumerate(self._edges):
+            min_x, min_y = min(x1, x2), min(y1, y2)
+            max_x, max_y = max(x1, x2), max(y1, y2)
+            
+            # Calcular celdas cubiertas por el borde
+            start_cell = (int(min_x//self.cell_size), int(min_y//self.cell_size))
+            end_cell = (int(max_x//self.cell_size), int(max_y//self.cell_size))
+            
+            for cx in range(start_cell[0], end_cell[0] + 1):
+                for cy in range(start_cell[1], end_cell[1] + 1):
+                    cell = (cx, cy)
+                    if cell not in self._spatial_grid:
+                        self._spatial_grid[cell] = []
+                    self._spatial_grid[cell].append(idx)
+
+    def _update_bounding_box(self):
+        """Actualiza el AABB (Axis-Aligned Bounding Box) del polígono"""
+        if not self._figure:
+            self.rect = (0, 0, 0, 0)
+            return
+            
+        min_x = min(p[0] for p in self._figure)
+        max_x = max(p[0] for p in self._figure)
+        min_y = min(p[1] for p in self._figure)
+        max_y = max(p[1] for p in self._figure)
+        self.rect = (min_x, min_y, max_x, max_y)
+
+    # ==================== MÉTODOS DE INTERFAZ PÚBLICA ====================
+    def get_edges_near(self, bbox: Tuple[float, float, float, float]) -> List[Tuple[Tuple[float, float], Tuple[float, float]]]:
+        """Obtiene bordes cercanos usando la malla espacial (versión corregida)"""
+        # Eliminar la verificación de versión obsoleta
+        return [self._edges[i] for i in self._get_edge_indices_near(bbox)]
+
+    def _get_edge_indices_near(self, bbox: Tuple[float, float, float, float]) -> set:
+        """Obtiene índices de bordes en celdas cercanas"""
+        min_x, min_y, max_x, max_y = bbox
+        cells = set()
+        
+        for x in range(int(min_x//self.cell_size), int(max_x//self.cell_size) + 1):
+            for y in range(int(min_y//self.cell_size), int(max_y//self.cell_size) + 1):
+                cells.add((x, y))
+        
+        return set(itertools.chain.from_iterable(
+            self._spatial_grid.get(cell, []) for cell in cells
+        ))
+
+    def intersects_line(self, line_start: Tuple[float, float], line_end: Tuple[float, float]) -> List[Tuple[float, float]]:
+        """Versión ultra optimizada de intersección línea-polígono"""
+        intersections = []
+        
+        # Consulta espacial
+        line_bbox = (
+            min(line_start[0], line_end[0]),
+            min(line_start[1], line_end[1]),
+            max(line_start[0], line_end[0]),
+            max(line_start[1], line_end[1])
+        )
+        
+        for edge in self.get_edges_near(line_bbox):
+            # Detección temprana con AABB
+            edge_bbox = (
+                min(edge[0][0], edge[1][0]),
+                min(edge[0][1], edge[1][1]),
+                max(edge[0][0], edge[1][0]),
+                max(edge[0][1], edge[1][1])
+            )
+            
+            if not (line_bbox[2] < edge_bbox[0] or line_bbox[0] > edge_bbox[2] or
+                    line_bbox[3] < edge_bbox[1] or line_bbox[1] > edge_bbox[3]):
+                # Cálculo preciso de intersección
+                intersect = self._line_intersection(line_start, line_end, edge[0], edge[1])
+                if intersect:
+                    intersections.append(intersect)
+        
+        # Ordenar por distancia al inicio de la línea
+        intersections.sort(key=lambda p: hypot(p[0]-line_start[0], p[1]-line_start[1]))
+        return intersections
+
+    # ==================== MÉTODOS AUXILIARES ====================
+    @staticmethod
+    def _line_intersection(a1: Tuple[float, float], a2: Tuple[float, float], 
+                         b1: Tuple[float, float], b2: Tuple[float, float]) -> Union[Tuple[float, float], None]:
+        """Algoritmo de intersección línea-línea con tolerancia numérica"""
+        denom = (b2[1] - b1[1]) * (a2[0] - a1[0]) - (b2[0] - b1[0]) * (a2[1] - a1[1])
+        if abs(denom) < 1e-10:
+            return None
+        
+        u = ((b2[0] - b1[0]) * (a1[1] - b1[1]) - (b2[1] - b1[1]) * (a1[0] - b1[0])) / denom
+        t = ((a2[0] - a1[0]) * (a1[1] - b1[1]) - (a2[1] - a1[1]) * (a1[0] - b1[0])) / denom
+        
+        if 0 <= u <= 1 and 0 <= t <= 1:
+            return (a1[0] + u * (a2[0] - a1[0]), a1[1] + u * (a2[1] - a1[1]))
+        return None
+        
+    
+    @property
+    def figura(self) -> int:
+        return self._figure

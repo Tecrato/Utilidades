@@ -16,8 +16,9 @@ class Logger:
         fecha = datetime.datetime.now()
         if not self.path.exists():
             self.path.mkdir(parents=True, exist_ok=True)
-        self.path.joinpath(f'{name} {fecha.strftime("%d-%m-%y")}.log').touch(exist_ok=True)
-        self.logger = open(path / f'{name} {fecha.strftime("%d-%m-%y")}.log', 'r+')
+        self.alias = f'{name} {fecha.strftime("%d-%m-%y")}.log'
+        self.path.joinpath(self.alias).touch(exist_ok=True)
+        self.logger = open(path / self.alias, 'r+')
         self.logger.read()
         # self.logger.write(f'Logger: {name} iniciado {fecha.strftime("%d-%m-%y %H:%M:%S")} \n')
 
@@ -45,5 +46,5 @@ class Logger:
     def __repr__(self) -> str:
         return f'Logger: {self.name}'
 
-    def __call__(self, name):
-        self.logger.write(f'{name} iniciado\n')
+    def __call__(self, text):
+        self.logger.write('{}'.format(text))
