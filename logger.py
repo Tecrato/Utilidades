@@ -18,7 +18,7 @@ class Logger:
             self.path.mkdir(parents=True, exist_ok=True)
         self.alias = f'{name} {fecha.strftime("%d-%m-%y")}.log'
         self.path.joinpath(self.alias).touch(exist_ok=True)
-        self.logger = open(path / self.alias, 'r+')
+        self.logger = open(self.path / self.alias, 'r+')
         self.logger.read()
         # self.logger.write(f'Logger: {name} iniciado {fecha.strftime("%d-%m-%y %H:%M:%S")} \n')
 
@@ -47,4 +47,4 @@ class Logger:
         return f'Logger: {self.name}'
 
     def __call__(self, text):
-        self.logger.write('{}'.format(text))
+        self.logger.write('{}\n'.format(text))
