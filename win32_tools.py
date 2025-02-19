@@ -4,6 +4,7 @@ import win32con
 import win32ui
 import win32api
 from ctypes import windll
+from typing import Callable, Optional, List, Tuple
 
 def windowEnumerationHandler(hwnd, windows):
     windows.append((hwnd, win32gui.GetWindowText(hwnd)))
@@ -102,22 +103,17 @@ def check_win(name) -> bool:
 
 
 def moveWin(hwnd,coordinates):
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, *coordinates, 0, 0,
-                          win32con.SWP_NOSIZE)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, *coordinates, 0, 0,win32con.SWP_NOSIZE)
 def resizeWin(hwnd,size):
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, *size,
-                          win32con.SWP_NOMOVE)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, *size,win32con.SWP_NOMOVE)
 
 def topmost(win):
-    win32gui.SetWindowPos(win, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+    win32gui.SetWindowPos(win, win32con.HWND_TOPMOST, 0, 0, 0, 0,win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
 def hide_window(hwnd):
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, 0, 0,
-                          win32con.SWP_NOSIZE|win32con.SWP_NOSIZE|win32con.SWP_HIDEWINDOW)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, 0, 0, win32con.SWP_NOSIZE|win32con.SWP_NOMOVE|win32con.SWP_HIDEWINDOW)
 def show_window(hwnd):
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, 0, 0,
-                          win32con.SWP_NOSIZE|win32con.SWP_NOSIZE|win32con.SWP_SHOWWINDOW)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, 0, 0, win32con.SWP_NOSIZE|win32con.SWP_NOMOVE|win32con.SWP_SHOWWINDOW)
 
 def get_screen_size():
     return win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
