@@ -25,7 +25,7 @@ class Logger:
     def write(self, text) -> None:
         self.logger.write(str(text)+'\n')
     
-    def open(self):
+    def open_folder(self):
         os.startfile(self.path)
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:

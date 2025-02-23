@@ -4,7 +4,6 @@ import win32con
 import win32ui
 import win32api
 import time
-import ctypes
 from ctypes import windll
 from typing import Callable, Optional, List, Tuple
 
@@ -61,13 +60,7 @@ def take_window_snapshot(hwnd):
 
     saveDC.SelectObject(saveBitMap)
 
-    # Change the line below depending on whether you want the whole window
-    # or just the client area. 
-    # result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
-    # result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
-    # result = saveDC.BitBlt((0, 0), (w, h), mfcDC, (left, top), win32con.SRCCOPY)
     result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 3)
-    # print result
 
     bmpinfo = saveBitMap.GetInfo()
     bmpstr = saveBitMap.GetBitmapBits(True)
