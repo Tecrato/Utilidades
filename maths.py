@@ -501,6 +501,60 @@ def calcular_integral(
     else:
         return metodo_calculo(funcion, a, b)
 
+class LinearRegressionSimple:
+    def __init__(self, x, y):
+        # Validación de las listas de entrada
+        if len(x) != len(y):
+            raise ValueError("Las listas de 'x' e 'y' deben tener la misma longitud.")
+        if len(x) == 0:
+            raise ValueError("Las listas no pueden estar vacías.")
+        
+        self.x = x
+        self.y = y
+        self.a, self.b = self.calcular_pendiente()  # Calcular pendiente e intersección
+        self.error = self.calcular_error()  # Calcular error cuadrático medio
+
+    def calcular_pendiente(self):
+        x_sum = sum(self.x)
+        y_sum = sum(self.y)
+        xy_sum = sum(xi * yi for xi, yi in zip(self.x, self.y))
+        xx_sum = sum(xi ** 2 for xi in self.x)
+        n = len(self.x)
+        
+        # Cálculo de la pendiente (a) y la intersección (b)
+        a = (n * xy_sum - x_sum * y_sum) / (n * xx_sum - x_sum ** 2)
+        b = (y_sum - a * x_sum) / n
+        
+        return a, b
+
+    def calcular_error(self):
+        error = 0
+        n = len(self.x)
+        
+        # Cálculo del error cuadrático medio (MSE)
+        for i in range(n):
+            y_pred = self.a * self.x[i] + self.b
+            error += (self.y[i] - y_pred) ** 2
+        
+        return error / n
+
+    def predict(self, x):
+        # Predicción de valores de y basado en un valor de x dado
+        return (self.a * x) + self.b
+    
+def calcular_pendiente(datos_x, datos_y):
+    x,y,xy,xx,a,b = 0,0,0,0,0,0
+    for l_x,l_y in zip(datos_x,datos_y):
+        for x,y in zip(l_x,l_y):
+            x += x
+            y += y
+            xy += x * y
+            xx += x ** 2
+    
+    a = ((len(datos_x) * xy) - (x * y)) / ((len(datos_x) * xx) - (x ** 2))
+    b = ((y - b * x) / len(datos_x))
+    return a,b
+
 class Vector2:
     """Clase vectorial minimalista para operaciones 2D"""
     __slots__ = ('x', 'y')

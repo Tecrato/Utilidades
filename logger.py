@@ -1,6 +1,7 @@
-import datetime, os
+import datetime, os, sys
 from typing import Union, Self
 from pathlib import Path
+import colorama
 
 StrOrPath = Union[str, Path]
 
@@ -20,7 +21,6 @@ class Logger:
         self.path.joinpath(self.alias).touch(exist_ok=True)
         self.logger = open(self.path / self.alias, 'r+')
         self.logger.read()
-        # self.logger.write(f'Logger: {name} iniciado {fecha.strftime("%d-%m-%y %H:%M:%S")} \n')
 
     def write(self, text) -> None:
         self.logger.write(str(text)+'\n')
@@ -48,3 +48,17 @@ class Logger:
 
     def __call__(self, text):
         self.logger.write('{}\n'.format(text))
+
+
+def debug_print(text, priority: int = 0):
+    """
+    priority:
+        0: Debug
+        1: Info
+        2: Warning
+        3: Error
+        4: Critical
+    """
+    priority_txt = ['Debug', 'Info', 'Warning', 'Error', 'Critical'][priority]
+    color_priority = [colorama.Fore.BLUE, colorama.Fore.GREEN, colorama.Fore.YELLOW, colorama.Fore.RED, colorama.Fore.MAGENTA]
+    print(f'{color_priority[priority]}[{priority_txt}] Line {sys._getframe(1).f_lineno} -> {text}{colorama.Style.RESET_ALL}')

@@ -6,13 +6,14 @@ from .maths import (
     lineal_interception_func, 
     line_to_polygon_intersection, 
     recta_entre_puntos,
-    Vector2
+    Vector2,
+    LinearRegressionSimple
 )
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import check_update, Download
 from .Animaciones import DynamicMovement, Curva_de_Bezier, Second_Order_Dinamics
-from .logger import Logger
+from .logger import Logger, debug_print
 # from .tinify_API import Compress_img
 # from .image import Image
 
