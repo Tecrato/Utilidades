@@ -1,3 +1,5 @@
-bs4
 requests
-pywin32
+pywin32; platform_system == 'Windows'
+colorama
+pystray; platform_system == 'Linux'
+Pillow; platform_system == 'Linux'

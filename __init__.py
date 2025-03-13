@@ -14,10 +14,13 @@ from .multithread import Funcs_pool, Semaforo
 from .web_tools import check_update, Download
 from .Animaciones import DynamicMovement, Curva_de_Bezier, Second_Order_Dinamics
 from .logger import Logger, debug_print
-# from .tinify_API import Compress_img
-# from .image import Image
 
-# from . import win32_tools
+import sys
+
+if sys.platform == 'win32':
+    from . import win32_tools
+else:
+    from . import linux_tools as win32_tools
 
 
 from .figuras.poligono_regular import PoligonoRegular
