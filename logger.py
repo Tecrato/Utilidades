@@ -1,5 +1,5 @@
 import datetime, os, sys
-from typing import Union, Self
+from typing import Union, Self, Any
 from pathlib import Path
 import colorama
 
@@ -50,7 +50,7 @@ class Logger:
         self.logger.write('{}\n'.format(text))
 
 
-def debug_print(text, priority: int = 0):
+def debug_print(text: Any, priority: int = 0):
     """
     priority:
         0: Debug
@@ -61,4 +61,6 @@ def debug_print(text, priority: int = 0):
     """
     priority_txt = ['Debug', 'Info', 'Warning', 'Error', 'Critical'][priority]
     color_priority = [colorama.Fore.BLUE, colorama.Fore.GREEN, colorama.Fore.YELLOW, colorama.Fore.RED, colorama.Fore.MAGENTA]
-    print(f'{color_priority[priority]}[{priority_txt}] Line {sys._getframe(1).f_lineno} -> {text}{colorama.Style.RESET_ALL}')
+    # va a mostrar tambien el nombre del archivo entre parentesis
+    file = sys._getframe(1).f_code.co_filename.split('\\')[-1]
+    print(f'{color_priority[priority]}[{priority_txt}] ({file}) Line {sys._getframe(1).f_lineno} -> <{type(text).__name__}>{text}{colorama.Style.RESET_ALL}')
