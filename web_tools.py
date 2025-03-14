@@ -1,13 +1,67 @@
-import requests, time
+import time
+import urllib.request
+import http.client
+import urllib.parse
+import json
+from typing import Dict
+from http import cookiejar
 from urllib.parse import quote, urlparse, unquote
-from threading import Thread
+from threading import Thread, Lock
 from pathlib import Path
+from .logger import debug_print
 
+DEFAULT_HEADERS: dict = {
+    'User-Agent': 'Mozilla/5.0'
+}
+
+def get_json(url, timeout=10, params=None) -> dict:
+    """
+    Retorna un diccionario de un url response
+    
+    Argumentos:
+        url (str): El url el que se obtendra el json
+        timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
+    
+    Returns:
+        dict: El json response
+    """
+    if params:
+        url += '?' + '&'.join([f"{k}={v}" for k, v in params.items()])
+    r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+    return json.loads(urllib.request.urlopen(r, timeout=timeout).read().decode('utf-8'))
+
+def head(url, timeout=10) -> http.client.HTTPMessage:
+    """
+    Retorna un HTTPMessage de un url response
+    
+    Argumentos:
+        url (str): El url el que se obtendra el headers
+        timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
+    
+    Returns:
+        http.client.HTTPMessage: El headers response
+    """
+    r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+    return urllib.request.urlopen(r, timeout=timeout).info()
+
+def send_post(url, data: dict, timeout=10) -> dict:
+    r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={**DEFAULT_HEADERS, 'Content-Type': 'application/json'}, method='POST')
+    return urllib.request.urlopen(r, timeout=timeout)
 
 def check_update(program_name:str,version_actual:str,version_deseada='last'):
-    response = requests.get(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30)
+    """
+    Retorna un diccionario con la version mas reciente y url del programa
+    
+    Argumentos:
+        program_name (str): El nombre del programa
+        version_actual (str): La version actual del programa
+        version_deseada (str, optional): La version a verificar. Defaults to 'last'.
+    
+    Returns:
+        dict: La version mas reciente y url del programa
+    """
+    resultado = get_json(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30)
 
-    resultado = response.json()
     if resultado['status'] == 'error':
         return False
     version_actual = version_actual.split('.')
@@ -23,6 +77,97 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
             return False
     else:
         return False
+
+class Http_Session:
+    def __init__(self):
+        self.session = cookiejar.CookieJar()
+        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.session),urllib.request.HTTPHandler())
+        self.__headers = {'User-Agent': 'Mozilla/5.0'}
+    
+    def head(self, url, timeout=10, headers: dict = None, **kwargs) -> dict:
+        r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
+        with self.opener.open(r, timeout=timeout) as response:
+            return response.info()
+
+    def get(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> dict:
+        if params:
+            url += '?' + urllib.parse.urlencode(params, doseq=True)
+        try:
+            r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
+            with self.opener.open(r, timeout=timeout) as response:
+                el_read = response.read()
+                return json.loads(el_read.decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            print(f"Error HTTP {e.code}: {e.reason}")
+            return {}
+    
+    def post(self, url, data: dict, timeout=10, headers: dict = None, **kwargs) -> dict:
+        r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers if headers else self.__headers, method='POST', **kwargs)
+        with self.opener.open(r, timeout=timeout) as response:
+            el_read = response.read()
+            return {'headers': response.info(), 'data': json.loads(el_read.decode('utf-8'))}
+
+    def download_file(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> http.client.HTTPResponse:
+        """
+        response = clase.download_file(url, timeout, headers, params, **kwargs)
+        while True:
+            chunk = response.read(1024)
+            if not chunk:
+                break
+            logic
+
+        """
+        if params:
+            url += '?' + urllib.parse.urlencode(params, doseq=True)
+        r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
+        return self.opener.open(r, timeout=timeout)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    @property
+    def cookies(self) -> Dict[str, str]:
+        return {cookie.name: cookie.value for cookie in self.session}
+
+    @cookies.setter
+    def cookies(self, cookies: Dict[str, str]) -> None:
+        # Set cookies from dict (simplificado)
+        for name, value in cookies.items():
+            cookie = cookiejar.Cookie(
+                version=0,
+                name=name,
+                value=value,
+                port=None,
+                port_specified=False,
+                domain='',
+                domain_specified=False,
+                domain_initial_dot=False,
+                path='/',
+                path_specified=True,
+                secure=False,
+                expires=None,
+                discard=False,
+                comment=None,
+                comment_url=None,
+                rest={}
+            )
+            self.session.set_cookie(cookie)
+
+
+    @property
+    def headers(self) -> dict:
+        return self.__headers
+
+    @headers.setter
+    def headers(self, headers: dict) -> None:
+        self.__headers.update(headers)
+
+    def close(self):
+        """Liberar recursos de conexión"""
+        self.opener.close()
 
 class Download:
     """
@@ -61,42 +206,42 @@ class Download:
 
         self.list_threads_download = []
         self.thread = None
+        self.write_lock = Lock()
 
         self.progress_func = progress_func
-        self.session = requests.Session()
+        self.session = Http_Session()
 
     def prepare(self):
         self.can_download = False
 
         parse = urlparse(self.url)
-        if (parse.netloc == "www.mediafire.com" or parse.netloc == ".mediafire.com") and 'file' in parse.path:
-            for x in parse.path[1:].split('/'):
-                if '.' in x:
-                    self.file = x
-                    break
-            self.url = get_mediafire_url(self.url)
-            
-        response = self.session.head(self.url, allow_redirects=True, stream=True, timeout=30,headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'})
-        self.headers = response.headers
         
-        if self.file == None:
+        response = self.session.head(self.url, timeout=30)
+        self.headers = response
+        debug_print(response)
+        
+        if self.headers.get('Content-Disposition'):
+            self.file = self.headers.get('Content-Disposition').split('filename=')[1].strip('"')
+        elif not self.file :
             self.file: str = parse.path
             self.file: str = self.file.split('/')[-1]
             self.file: str = self.file.replace('+', ' ')
-            self.file: str = unquote(self.file) if '%' in self.file else self.file
+            self.file: str = unquote(self.file)
+        else:
+            self.file = "downloaded_file"
+            if self.headers.get('Content-Type'):
+                self.file += "." + self.headers.get('Content-Type').split('/')[1]
 
-        if 'bytes' not in response.headers.get('Accept-Ranges', ''):
+        if 'bytes' not in response.get('Accept-Ranges', ''):
             self.threads = 1
             self.resume = False
     
-        self.type = response.headers.get('Content-Type', 'unknown/Nose').split(';')[0]
+        self.type = response.get('Content-Type', 'unknown/Nose').split(';')[0]
         if self.type in ['text/plain', 'text/html']:
-            print(response.headers)
             raise Exception('No paginas')
         
-        self.size = int(response.headers.get('content-length', 1))
+        self.size = int(response.get('content-length', 1))
         if self.size < self.chunk_size * self.threads:
-            print(response.text)
             raise Exception('Peso muy pequeño')
         self.can_download = True
         return True
@@ -143,6 +288,8 @@ class Download:
         self.__progress = value
         if self.progress_func is not None:
             self.progress_func(self.__progress/self.size)
+        if self.__progress == self.size:
+            self.is_finished = True
 
         
         
@@ -162,27 +309,28 @@ class DownloadThread(Thread):
         print(f"empezo{self.index}")
         headers = {'Range': f'bytes={self.inicio+self.progress}-{self.end}','User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'}
         try:
-            response = self.downloader.session.get(self.downloader.url, headers=headers, stream=True, timeout=30)
+            response = self.downloader.session.download_file(self.downloader.url, headers=headers, timeout=30)
             with open(self.downloader.path/self.downloader.file, "+rb") as file:
                 seek =self.inicio+self.progress if self.downloader.resume else 0
+                self.downloader.write_lock.acquire()
                 file.seek(seek)
+                self.downloader.write_lock.release()
                 self.sleep = 0
-                for chunk in response.iter_content(chunk_size=self.downloader.chunk_size):
-                    if not chunk: # filter out keep-alive new chunks
-                        continue
-                    if self.downloader.is_canceled:
+                
+                while True:
+                    chunk = response.read(self.downloader.chunk_size)
+                    if not chunk or self.downloader.is_canceled: # filter out keep-alive new chunks
                         break
+                    self.downloader.write_lock.acquire()
                     file.write(chunk)
                     self.progress += len(chunk)
+                    self.downloader.write_lock.release()
                     self.downloader.progress += len(chunk)
+            response.close()
         except Exception as err:
-            print(f"Error de lectura en el hilo {self.index}: {err}")
-            # self.intentos += 1
-            # if self.intentos < 5:
+            debug_print(f"Error de lectura en el hilo {self.index}: {err}")
             self.sleep += 1
             if self.sleep > 3:
                 self.sleep = 3
             time.sleep(self.sleep)
             self.download()
-            # else:
-            #     print(f"Se han agotado los intentos para el hilo {self.index}.")
