@@ -14,6 +14,13 @@ DEFAULT_HEADERS: dict = {
     'User-Agent': 'Mozilla/5.0'
 }
 
+def get(url, timeout=10, params=None) -> str:
+    if params:
+        url += '?' + urllib.parse.urlencode(params, doseq=True)
+    r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+    response  = urllib.request.urlopen(r, timeout=timeout)
+    return {'headers': response.info(), 'data': response.read().decode('utf-8')}
+
 def get_json(url, timeout=10, params=None) -> dict:
     """
     Retorna un diccionario de un url response
@@ -47,6 +54,13 @@ def head(url, timeout=10) -> http.client.HTTPMessage:
 def send_post(url, data: dict, timeout=10) -> dict:
     r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={**DEFAULT_HEADERS, 'Content-Type': 'application/json'}, method='POST')
     return urllib.request.urlopen(r, timeout=timeout)
+
+def download_file(url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> http.client.HTTPResponse:
+    if params:
+        url += '?' + urllib.parse.urlencode(params, doseq=True)
+    r = urllib.request.Request(url, headers=headers if headers else DEFAULT_HEADERS, **kwargs)
+    return urllib.request.urlopen(r, timeout=timeout).read()
+
 
 def check_update(program_name:str,version_actual:str,version_deseada='last'):
     """
