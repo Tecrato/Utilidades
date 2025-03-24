@@ -8,58 +8,56 @@ from http import cookiejar
 from urllib.parse import quote, urlparse, unquote
 from threading import Thread, Lock
 from pathlib import Path
-from .logger import debug_print
+from ..logger import debug_print
+from .responses import Response
 
 DEFAULT_HEADERS: dict = {
-    'User-Agent': 'Mozilla/5.0'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
 }
 
-def get(url, timeout=10, params=None) -> str:
+def get(url, timeout=10, params=None) -> Response:
+    """
+    Retorna un Response de un url response
+    
+    Argumentos:
+        url (str): El url el que se obtendra el response
+        timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
+        params (dict, optional): Los parametros para la peticion. Defaults to None.
+    
+    Returns:
+        Response: El response
+    """
     if params:
         url += '?' + urllib.parse.urlencode(params, doseq=True)
     r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
-    response  = urllib.request.urlopen(r, timeout=timeout)
-    return {'headers': response.info(), 'data': response.read().decode('utf-8')}
+    return Response(urllib.request.urlopen(r, timeout=timeout))
 
-def get_json(url, timeout=10, params=None) -> dict:
-    """
-    Retorna un diccionario de un url response
-    
-    Argumentos:
-        url (str): El url el que se obtendra el json
-        timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
-    
-    Returns:
-        dict: El json response
-    """
-    if params:
-        url += '?' + '&'.join([f"{k}={v}" for k, v in params.items()])
-    r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
-    return json.loads(urllib.request.urlopen(r, timeout=timeout).read().decode('utf-8'))
-
-def head(url, timeout=10) -> http.client.HTTPMessage:
-    """
-    Retorna un HTTPMessage de un url response
-    
-    Argumentos:
-        url (str): El url el que se obtendra el headers
-        timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
-    
-    Returns:
-        http.client.HTTPMessage: El headers response
-    """
-    r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
-    return urllib.request.urlopen(r, timeout=timeout).info()
 
 def send_post(url, data: dict, timeout=10) -> dict:
     r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={**DEFAULT_HEADERS, 'Content-Type': 'application/json'}, method='POST')
-    return urllib.request.urlopen(r, timeout=timeout)
+    return Response(urllib.request.urlopen(r, timeout=timeout))
 
-def download_file(url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> http.client.HTTPResponse:
+def download_file(url, timeout=10, headers: dict = None, params: dict = None, stream: bool = False, **kwargs) -> Response|http.client.HTTPResponse:
+    """
+    Retorna un Response de un url response
+    
+    Argumentos:
+        url (str): El url el que se obtendra el response
+        timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
+        headers (dict, optional): Los headers para la peticion. Defaults to None.
+        params (dict, optional): Los parametros para la peticion. Defaults to None.
+        stream (bool, optional): Si es True, retorna un HTTPResponse. Defaults to False.
+        **kwargs: Argumentos adicionales para la peticion.
+    
+    Returns:
+        Response|http.client.HTTPResponse: El response
+    """
     if params:
         url += '?' + urllib.parse.urlencode(params, doseq=True)
     r = urllib.request.Request(url, headers=headers if headers else DEFAULT_HEADERS, **kwargs)
-    return urllib.request.urlopen(r, timeout=timeout).read()
+    if stream:
+        return urllib.request.urlopen(r, timeout=timeout)
+    return Response(urllib.request.urlopen(r, timeout=timeout)).data
 
 
 def check_update(program_name:str,version_actual:str,version_deseada='last'):
@@ -74,7 +72,7 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
     Returns:
         dict: La version mas reciente y url del programa
     """
-    resultado = get_json(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30)
+    resultado = get(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30).json
 
     if resultado['status'] == 'error':
         return False
@@ -103,17 +101,17 @@ class Http_Session:
         with self.opener.open(r, timeout=timeout) as response:
             return response.info()
 
-    def get(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> dict:
+    def get(self, url, timeout=10, stream: bool = False, headers: dict = None, params: dict = None, **kwargs) -> Response | http.client.HTTPResponse | None:
         if params:
             url += '?' + urllib.parse.urlencode(params, doseq=True)
         try:
             r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
-            with self.opener.open(r, timeout=timeout) as response:
-                el_read = response.read()
-                return json.loads(el_read.decode('utf-8'))
+            if stream:
+                return self.opener.open(r, timeout=timeout)
+            return Response(self.opener.open(r, timeout=timeout))
         except urllib.error.HTTPError as e:
             print(f"Error HTTP {e.code}: {e.reason}")
-            return {}
+            return None
     
     def post(self, url, data: dict, timeout=10, headers: dict = None, **kwargs) -> dict:
         r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers if headers else self.__headers, method='POST', **kwargs)
