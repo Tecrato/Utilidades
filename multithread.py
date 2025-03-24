@@ -1,6 +1,6 @@
 from typing import Any, Callable
 import time
-from threading import Thread, Lock, Condition
+from threading import Thread, Lock, Condition, Timer
 
 class Funcs_pool:
     def __init__(self) -> None:
@@ -97,6 +97,12 @@ class Interval_funcs:
         self.task_dict[alias]['time'] = new_time
     
     def join(self, alias: str):
-        self.tasks_threads['alias'].join(0.1)
-        del self.tasks_threads['alias']
+        self.tasks_threads[alias].join(0.1)
+        del self.tasks_threads[alias]
+    
+    def timer(self, alias: str, func: Callable, time: float = 1, *args, **kwargs):
+        if self.tasks_threads.get(alias, False):
+            raise Exception('Ya existe la key')
+        self.tasks_threads[alias] = Timer(time, func, args=args, kwargs=kwargs)
+        self.tasks_threads[alias].start()
         
