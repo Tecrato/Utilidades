@@ -1,9 +1,16 @@
-import datetime, os, sys
+import os
+import sys
+import datetime
+import traceback
+import colorama
 from typing import Union, Self, Any
 from pathlib import Path
-import colorama
+from threading import Lock
 
 StrOrPath = Union[str, Path]
+print_lock = Lock()
+priority_txt = {0:'Debug', 1:'Info', 2:'Warning', 3:'Error', 4:'Critical'}
+color_priority = {0:colorama.Fore.BLUE, 1:colorama.Fore.GREEN, 2:colorama.Fore.YELLOW, 3:colorama.Fore.RED, 4:colorama.Fore.MAGENTA}
 
 class Logger:
     """
@@ -59,8 +66,13 @@ def debug_print(text: Any, priority: int = 0):
         3: Error
         4: Critical
     """
-    priority_txt = ['Debug', 'Info', 'Warning', 'Error', 'Critical'][priority]
-    color_priority = [colorama.Fore.BLUE, colorama.Fore.GREEN, colorama.Fore.YELLOW, colorama.Fore.RED, colorama.Fore.MAGENTA]
+    if not 0 <= priority <= 4:
+        raise ValueError(f'Invalid priority: {priority}, valid priorities between 0 and 4')
+    print_lock.acquire()
     # va a mostrar tambien el nombre del archivo entre parentesis
+
     file = sys._getframe(1).f_code.co_filename.split('\\')[-1]
-    print(f'{color_priority[priority]}[{priority_txt}] ({file}) Line {sys._getframe(1).f_lineno} -> <{type(text).__name__}>{text}{colorama.Style.RESET_ALL}')
+    print(f'{color_priority[priority]}[{priority_txt[priority]}] ({file}) Line {sys._getframe(1).f_lineno} -> <{type(text).__name__}>{str(text)}{colorama.Style.RESET_ALL}')
+    if traceback.extract_stack() and priority >= 2:
+        traceback.print_exc()
+    print_lock.release()
