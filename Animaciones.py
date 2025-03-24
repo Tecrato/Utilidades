@@ -192,6 +192,8 @@ class Second_Order_Dinamics:
         r: Respuesta inicial - 0 para empezar suave, 1 para inicio instantáneo
         coord: Posición inicial (Tuple[float, float] o Vector2)
     """
+    __slots__ = ('_pi', '_k1', '_k2', '_k3', 'xp', 'y', 'yd', '_dt_crit', '_last_time')
+    
     def __init__(self, f: float, z: float, r: float, coord: Union[Tuple[float, float], Vector2]):
         # Constantes del sistema
         self._pi = pi
