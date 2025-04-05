@@ -37,17 +37,15 @@ def get(url, timeout=10, params=None) -> Response:
 
 
 def send_post(url, data: dict = None, timeout=10, headers: dict={}, parser='form') -> Response:
+    if not headers:
+        headers = DEFAULT_HEADERS
     if data and parser == 'form':
         headers = {'Content-Type': 'application/x-www-form-urlencoded',**DEFAULT_HEADERS, **(headers if headers else {})}
         data = urllib.parse.urlencode(data).encode()
-        print('form')
     elif data and parser == 'json':
         data = json.dumps(data).encode()
         headers = {'Content-Type': 'application/json',**DEFAULT_HEADERS, **(headers if headers else {})}
-        print('json')
 
-    print(headers)
-    print(data)
     r = urllib.request.Request(url, data=data, method='POST', headers=headers)
     return Response(urllib.request.urlopen(r, timeout=timeout))
 
@@ -128,12 +126,14 @@ class Http_Session:
         return Response(self.opener.open(r, timeout=timeout))
     
     def post(self, url, data: dict, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
+        if not headers:
+            headers = self.__headers
         if parser == 'form':
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
             data = urllib.parse.urlencode(data, doseq=True).encode('utf-8')
         elif parser == 'json':
             headers['Content-Type'] = 'application/json'
-            data = json.dumps(data).encode()
+            data = json.dumps(data).encode('utf-8')
         r = urllib.request.Request(url, data=data, headers=headers if headers else self.__headers, method='POST', **kwargs)
         return Response(self.opener.open(r, timeout=timeout))
 
