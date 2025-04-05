@@ -13,6 +13,9 @@ class Response:
     def data(self):
         return self.response.read()
     
+    def read(self, bytes: int = 0):
+        return self.response.read(bytes or None)
+    
     @property
     def headers(self):
         return self.response.info()
@@ -24,3 +27,13 @@ class Response:
     @property
     def text(self):
         return self.response.read().decode('utf-8')
+    
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def close(self):
+        self.response.close()
+    def __del__(self):
+        self.close()

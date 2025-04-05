@@ -9,8 +9,20 @@ from threading import Lock
 
 StrOrPath = Union[str, Path]
 print_lock = Lock()
-priority_txt = {0:'Debug', 1:'Info', 2:'Warning', 3:'Error', 4:'Critical'}
-color_priority = {0:colorama.Fore.BLUE, 1:colorama.Fore.GREEN, 2:colorama.Fore.YELLOW, 3:colorama.Fore.RED, 4:colorama.Fore.MAGENTA}
+priority_txt = {
+    0:'Debug', 
+    1:'Info', 
+    2:'Warning', 
+    3:'Error', 
+    4:'Critical'
+}
+color_priority = {
+    0:colorama.Fore.BLUE, 
+    1:colorama.Fore.GREEN, 
+    2:colorama.Fore.YELLOW, 
+    3:colorama.Fore.RED, 
+    4:colorama.Fore.MAGENTA
+}
 
 class Logger:
     """

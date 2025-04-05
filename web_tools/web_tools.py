@@ -3,7 +3,10 @@ import urllib.request
 import http.client
 import urllib.parse
 import json
-from typing import Dict
+import certifi
+import ssl
+
+from typing import Dict, Self
 from http import cookiejar
 from urllib.parse import quote, urlparse, unquote
 from threading import Thread, Lock
@@ -33,11 +36,22 @@ def get(url, timeout=10, params=None) -> Response:
     return Response(urllib.request.urlopen(r, timeout=timeout))
 
 
-def send_post(url, data: dict, timeout=10) -> dict:
-    r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers={**DEFAULT_HEADERS, 'Content-Type': 'application/json'}, method='POST')
+def send_post(url, data: dict = None, timeout=10, headers: dict={}, parser='form') -> Response:
+    if data and parser == 'form':
+        headers = {'Content-Type': 'application/x-www-form-urlencoded',**DEFAULT_HEADERS, **(headers if headers else {})}
+        data = urllib.parse.urlencode(data).encode()
+        print('form')
+    elif data and parser == 'json':
+        data = json.dumps(data).encode()
+        headers = {'Content-Type': 'application/json',**DEFAULT_HEADERS, **(headers if headers else {})}
+        print('json')
+
+    print(headers)
+    print(data)
+    r = urllib.request.Request(url, data=data, method='POST', headers=headers)
     return Response(urllib.request.urlopen(r, timeout=timeout))
 
-def download_file(url, timeout=10, headers: dict = None, params: dict = None, stream: bool = False, **kwargs) -> Response|http.client.HTTPResponse:
+def download_file(url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> Response|http.client.HTTPResponse:
     """
     Retorna un Response de un url response
     
@@ -46,7 +60,6 @@ def download_file(url, timeout=10, headers: dict = None, params: dict = None, st
         timeout (int, optional): El tiempo limite para la peticion. Defaults to 10.
         headers (dict, optional): Los headers para la peticion. Defaults to None.
         params (dict, optional): Los parametros para la peticion. Defaults to None.
-        stream (bool, optional): Si es True, retorna un HTTPResponse. Defaults to False.
         **kwargs: Argumentos adicionales para la peticion.
     
     Returns:
@@ -55,10 +68,13 @@ def download_file(url, timeout=10, headers: dict = None, params: dict = None, st
     if params:
         url += '?' + urllib.parse.urlencode(params, doseq=True)
     r = urllib.request.Request(url, headers=headers if headers else DEFAULT_HEADERS, **kwargs)
-    if stream:
-        return urllib.request.urlopen(r, timeout=timeout)
     return Response(urllib.request.urlopen(r, timeout=timeout)).data
 
+def parse_cookies(cookies: str) -> dict:
+    cookie_dict = {}
+    for i in cookies.split(';'):
+        cookie_dict[i.split('=')[0]] = i.split('=')[1]
+    return cookie_dict
 
 def check_update(program_name:str,version_actual:str,version_deseada='last'):
     """
@@ -91,9 +107,13 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
         return False
 
 class Http_Session:
-    def __init__(self):
+    def __init__(self, secure=True, certificate_file=None):
         self.session = cookiejar.CookieJar()
-        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.session),urllib.request.HTTPHandler())
+        self.ssl_context = ssl.create_default_context(cafile=certificate_file)
+        if not secure:
+            self.ssl_context.check_hostname = False
+            self.ssl_context.verify_mode = ssl.CERT_NONE
+        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.session),urllib.request.HTTPHandler(),urllib.request.HTTPSHandler(context=self.ssl_context))
         self.__headers = {'User-Agent': 'Mozilla/5.0'}
     
     def head(self, url, timeout=10, headers: dict = None, **kwargs) -> dict:
@@ -101,38 +121,21 @@ class Http_Session:
         with self.opener.open(r, timeout=timeout) as response:
             return response.info()
 
-    def get(self, url, timeout=10, stream: bool = False, headers: dict = None, params: dict = None, **kwargs) -> Response | http.client.HTTPResponse | None:
-        if params:
-            url += '?' + urllib.parse.urlencode(params, doseq=True)
-        try:
-            r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
-            if stream:
-                return self.opener.open(r, timeout=timeout)
-            return Response(self.opener.open(r, timeout=timeout))
-        except urllib.error.HTTPError as e:
-            print(f"Error HTTP {e.code}: {e.reason}")
-            return None
-    
-    def post(self, url, data: dict, timeout=10, headers: dict = None, **kwargs) -> dict:
-        r = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), headers=headers if headers else self.__headers, method='POST', **kwargs)
-        with self.opener.open(r, timeout=timeout) as response:
-            el_read = response.read()
-            return {'headers': response.info(), 'data': json.loads(el_read.decode('utf-8'))}
-
-    def download_file(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> http.client.HTTPResponse:
-        """
-        response = clase.download_file(url, timeout, headers, params, **kwargs)
-        while True:
-            chunk = response.read(1024)
-            if not chunk:
-                break
-            logic
-
-        """
+    def get(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> Response | None:
         if params:
             url += '?' + urllib.parse.urlencode(params, doseq=True)
         r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
-        return self.opener.open(r, timeout=timeout)
+        return Response(self.opener.open(r, timeout=timeout))
+    
+    def post(self, url, data: dict, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
+        if parser == 'form':
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+            data = urllib.parse.urlencode(data, doseq=True).encode('utf-8')
+        elif parser == 'json':
+            headers['Content-Type'] = 'application/json'
+            data = json.dumps(data).encode()
+        r = urllib.request.Request(url, data=data, headers=headers if headers else self.__headers, method='POST', **kwargs)
+        return Response(self.opener.open(r, timeout=timeout))
 
     def __enter__(self):
         return self
@@ -147,6 +150,8 @@ class Http_Session:
     @cookies.setter
     def cookies(self, cookies: Dict[str, str]) -> None:
         # Set cookies from dict (simplificado)
+        if isinstance(cookies, str):
+            cookies = parse_cookies(cookies)
         for name, value in cookies.items():
             cookie = cookiejar.Cookie(
                 version=0,
@@ -176,6 +181,16 @@ class Http_Session:
     @headers.setter
     def headers(self, headers: dict) -> None:
         self.__headers.update(headers)
+
+    def copy(self) -> Self:
+        copy = Http_Session()
+        copy.session = self.session
+        copy.opener = self.opener
+        copy.headers = self.__headers.copy()
+        return copy
+
+    def __del__(self):
+        self.close()
 
     def close(self):
         """Liberar recursos de conexión"""
