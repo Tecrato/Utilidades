@@ -2,6 +2,7 @@ import time
 import urllib.request
 import http.client
 import urllib.parse
+import urllib.error
 import json
 import certifi
 import ssl
@@ -14,9 +15,15 @@ from pathlib import Path
 from ..logger import debug_print
 from .responses import Response
 
+from .errors import errors_handler
+
 DEFAULT_HEADERS: dict = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+    "Connection": "keep-alive",
+    "Accept": "*/*",
 }
+
+default_ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,cafile=certifi.where())
 
 def get(url, timeout=10, params=None) -> Response:
     """
@@ -105,12 +112,11 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
         return False
 
 class Http_Session:
-    def __init__(self, secure=True, certificate_file=None):
+    def __init__(self, certificate_file=None):
         self.session = cookiejar.CookieJar()
-        self.ssl_context = ssl.create_default_context(cafile=certificate_file)
-        if not secure:
-            self.ssl_context.check_hostname = False
-            self.ssl_context.verify_mode = ssl.CERT_NONE
+        self.ssl_context = default_ssl_context
+        if certificate_file:
+            self.ssl_context.load_verify_locations(certificate_file)
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.session),urllib.request.HTTPHandler(),urllib.request.HTTPSHandler(context=self.ssl_context))
         self.__headers = {'User-Agent': 'Mozilla/5.0'}
     
@@ -123,7 +129,11 @@ class Http_Session:
         if params:
             url += '?' + urllib.parse.urlencode(params, doseq=True)
         r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
-        return Response(self.opener.open(r, timeout=timeout))
+        try:
+            return Response(self.opener.open(r, timeout=timeout))
+        except Exception as e:
+            debug_print(e,2)
+            errors_handler(e)
     
     def post(self, url, data: dict, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
         if not headers:
@@ -135,7 +145,11 @@ class Http_Session:
             headers['Content-Type'] = 'application/json'
             data = json.dumps(data).encode('utf-8')
         r = urllib.request.Request(url, data=data, headers=headers if headers else self.__headers, method='POST', **kwargs)
-        return Response(self.opener.open(r, timeout=timeout))
+        try:
+            return Response(self.opener.open(r, timeout=timeout))
+        except Exception as e:
+            debug_print(e,1)
+            errors_handler(e)
 
     def __enter__(self):
         return self

@@ -1,6 +1,5 @@
 import json
 import http.client
-
 class Response:
     def __init__(self, response: http.client.HTTPResponse):
         self.response: http.client.HTTPResponse = response
