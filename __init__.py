@@ -17,10 +17,10 @@ from .logger import Logger, debug_print
 
 import sys
 
-if sys.platform == 'win32':
-    from . import win32_tools
-else:
-    from . import linux_tools as win32_tools
+# if sys.platform == 'win32':
+from . import win32_tools
+# else:
+#     from . import linux_tools as win32_tools
 
 
 from .figuras.poligono_regular import PoligonoRegular

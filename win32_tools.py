@@ -1,6 +1,7 @@
 import win32gui
 import winreg
 import win32con
+import win32com.client
 import win32ui
 import win32api
 import time
@@ -564,3 +565,40 @@ class Win32TrayIcon:
         win32gui.DestroyWindow(self.hwnd)
         win32gui.UnregisterClass(self.class_atom, None)
         win32gui.PostQuitMessage(0)
+
+
+class Speaker:
+    def __init__(self, ):
+        self.speek = win32com.client.Dispatch('SAPI.SpVoice')
+        self.__voice_index = 0
+    
+    def speak(self, text):
+        self.speek.Speak(text)
+
+    @property
+    def voices(self):
+        return [self.speek.GetVoices().Item(i).GetDescription() for i in range(self.speek.GetVoices().Count)]
+    
+    
+    @property
+    def voice(self):
+        return self.speek.Voice.GetDescription()
+    
+    @property
+    def voice_index(self):
+        return self.__voice_index
+    @voice_index.setter
+    def voice_index(self, index: int):
+        if index < 0 or index >= self.speek.GetVoices().Count:
+            raise ValueError(f"Invalid voice index: {index}")
+        self.__voice_index = index
+        self.speek.Voice = self.speek.GetVoices().Item(index)
+    
+    def set_voice(self, voice_name: str):
+        for i, voice in enumerate(self.voices):
+            if voice == voice_name:
+                self.speek.Voice = self.speek.GetVoices().Item(i)
+                self.__voice_index = i
+                return
+        raise ValueError(f"Voice '{voice_name}' not found")
+
