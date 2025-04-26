@@ -1,13 +1,14 @@
 from .maths import (
-    Angulo, 
-    Hipotenuza, 
+    Angulo,
+    Hipotenuza,
     format_size_bits_to_bytes_str,
-    lineal_interception, 
+    lineal_interception,
     lineal_interception_func, 
     line_to_polygon_intersection, 
     recta_entre_puntos,
     Vector2,
-    LinearRegressionSimple
+    LinearRegressionSimple,
+    LinearRegressionMultiple
 )
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .multithread import Funcs_pool, Semaforo
@@ -17,10 +18,10 @@ from .logger import Logger, debug_print
 
 import sys
 
-# if sys.platform == 'win32':
-from . import win32_tools
-# else:
-#     from . import linux_tools as win32_tools
+if sys.platform == 'win32':
+    from . import win32_tools
+else:
+    from . import linux_tools as win32_tools
 
 
 from .figuras.poligono_regular import PoligonoRegular

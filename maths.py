@@ -496,10 +496,7 @@ def calcular_integral(
     }.get(metodo.lower(), _simpson)
 
     # Llamada inicial
-    if metodo == 'adaptive':
-        return _adaptativa(funcion, a, b, tolerancia, max_profundidad, _simpson)
-    else:
-        return metodo_calculo(funcion, a, b)
+    return metodo_calculo(funcion, a, b)
 
 class LinearRegressionSimple:
     def __init__(self, x, y):
@@ -509,6 +506,12 @@ class LinearRegressionSimple:
         if len(x) == 0:
             raise ValueError("Las listas no pueden estar vacías.")
         
+        self.x = x
+        self.y = y
+        self.a, self.b = self.calcular_pendiente()  # Calcular pendiente e intersección
+        self.error = self.calcular_error()  # Calcular error cuadrático medio
+    
+    def set_data(self, x, y):
         self.x = x
         self.y = y
         self.a, self.b = self.calcular_pendiente()  # Calcular pendiente e intersección
@@ -554,6 +557,66 @@ def calcular_pendiente(datos_x, datos_y):
     a = ((len(datos_x) * xy) - (x * y)) / ((len(datos_x) * xx) - (x ** 2))
     b = ((y - b * x) / len(datos_x))
     return a,b
+
+class LinearRegressionMultiple:
+    def __init__(self, learning_rate=0.01, iterations=5_000):
+        self.learning_rate = learning_rate
+        self.n_iter = iterations
+        self.coef = None
+        self.mean = None
+        self.std = None
+        self.is_fitted = False
+    
+    def _normalize(self, X, is_training=False):
+        if not self.is_fitted or is_training:
+            self.mean = [sum(col)/len(col) for col in zip(*X)]
+            self.std = [
+                (sum((x - mean)**2 for x in col)/len(col))**0.5 
+                for col, mean in zip(zip(*X), self.mean)
+            ]
+        
+        X_normalized = []
+        for row in X:
+            normalized_row = [
+                (row[i] - self.mean[i])/self.std[i] if self.std[i] != 0 else 0 
+                for i in range(len(row))
+            ]
+            X_normalized.append([1] + normalized_row)
+        return X_normalized
+    
+    def fit(self, X, y, epochs=None):
+        if not self.is_fitted:
+            X_normalized = self._normalize(X, is_training=True)
+            y = [float(val) for val in y]
+            n_features = len(X_normalized[0])
+            self.coef = [0.1] * n_features
+            self.is_fitted = True
+        else:
+            X_normalized = self._normalize(X)
+            y = [float(val) for val in y]
+        
+        for _ in range(epochs or self.n_iter):
+            gradients = [0.0] * len(self.coef)
+            for i in range(len(X_normalized)):
+                prediction = sum(X_normalized[i][j] * self.coef[j] for j in range(len(self.coef)))
+                error = prediction - y[i]
+                for j in range(len(self.coef)):
+                    gradients[j] += error * X_normalized[i][j]
+            
+            self.coef = [
+                self.coef[j] - (self.learning_rate * gradients[j]/len(X_normalized)) 
+                for j in range(len(self.coef))
+            ]
+    
+    def predict(self, X_new):
+        if not self.is_fitted:
+            raise Exception("Modelo no entrenado")
+        X_normalized = [
+            (X_new[i] - self.mean[i])/self.std[i] 
+            if self.std[i] != 0 else 0 
+            for i in range(len(X_new))
+        ]
+        return sum(x * coef for x, coef in zip([1] + X_normalized, self.coef))
 
 class Vector2:
     """Clase vectorial minimalista para operaciones 2D"""
