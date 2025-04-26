@@ -272,6 +272,8 @@ class Download:
             self.file = "downloaded_file"
             if self.headers.get('Content-Type'):
                 self.file += "." + self.headers.get('Content-Type').split('/')[1]
+            else:
+                self.file += ".unknown"
 
         if 'bytes' not in response.get('Accept-Ranges', ''):
             self.threads = 1
@@ -350,7 +352,7 @@ class DownloadThread(Thread):
         print(f"empezo{self.index}")
         headers = {'Range': f'bytes={self.inicio+self.progress}-{self.end}','User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'}
         try:
-            response = self.downloader.session.download_file(self.downloader.url, headers=headers, timeout=30)
+            response = self.downloader.session.get(self.downloader.url, headers=headers, timeout=30)
             with open(self.downloader.path/self.downloader.file, "+rb") as file:
                 seek =self.inicio+self.progress if self.downloader.resume else 0
                 self.downloader.write_lock.acquire()
