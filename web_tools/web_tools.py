@@ -112,9 +112,13 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
         return False
 
 class Http_Session:
-    def __init__(self, certificate_file=None):
+    def __init__(self, certificate_file=None, verify=True):
         self.session = cookiejar.CookieJar()
         self.ssl_context = default_ssl_context
+        if not verify:
+            self.ssl_context.check_hostname = False
+            self.ssl_context.verify_mode = ssl.CERT_NONE
+
         if certificate_file:
             self.ssl_context.load_verify_locations(certificate_file)
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.session),urllib.request.HTTPHandler(),urllib.request.HTTPSHandler(context=self.ssl_context))
@@ -135,7 +139,7 @@ class Http_Session:
             debug_print(e,2)
             errors_handler(e)
     
-    def post(self, url, data: dict, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
+    def post(self, url, data: dict = {}, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
         if not headers:
             headers = self.__headers
         if parser == 'form':
