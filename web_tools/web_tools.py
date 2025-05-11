@@ -24,6 +24,7 @@ DEFAULT_HEADERS: dict = {
 }
 
 default_ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,cafile=certifi.where())
+Edouard_API = 'https://tecrato.pythonanywhere.com/api'
 
 def get(url, timeout=10, params=None) -> Response:
     """
@@ -93,7 +94,7 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
     Returns:
         dict: La version mas reciente y url del programa
     """
-    resultado = get(f'https://tecrato.pythonanywhere.com/api/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30).json
+    resultado = get(f'{Edouard_API}/programs?program={quote(program_name)}&version={quote(version_deseada)}', timeout=30).json
 
     if resultado['status'] == 'error':
         return False

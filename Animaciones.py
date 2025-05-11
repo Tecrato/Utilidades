@@ -1,102 +1,20 @@
-from typing import Tuple, Union, Optional, List
+from typing import Tuple, Union, List
 from math import pi, comb
-from .maths import Vector2
+from pygame import Vector2
 
 
-class DynamicMovement:
-    """
-    Sistema de movimiento físico con aceleración controlada y seguimiento de objetivos.
-    
-    Args:
-        max_speed: Velocidad máxima en unidades/segundo
-        acceleration: Aceleración en unidades/segundo²
-        damping: Fricción (0-1) para movimiento inercial
-        initial_pos: Posición inicial (tupla o Vector2)
-        initial_dir: Dirección inicial normalizada (tupla o Vector2)
-    """
-    
-    __slots__ = ('_pos', '_velocity', '_max_speed', '_acceleration', 
-                 '_damping', '_target', '_arrival_radius')
-
-    def __init__(self, max_speed: float = 100.0, acceleration: float = 200.0,
-                 damping: float = 0.95, initial_pos: Tuple[float, float] = (0, 0),
-                 initial_dir: Tuple[float, float] = (1, 0)):
-        self._pos = Vector2(initial_pos)
-        self._velocity = Vector2(initial_dir).normalize() * min(max_speed, 1.0)
-        self._max_speed = max(abs(max_speed), 0.1)
-        self._acceleration = max(acceleration, 0.0)
-        self._damping = max(min(damping, 1.0), 0.0)
-        self._target: Optional[Vector2] = None
-        self._arrival_radius = 10.0  # Radio para frenado suave
-
-    def update(self, dt: float = 1/60.0) -> Vector2:
-        """Actualiza la posición basada en la física del movimiento"""
-        dt = max(dt, 1e-5)  # Evitar divisiones por cero
-        
-        if self._target:
-            self._seek_target(dt)
-        else:
-            self._apply_damping(dt)
-            
-        self._pos += self._velocity * dt
-        return self._pos
-
-    def _seek_target(self, dt: float):
-        """Lógica de seguimiento de objetivo con frenado suave"""
-        to_target = self._target - self._pos
-        distance = to_target.magnitude()
-        
-        if distance <= self._arrival_radius:
-            self._velocity *= 0.5 ** (dt * 60)
-            return
-            
-        # Aceleración adaptativa
-        target_speed = self._max_speed * min(distance / self._arrival_radius, 1.0)
-        desired_velocity = to_target.normalize() * target_speed
-        
-        # Steering force
-        steering = (desired_velocity - self._velocity) * self._acceleration * dt
-        self._velocity += steering
-        self._velocity.clamp_magnitude(0, self._max_speed)
-
-    def _apply_damping(self, dt: float):
-        """Aplica fricción cuando no hay objetivo"""
-        self._velocity *= self._damping ** dt
-
-    @property
-    def position(self) -> Vector2:
-        return self._pos.copy()
-
-    @position.setter
-    def position(self, value: Tuple[float, float]):
-        self._pos = Vector2(value)
-
-    @property
-    def target(self) -> Optional[Vector2]:
-        return self._target
-
-    @target.setter
-    def target(self, value: Optional[Tuple[float, float]]):
-        self._target = Vector2(value) if value else None
-
-    @property
-    def speed(self) -> float:
-        return self._velocity.magnitude()
-
-    def set_velocity(self, direction: Tuple[float, float], instantaneous: bool = False):
-        """
-        Establece nueva dirección de movimiento.
-        
-        Args:
-            direction: Vector dirección (no necesita estar normalizado)
-            instantaneous: Si True, cambia velocidad inmediatamente
-        """
-        new_velocity = Vector2(direction).normalize() * self._max_speed
-        
-        if instantaneous:
-            self._velocity = new_velocity
-        else:
-            self._velocity = new_velocity * 0.5 + self._velocity * 0.5
+class Simple_acceleration:
+    def __init__(self,vel, dir,pos) -> None:
+        self.vel: float = vel
+        self.dir: Vector2 = Vector2(dir)
+        self.pos = Vector2(pos)
+    def update(self,dt=1) -> Vector2:
+        self.pos += self.dir*self.vel*dt
+        return self.pos
+    def follow(self,pos,dt=1):
+        self.dir = (Vector2(pos)-self.pos).normalize()
+        self.pos += self.dir*self.vel*dt*60
+        return self.pos
 
 class Curva_de_Bezier:
     """

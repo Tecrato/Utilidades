@@ -13,7 +13,7 @@ from .maths import (
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import *
-from .Animaciones import DynamicMovement, Curva_de_Bezier, Second_Order_Dinamics
+from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dinamics
 from .logger import Logger, debug_print
 
 import sys

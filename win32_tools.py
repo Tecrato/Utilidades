@@ -158,6 +158,16 @@ def check_win(name) -> bool:
     return False
 
 
+def setWinPos(hwnd,coordinates):
+    """
+    Mueve la ventana con el handle especificado a las coordenadas especificadas.
+    
+    Parametros:
+    hwnd (int): El handle de la ventana.
+    coordinates (tuple): Las coordenadas (x, y) de la ventana.
+    """
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, *coordinates, 0, 0,win32con.SWP_NOSIZE|win32con.SWP_NOZORDER|win32con.SWP_NOACTIVATE)
+
 def moveWin(hwnd,coordinates):
     """
     Mueve la ventana con el handle especificado a las coordenadas especificadas.
@@ -166,7 +176,7 @@ def moveWin(hwnd,coordinates):
     hwnd (int): El handle de la ventana.
     coordinates (tuple): Las coordenadas (x, y) de la ventana.
     """
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, *coordinates, 0, 0,win32con.SWP_NOSIZE)
+    win32gui.MoveWindow(hwnd, *coordinates, 0, 0, False)
 
 def resizeWin(hwnd,size):
     """
@@ -209,6 +219,15 @@ def get_screen_size():
     Retorna el tamaño de la pantalla.
     """
     return win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
+
+def get_window_rect(hwnd):
+    """
+    Retorna la posición de la ventana con el handle especificado.
+    
+    Parametros:
+    hwnd (int): El handle de la ventana.
+    """
+    return win32gui.GetWindowRect(hwnd)
 
 def get_is_dark_mode_enabled():
     """

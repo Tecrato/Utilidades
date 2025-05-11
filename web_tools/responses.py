@@ -12,7 +12,7 @@ class Response:
     def data(self):
         return self.response.read()
     
-    def read(self, bytes: int = 0):
+    def read(self, bytes: int = None):
         return self.response.read(bytes or None)
     
     @property
