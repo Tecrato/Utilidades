@@ -26,7 +26,7 @@ DEFAULT_HEADERS: dict = {
 default_ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,cafile=certifi.where())
 Edouard_API = 'https://tecrato.pythonanywhere.com/api'
 
-def get(url, timeout=10, params=None) -> Response:
+def get(url, timeout=10, params=None, headers: dict = None) -> Response:
     """
     Retorna un Response de un url response
     
@@ -40,7 +40,8 @@ def get(url, timeout=10, params=None) -> Response:
     """
     if params:
         url += '?' + urllib.parse.urlencode(params, doseq=True)
-    r = urllib.request.Request(url, headers=DEFAULT_HEADERS)
+    headers = {**DEFAULT_HEADERS, **(headers if headers else {})}
+    r = urllib.request.Request(url, headers=headers)
     return Response(urllib.request.urlopen(r, timeout=timeout))
 
 
