@@ -7,6 +7,7 @@ import win32api
 import time
 from ctypes import windll
 from typing import Callable, Optional, List, Tuple
+from .logger import debug_print
 
 def windowEnumerationHandler(hwnd, windows):
     """
@@ -287,7 +288,7 @@ def askFile(title='Select a file',filter="Text Files (*.txt)|*.txt|Ejecutables|*
     Retorna:
     str: La ruta del archivo seleccionado.
     """
-    dlg = win32ui.CreateFileDialog(1, None, None, None, filter)
+    dlg = win32ui.CreateFileDialog(1, None, None, win32con.OFN_OVERWRITEPROMPT|win32con.OFN_FILEMUSTEXIST, filter)
     # dlg.SetOFNInitialDir('C:/')
     dlg.SetOFNTitle(title)
     dlg.DoModal()
@@ -418,6 +419,30 @@ def MessageBox(title, text, button_type=0, icon=None, default_button=0, position
     except Exception as e:
         print(f"Error mostrando mensaje: {e}")
         return 0
+
+def askFolder(hwnd,title="Seleccionar carpeta") -> str:
+    """Opens a "Browse For Folder" dialog and returns the selected path.
+
+    Returns:
+        str: The path to the selected folder, or None if the user cancels.
+    """
+    try:
+        shell_app = win32com.client.Dispatch("Shell.Application")
+        folder = shell_app.BrowseForFolder(
+            0,
+            "Select a folder",
+            0,
+            hwnd
+        )
+
+        if folder:
+            return folder.Self.Path
+        else:
+            return None
+
+    except Exception as e:
+        debug_print(e,2)
+        return None
 
 class Win32TrayIcon:
     """
