@@ -620,7 +620,7 @@ class LinearRegressionMultiple:
 
 class Vector2:
     """Clase vectorial minimalista para operaciones 2D"""
-    __slots__ = ('x', 'y')
+    __slots__ = ('__x', '__y')
     
     @overload
     def __init__(self, vector: Self): ...
@@ -628,19 +628,33 @@ class Vector2:
     def __init__(self, x: float = 0.0, y: float = 0.0): ...
     def __init__(self, *args):
         if len(args) == 1 and isinstance(args[0], (Iterable)):
-            self.x = args[0][0]
-            self.y = args[0][1]
+            self.__x = args[0][0]
+            self.__y = args[0][1]
         elif len(args) == 1 and isinstance(args[0], (int,float)):
-            self.x = args[0]
-            self.y = args[0]
+            self.__x = args[0]
+            self.__y = args[0]
         elif len(args) == 2:
-            self.x = args[0]
-            self.y = args[1]
+            self.__x = args[0]
+            self.__y = args[1]
         elif len(args) == 0:
-            self.x = 0
-            self.y = 0
+            self.__x = 0
+            self.__y = 0
         else:
             raise ValueError('Invalid arguments')
+    
+    @property
+    def x(self):
+        return self.__x
+    @x.setter
+    def x(self,x):
+        self.__x = x
+
+    @property
+    def y(self):
+        return self.__y
+    @y.setter
+    def y(self,y):
+        self.__y = y
     
     @classmethod
     def from_tuple(cls, data: Tuple[float, float]):
@@ -668,7 +682,10 @@ class Vector2:
         return f"Vector2({self.x:.2f}, {self.y:.2f})"
 
     def __getitem__(self, index):
-        return (self.x,self.y)[index]
+        return [self.x,self.y][index]
+    
+    def __setitem__(self, index, value):
+        [self.x,self.y][index] = value
     
     def __len__(self):
         return 2
