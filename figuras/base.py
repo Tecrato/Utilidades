@@ -1,5 +1,6 @@
 from typing import List, Tuple, Dict, Union
 from math import hypot
+from ..maths import Vector2
 import itertools
 
 class BasePolygon:
@@ -20,8 +21,8 @@ class BasePolygon:
 
     # ==================== PROPIEDADES OPTIMIZADAS ====================
     @property
-    def pos(self) -> Tuple[float, float]:
-        return self._pos
+    def pos(self) -> Vector2:
+        return Vector2(self._pos)
     @pos.setter
     def pos(self, value: Tuple[float, float]):
         if self._pos != value:
@@ -154,3 +155,17 @@ class BasePolygon:
     @property
     def figura(self) -> int:
         return self._figure
+
+    @property
+    def x(self) -> float:
+        return self.pos.x
+    @x.setter
+    def x(self, value: float):
+        self.pos.x = value
+
+    @property
+    def y(self) -> float:
+        return self.pos.y
+    @y.setter
+    def y(self, value: float):
+        self.pos.y = value
