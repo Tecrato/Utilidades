@@ -17,88 +17,31 @@ class Simple_acceleration:
         return self.pos
 
 class Curva_de_Bezier:
-    """
-    Sistema de curvas Bézier generalizado con interpolación suave y eficiente.
-    
-    Args:
-        points: Lista de puntos de control (mínimo 2)
-        duration: Duración total de la animación en segundos
-        loop: Si la animación se repite automáticamente
-    """
-    
-    __slots__ = ('_points', '_duration', '_time', '_loop', '_coefficients', '_step')
-    
-    def __init__(self, points: List[Union[Tuple[float, float], Vector2]], 
-                 duration: float = 1.0, loop: bool = False):
-        if len(points) < 2:
-            raise ValueError("Se requieren al menos 2 puntos de control")
-            
-        self._points = [Vector2(p) for p in points]
-        self._duration = max(duration, 0.001)
-        self._time = 0.0
-        self._loop = loop
-        self._coefficients = self._precalculate_coefficients()
-        self._step = 1.0 / self._duration
+    def __init__(self, timer, points, extra_time: int = 1) -> None:
+        self.__T = 0
+        self.timer = timer
+        self.extra_time = extra_time
+        self.points = [Vector2(ag) for ag in points]
+        if len(self.points) < 2:
+            raise 'Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)'
 
-    def _precalculate_coefficients(self) -> List[float]:
-        """Calcula los coeficientes binomiales una sola vez"""
-        n = len(self._points) - 1
-        return [comb(n, i) for i in range(n + 1)]
+    def move(self, points) -> None:
+        self.points = [Vector2(ag) for ag in points]
 
-    def reset(self) -> None:
-        """Reinicia la animación al estado inicial"""
-        self._time = 0.0
+    def set(self,progress:float) -> None:
+        ' - Define en que % de la animacion estara'
+        self.__T = progress
 
-    @property
-    def completed(self) -> bool:
-        """Indica si la animación ha finalizado (solo en modo no-loop)"""
-        return self._time >= 1.0 and not self._loop
-
-    def update(self, dt: float) -> Vector2:
-        """
-        Actualiza la posición en la curva.
-        
-        Args:
-            dt: Tiempo transcurrido en segundos
-            
-        Returns:
-            Vector2: Posición actual en la curva
-        """
-        self._time += dt * self._step
-        
-        if self._loop:
-            self._time %= 1.0
-        else:
-            self._time = min(self._time, 1.0)
-
-        return self._calculate_position(self._time)
-
-    def _calculate_position(self, t: float) -> Vector2:
-        """Cálculo optimizado usando pre-multiplicación de coeficientes"""
-        t = max(0.0, min(t, 1.0))
-        n = len(self._points) - 1
-        result = Vector2(0, 0)
-        
-        for i in range(n + 1):
-            coeff = self._coefficients[i] * (t ** i) * ((1 - t) ** (n - i))
-            result += self._points[i] * coeff
-            
+    def update(self,dt=1) -> Vector2|bool:
+        self.__T += (1/self.timer) * dt
+        if self.__T > self.extra_time:
+            self.__T = 1
+            return True
+        result = Vector2(0,0)
+        for i,p in enumerate(self.points):
+            coeff = comb(len(self.points)-1,i) * self.__T**i * (1-self.__T)**(len(self.points)-1-i)
+            result += coeff * p
         return result
-
-    @property
-    def position(self) -> Vector2:
-        """Posición actual en la curva (interpolación suave)"""
-        return self._calculate_position(self._time)
-
-    @property
-    def progress(self) -> float:
-        """Progreso de la animación en rango [0, 1]"""
-        return self._time
-
-    @progress.setter
-    def progress(self, value: float):
-        """Establece el progreso de la animación manualmente"""
-        self._time = max(0.0, min(float(value), 1.0))
 
 class Second_Order_Dinamics:
     """
