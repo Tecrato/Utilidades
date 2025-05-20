@@ -444,6 +444,32 @@ def askFolder(hwnd,title="Seleccionar carpeta") -> str:
         debug_print(e,2)
         return None
 
+def extract_icon(exe_path: str) -> bytes:
+    """
+    Extrae el ícono de un archivo .exe y lo devuelve como una tupla de (ancho, alto, color, ruta_icono).
+    (sin librerias externas)
+    
+    Parametros:
+    exe_path (str): Ruta al archivo .exe
+    
+    Retorna:
+    bytes: El ícono del archivo .exe
+    """
+    
+    ico_x = win32api.GetSystemMetrics(win32con.SM_CXICON)
+    ico_y = win32api.GetSystemMetrics(win32con.SM_CYICON)
+    large, small = win32gui.ExtractIconEx(exe_path,0)
+    win32gui.DestroyIcon(small[0])
+
+    hdc = win32ui.CreateDCFromHandle( win32gui.GetDC(0) )
+    hbmp = win32ui.CreateBitmap()
+    hbmp.CreateCompatibleBitmap( hdc, ico_x, ico_x )
+    hdc = hdc.CreateCompatibleDC()
+
+    hdc.SelectObject( hbmp )
+    hdc.DrawIcon( (0,0), large[0] )
+    return hbmp.GetBitmapBits(True)
+
 class Win32TrayIcon:
     """
     Ícono en bandeja del sistema para Windows con soporte completo de eventos.
