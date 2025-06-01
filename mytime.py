@@ -19,6 +19,9 @@ class Deltatime:
 	def reset(self) -> None:
 		self.last_time = time.time()
 		self.dt = 0
+	
+	def __str__(self):
+		return f'FPS: {self.FPS:.1f} dt: {self.dt:.1f}'
 		
 
 def tener_el_tiempo(func):
