@@ -112,6 +112,23 @@ def take_window_snapshot(hwnd):
 
     return {'size':(w,h), 'buffer':bmpstr, 'bmpinfo':bmpinfo}
 
+def set_window_transparent(hwnd, colorkey = (0,0,0), opacity = 1.):
+    """
+    Establece el color transparente de la ventana con el handle especificado.
+    
+    Parametros:
+    hwnd (int): El handle de la ventana.
+    colorkey (tuple): El color transparente de la ventana.
+    opacity (float): Opacidad del color transparente (0.0 - 1.0)
+    """
+    if 0 > opacity > 1:
+        raise ValueError("Opacity debe estar entre 0.0 y 1.0")
+    # Create layered window
+    win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
+                        win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+    win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(*colorkey), int((255 * opacity*100) / 100), win32con.LWA_ALPHA|win32con.LWA_COLORKEY)
+
+
 def set_window_colorkey_transparent(hwnd, colorkey = (0,0,0)):
     """
     Establece el color transparente de la ventana con el handle especificado.
@@ -635,6 +652,8 @@ class Win32TrayIcon:
         win32gui.DestroyWindow(self.hwnd)
         win32gui.UnregisterClass(self.class_atom, None)
         win32gui.PostQuitMessage(0)
+    def __del__(self):
+        self.stop()
 
 
 class Speaker:
