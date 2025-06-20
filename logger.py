@@ -69,7 +69,7 @@ class Logger:
         self.logger.write('{}\n'.format(text))
 
 
-def debug_print(text: Any, priority: int = 0):
+def debug_print(*text: Any, priority: int = 0) -> None:
     """
     priority:
         0: Debug
@@ -84,7 +84,8 @@ def debug_print(text: Any, priority: int = 0):
     # va a mostrar tambien el nombre del archivo entre parentesis
 
     file = sys._getframe(1).f_code.co_filename.split('\\')[-1]
-    print(f'{color_priority[priority]}[{priority_txt[priority]}] ({file}) Line {sys._getframe(1).f_lineno} -> <{type(text).__name__}>{str(text)}{colorama.Style.RESET_ALL}')
+    for x in text:
+        print(f'{color_priority[priority]}[{priority_txt[priority]}] ({file}) Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}{colorama.Style.RESET_ALL}')
     if traceback.extract_stack() and priority >= 2:
         traceback.print_exc()
     print_lock.release()
