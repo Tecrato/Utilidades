@@ -3,3 +3,4 @@ pystray; platform_system == 'Linux'
 Pillow; platform_system == 'Linux'
 colorama
 certifi
+platformdirs
