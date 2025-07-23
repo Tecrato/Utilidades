@@ -131,7 +131,7 @@ class Http_Session:
         with self.opener.open(r, timeout=timeout) as response:
             return response.info()
 
-    def get(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> Response | None:
+    def get(self, url, timeout=10, headers: dict = None, params: dict = None, **kwargs) -> Response:
         if params:
             url += '?' + urllib.parse.urlencode(params, doseq=True)
         r = urllib.request.Request(url, headers=headers if headers else self.__headers, **kwargs)
