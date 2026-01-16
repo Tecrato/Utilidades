@@ -76,6 +76,8 @@ class Interval_funcs:
         self.tasks_threads = {}
 
     def add(self, alias: str, func: Callable, time: float = 1, start = False):
+        if alias in self.task_dict:
+            raise AttributeError("Alias en uso")
         self.task_dict[alias] = {'func': func, 'time': time}
         if start:
             self.start_task(alias)
