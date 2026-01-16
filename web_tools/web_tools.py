@@ -138,10 +138,10 @@ class Http_Session:
         try:
             return Response(self.opener.open(r, timeout=timeout))
         except Exception as e:
-            debug_print(e,2)
-            errors_handler(e)
+            debug_print(e,priority=2)
+            return errors_handler(e)
     
-    def post(self, url, data: dict = {}, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
+    def post(self, url, data: dict|str = {}, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
         if not headers:
             headers = self.__headers
         if parser == 'form':
@@ -150,6 +150,8 @@ class Http_Session:
         elif parser == 'json':
             headers['Content-Type'] = 'application/json'
             data = json.dumps(data).encode('utf-8')
+        elif parser == "plain text":
+            data = data.encode()
         r = urllib.request.Request(url, data=data, headers=headers if headers else self.__headers, method='POST', **kwargs)
         try:
             return Response(self.opener.open(r, timeout=timeout))

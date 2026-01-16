@@ -1,14 +1,16 @@
 from urllib.error import HTTPError, URLError
 
 def errors_handler(req):
-    if isinstance(req,URLError):
-        raise InternetError()
-    elif not isinstance(req,HTTPError):
+    if not isinstance(req,HTTPError):
         raise req
+    if isinstance(req,URLError) and not isinstance(req,HTTPError):
+        raise InternetError(req)
     if req.code == 404:
-        raise UrlPerdida(req.url)
+        raise UrlPerdida(req.read())
     elif req.code == 403:
-        raise UrlNoAccesible(req.url)
+        raise UrlNoAccesible(req.read())
+    elif req.code == 400:
+        raise BadRequestError(req.read())
     else:
         raise req
         # raise ErrorNoImplementado(req.url, req.code)
@@ -29,5 +31,11 @@ class ErrorNoImplementado(Exception):
     
 
 class InternetError(Exception):
-    def __init__(self):
-        super().__init__(f"Error con el internet")
+    def __init__(self, txt="Error con el internet"):
+        super().__init__(txt)
+
+class BadRequestError(Exception):
+    def __init__(self, txt="Error en la peticion"):
+        super().__init__(txt)
+
+    
