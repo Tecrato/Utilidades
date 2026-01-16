@@ -27,9 +27,9 @@ def Hipotenuza(vector1, vector2) -> int:
     return math.dist(vector1,vector2)
 
 def Angulo(
-    punto_origen: Union[Tuple[float, float], list[float]],
-    punto_destino: Union[Tuple[float, float], list[float]]
-) -> float:
+        punto_origen: Union[Tuple[float, float], list[float]],
+        punto_destino: Union[Tuple[float, float], list[float]]
+    ) -> float:
     """
     Calcula el ángulo polar (en grados) entre dos puntos en un plano 2D.
     El ángulo se mide desde el eje X positivo en sentido antihorario.
