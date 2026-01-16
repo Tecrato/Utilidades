@@ -30,8 +30,9 @@ class Logger:
         - name: Nombre del programa
         - path: Ruta de la carpeta donde se guardarán los logs
     """
-    def __init__(self, name: str, path: StrOrPath) -> None:
+    def __init__(self, name: str, path: StrOrPath, printing=False) -> None:
         self.name = name
+        self.printing = printing
         self.path = Path(path)
         fecha = datetime.datetime.now()
         if not self.path.exists():
@@ -42,6 +43,10 @@ class Logger:
         self.logger.read()
 
     def write(self, text) -> None:
+        if self.printing:
+            print_lock.acquire()
+            print("Añadido a logger:", text)
+            print_lock.release()
         self.logger.write(str(text)+'\n')
     
     def open_folder(self):
@@ -85,7 +90,7 @@ def debug_print(*text: Any, priority: int = 0) -> None:
 
     file = sys._getframe(1).f_code.co_filename.split('\\')[-1]
     for x in text:
-        print(f'{color_priority[priority]}[{priority_txt[priority]}] ({file}) Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}{colorama.Style.RESET_ALL}')
+        print(f'{color_priority[priority]}[{priority_txt[priority]}] {datetime.datetime.now().strftime("%H:%M:%S")} ({sys._getframe(2).f_code.co_filename.split("\\")[-1]}) {sys._getframe(2).f_lineno} -> ({file}) Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}{colorama.Style.RESET_ALL}')
     if traceback.extract_stack() and priority >= 2:
         traceback.print_exc()
     print_lock.release()
