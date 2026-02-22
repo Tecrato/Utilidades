@@ -8,7 +8,7 @@ class PoligonoRegular(BasePolygon):
                  pos: Tuple[float, float] = (0, 0), 
                  lados: int = 4, 
                  radio: float = 10, 
-                 angle: float = 0, 
+                 angle: float = 0,
                  cell_size: float = 50.0):
         super().__init__(pos, radio, angle, cell_size)
         self._lados = lados

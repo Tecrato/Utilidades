@@ -39,7 +39,7 @@ class Logger:
             self.path.mkdir(parents=True, exist_ok=True)
         self.alias = f'{name} {fecha.strftime("%d-%m-%y")}.log'
         self.path.joinpath(self.alias).touch(exist_ok=True)
-        self.logger = open(self.path / self.alias, 'r+')
+        self.logger = open(self.path / self.alias, 'r+',encoding='utf-8')
         self.logger.read()
 
     def write(self, text) -> None:
