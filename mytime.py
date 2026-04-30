@@ -22,6 +22,21 @@ class Deltatime:
 	
 	def __str__(self):
 		return f'FPS: {self.FPS:.1f} dt: {self.dt:.1f}'
+
+	def __sum__(self,other):
+		return self.dt + other
+	def __rsum__(self,other):
+		return self.dt + other
+	def __sub__(self,other):
+		return self.dt - other
+	def __rsub__(self,other):
+		return self.dt - other
+	def __mul__(self,other):
+		return self.dt * other
+	def __rmul__(self,other):
+		return self.dt * other
+	def __truediv__(self,other):
+		return self.dt / other
 		
 
 def tener_el_tiempo(func):

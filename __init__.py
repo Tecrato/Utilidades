@@ -17,6 +17,7 @@ from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dina
 from .logger import Logger, debug_print
 
 import sys
+from .constants import *
 
 if sys.platform == 'win32':
     from . import win32_tools
