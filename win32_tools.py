@@ -658,35 +658,43 @@ class Win32TrayIcon:
 
 class Speaker:
     def __init__(self, ):
-        self.speek = win32com.client.Dispatch('SAPI.SpVoice')
+        self.speak = win32com.client.Dispatch('SAPI.SpVoice')
         self.__voice_index = 0
     
-    def speak(self, text):
-        self.speek.Speak(text)
+    def speak(self, text, wait = False):
+        self.speak.Speak(text,1 if wait else 0)
 
     @property
     def voices(self):
-        return [self.speek.GetVoices().Item(i).GetDescription() for i in range(self.speek.GetVoices().Count)]
+        return [self.speak.GetVoices().Item(i).GetDescription() for i in range(self.speak.GetVoices().Count)]
     
     
     @property
     def voice(self):
-        return self.speek.Voice.GetDescription()
-    
+        return self.speak.Voice.GetDescription()
+
+    @property
+    def rate(self):
+        return self.speek.Rate
+
+    @rate.setter
+    def rate(self, value):
+        self.speek.Rate = max(-10, min(10, value))
+
     @property
     def voice_index(self):
         return self.__voice_index
     @voice_index.setter
     def voice_index(self, index: int):
-        if index < 0 or index >= self.speek.GetVoices().Count:
+        if index < 0 or index >= self.speak.GetVoices().Count:
             raise ValueError(f"Invalid voice index: {index}")
         self.__voice_index = index
-        self.speek.Voice = self.speek.GetVoices().Item(index)
+        self.speak.Voice = self.speak.GetVoices().Item(index)
     
     def set_voice(self, voice_name: str):
         for i, voice in enumerate(self.voices):
             if voice == voice_name:
-                self.speek.Voice = self.speek.GetVoices().Item(i)
+                self.speak.Voice = self.speak.GetVoices().Item(i)
                 self.__voice_index = i
                 return
         raise ValueError(f"Voice '{voice_name}' not found")
