@@ -6,8 +6,10 @@ import win32ui
 import win32api
 import time
 from ctypes import windll
-from typing import Callable, Optional, List, Tuple
+from typing import Callable, Optional, List, Tuple, Union
 from .logger import debug_print
+from .constants import MenuItem
+
 
 def windowEnumerationHandler(hwnd, windows):
     """
@@ -487,6 +489,7 @@ def extract_icon(exe_path: str) -> bytes:
     hdc.DrawIcon( (0,0), large[0] )
     return hbmp.GetBitmapBits(True)
 
+
 class Win32TrayIcon:
     """
     Ícono en bandeja del sistema para Windows con soporte completo de eventos.
@@ -502,12 +505,15 @@ class Win32TrayIcon:
     def __init__(self, 
                  icon_path: str, 
                  tooltip: str = "", 
-                 menu_items: Optional[List[Tuple[str, Callable]]] = None,
+                 menu_items: Optional[List[MenuItem]] = None,
                  on_left_click: Optional[Callable] = None,
                  on_right_click: Optional[Callable] = None):
         self.icon_path = icon_path
         self.tooltip = tooltip
+
         self.menu_items = menu_items or []
+        self.next_command_id = 1   # contador para IDs únicos
+
         self.on_left_click = on_left_click
         self.on_right_click = on_right_click
         self.hwnd = None
@@ -589,18 +595,36 @@ class Win32TrayIcon:
         win32gui.Shell_NotifyIcon(win32gui.NIM_ADD, nid)
 
     def _create_menu(self):
-        # Construye menú contextual con items
+        """Construye menú contextual recursivo"""
+        # Destruir menú anterior si existe
+        if hasattr(self, 'menu'):
+            win32gui.DestroyMenu(self.menu)
         self.menu = win32gui.CreatePopupMenu()
         self.menu_commands.clear()
-        
-        for idx, (text, callback) in enumerate(self.menu_items):
-            self.menu_commands[idx] = callback
-            win32gui.AppendMenu(
-                self.menu, 
-                win32con.MF_STRING, 
-                idx, 
-                text
-            )
+        self.next_command_id = 1
+        self._build_menu(self.menu, self.menu_items)
+
+    def _build_menu(self, parent_menu: int, items: List[MenuItem]):
+        """Rellena un menú (puede ser el principal o un submenú)"""
+        for item in items:
+            if len(item) != 2:
+                continue
+            text, data = item
+            if callable(data):  # Es un ítem normal con callback
+                cmd_id = self.next_command_id
+                self.next_command_id += 1
+                self.menu_commands[cmd_id] = data
+                win32gui.AppendMenu(parent_menu,
+                                    win32con.MF_STRING,
+                                    cmd_id,
+                                    text)
+            else:  # Es un submenú: data es una lista de items
+                submenu = win32gui.CreatePopupMenu()
+                self._build_menu(submenu, data)
+                win32gui.AppendMenu(parent_menu,
+                                    win32con.MF_POPUP | win32con.MF_STRING,
+                                    submenu,
+                                    text)
 
     def _show_context_menu(self):
         # Muestra el menú en posición correcta
@@ -624,12 +648,6 @@ class Win32TrayIcon:
 
     def show_notification(self, title: str, message: str, timeout: int = 5):
         """Muestra notificación estilo Windows con ícono"""
-        hicon = win32gui.LoadImage(
-            0, self.icon_path, 
-            win32con.IMAGE_ICON, 
-            0, 0, 
-            win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE
-        )
         nid = (
             self.hwnd, 
             0,
