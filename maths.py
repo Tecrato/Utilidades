@@ -1,6 +1,16 @@
 import math
-from typing import Union, Tuple, List, Literal, Callable, Self, Iterable
-from typing import overload
+from typing import (
+    Union,
+    Tuple,
+    List,
+    Literal,
+    Callable,
+    Self,
+    Iterable,
+    overload,
+)
+from .constants import Rect
+left_top_width_height = tuple[float,float,float,float]
 
 def Hipotenuza(vector1, vector2) -> int:
     """
@@ -63,6 +73,40 @@ def Angulo(
 
     return angulo_grados
 
+def Angulo_solo(
+        vector: Union[Tuple[float, float], list[float]]
+    ) -> float:
+    """
+    Calcula el ángulo polar (en grados) de un vector 2D respecto al eje X positivo.
+    El ángulo se mide en sentido antihorario.
+
+    Args:
+        vector (Union[Tuple[float, float], list[float]]): Coordenadas (x, y) del vector
+
+    Returns:
+        float: Ángulo en grados en el rango [0, 360)
+
+    Raises:
+        ValueError: Si el vector no es 2D
+
+    Ejemplos:
+        >>> Angulo_solo((3, 4))
+        53.13010235415599
+        >>> Angulo_solo((0, 5))
+        90.0
+        >>> Angulo_solo((-5, 0))
+        180.0
+    """
+    
+    # Validación de input
+    if len(vector) != 2:
+        raise ValueError("El vector debe ser una coordenada 2D numérica")
+    
+    dx, dy = vector
+    angulo_grados = math.degrees(math.atan2(dy, dx)) % 360.0
+
+    return angulo_grados
+
 def format_size_bits_to_bytes_str(size: int | float) -> str:
     """
     Convierte bits a cadena legible usando unidades binarias (IEC).
@@ -116,7 +160,7 @@ def notacion_cientifica(n: int) -> str:
     exponent = len(s) - 1
     
     # Parte decimal truncada (sin redondeo)
-    decimal_part = s[1:4].ljust(3, '0')  # Rellena con ceros si es necesario
+    decimal_part = s[1:3].ljust(2, '0')  # Rellena con ceros si es necesario
     decimal_part = decimal_part.rstrip('0')  # Elimina ceros finales
     
     # Formatea la parte decimal
@@ -124,6 +168,22 @@ def notacion_cientifica(n: int) -> str:
     
     return f"{sign}{s[0]}{formatted_decimal}x10^{exponent}"
 
+def rect_colition(rect1: left_top_width_height|Rect, rect2: left_top_width_height|Rect):
+    if (
+        (
+            rect1[0]<rect2[0]+rect2[2] and
+            rect1[0]+rect1[2]>rect2[0] 
+        ) and
+        (
+            rect1[1]<rect2[1]+rect2[3] and
+            rect1[1]+rect1[3]>rect2[1]
+        )
+        ):
+        return True
+    return False
+    
+def rect_get_center(rect: left_top_width_height):
+    return (rect[0]+(rect[2]/2),rect[1]+(rect[3]/2))
 
 def fibonacci(n: int) -> int:
     def _fast_doubling(n):
@@ -627,18 +687,26 @@ class Vector2:
     @overload
     def __init__(self, x: float = 0.0, y: float = 0.0): ...
     def __init__(self, *args):
-        if len(args) == 1 and isinstance(args[0], (Iterable)):
-            self.__x = args[0][0]
-            self.__y = args[0][1]
-        elif len(args) == 1 and isinstance(args[0], (int,float)):
-            self.__x = args[0]
-            self.__y = args[0]
+        if len(args) == 0:
+            self.__x = 0.0
+            self.__y = 0.0
+        elif len(args) == 1:
+            arg = args[0]
+
+            if isinstance(arg, Vector2):
+                self.__x = float(arg.x)
+                self.__y = float(arg.y)
+            elif isinstance(arg, Iterable):
+                self.__x = float(arg[0])
+                self.__y = float(arg[1])
+            elif isinstance(arg, (int,float)):
+                self.__x = float(arg)
+                self.__y = float(arg)
+            else:
+                raise TypeError('Invalid arguments')
         elif len(args) == 2:
-            self.__x = args[0]
-            self.__y = args[1]
-        elif len(args) == 0:
-            self.__x = 0
-            self.__y = 0
+            self.__x = float(args[0])
+            self.__y = float(args[1])
         else:
             raise ValueError('Invalid arguments')
     
@@ -647,19 +715,44 @@ class Vector2:
         return self.__x
     @x.setter
     def x(self,x):
-        self.__x = x
+        self.__x = float(x)
 
     @property
     def y(self):
         return self.__y
     @y.setter
     def y(self,y):
-        self.__y = y
+        self.__y = float(y)
     
     @classmethod
     def from_tuple(cls, data: Tuple[float, float]):
         return cls(data[0], data[1])
     
+    def magnitude(self) -> float:
+        return self.length()
+    def length(self) -> float:
+        return (self.x**2 + self.y**2)**0.5
+    def normal(self) -> 'Vector2':
+        length = self.length()
+        if length == 0:
+            return Vector2(0, 0)
+        return Vector2(self.x / length, self.y / length)
+    def normalize(self) -> 'Vector2':
+        return self.normal()
+    def dot(self, other: 'Vector2') -> float:
+        return self.x * other.x + self.y * other.y
+
+    def scale(self, scalar: float) -> 'Vector2':
+        return Vector2(self.x * scalar, self.y * scalar)
+    def scale_to_length(self, length: float) -> 'Vector2':
+        return self.normalize() * length
+
+    def rotate(self, angle: float) -> 'Vector2':
+        cos_a = math.cos(math.radians(angle))
+        sin_a = math.sin(math.radians(angle))
+
+        return Vector2(self.__x * cos_a - self.__y * sin_a, self.__x * sin_a + self.__y * cos_a)
+
     def __add__(self, other: 'Vector2') -> 'Vector2':
         return Vector2(self.x + other[0], self.y + other[1])
     
@@ -668,12 +761,17 @@ class Vector2:
     
     def __sub__(self, other: 'Vector2') -> 'Vector2':
         return Vector2(self.x - other[0], self.y - other[1])
+    def __rsub__(self, other: 'Vector2') -> 'Vector2':
+        return Vector2(other[0] - self.x, other[1] - self.y)
     
     def __mul__(self, scalar: float) -> 'Vector2':
         return Vector2(self.x * scalar, self.y * scalar)
     
     def __truediv__(self, scalar: float) -> 'Vector2':
         return Vector2(self.x / scalar, self.y / scalar)
+
+    def __neg__(self) -> 'Vector2':
+        return Vector2(-self.x, -self.y)
     
     def __iter__(self):
         return iter((self.x, self.y))
@@ -685,7 +783,12 @@ class Vector2:
         return [self.x,self.y][index]
     
     def __setitem__(self, index, value):
-        [self.x,self.y][index] = value
+        if index == 0:
+            self.x = value
+        elif index == 1:
+            self.y = value
+        else:
+            raise IndexError('Index out of range')
     
     def __len__(self):
         return 2

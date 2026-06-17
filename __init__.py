@@ -8,13 +8,15 @@ from .maths import (
     recta_entre_puntos,
     Vector2,
     LinearRegressionSimple,
-    LinearRegressionMultiple
+    LinearRegressionMultiple,
+    rect_colition
 )
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import *
 from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dinamics
 from .logger import Logger, debug_print
+from .collision_handler import Collision_handler
 
 import sys
 from .constants import *
