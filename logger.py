@@ -3,9 +3,12 @@ import sys
 import datetime
 import traceback
 import colorama
-from typing import Union, Self, Any
+from typing import Union, Self, Any, Optional
 from pathlib import Path
 from threading import Lock
+
+
+colorama.init(autoreset=True)
 
 StrOrPath = Union[str, Path]
 print_lock = Lock()
@@ -16,6 +19,7 @@ priority_txt = {
     3:'Error', 
     4:'Critical'
 }
+DEBUG, INFO, WARNING, ERROR, CRITICAL = range(5)
 color_priority = {
     0:colorama.Fore.BLUE, 
     1:colorama.Fore.GREEN, 
@@ -54,12 +58,6 @@ class Logger:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.logger.close()
-    
-    def __del__(self) -> None:
-        self.logger.close()
-    
-    def __close__(self) -> None:
-        self.logger.close()
 
     def __enter__(self) -> Self:
         return self
@@ -74,7 +72,7 @@ class Logger:
         self.logger.write('{}\n'.format(text))
 
 
-def debug_print(*text: Any, priority: int = 0) -> None:
+def debug_print(*text: Any, priority: int = 0, logger: Optional[Logger] = None) -> None:
     """
     priority:
         0: Debug
@@ -91,11 +89,19 @@ def debug_print(*text: Any, priority: int = 0) -> None:
     file = sys._getframe(1).f_code.co_filename.split('\\')[-1]
     text_file_2_deep = ""
     try :
-        text_file_2_deep = f"({sys._getframe(2).f_code.co_filename.split("\\")[-1]}) {sys._getframe(2).f_lineno} -> "
+        text_file_2_deep = f"({sys._getframe(2).f_code.co_filename.split('\\')[-1]}) {sys._getframe(2).f_lineno} -> "
     except:
         text_file_2_deep = ""
+        
+    print(f'[{priority_txt[priority]}] {datetime.datetime.now().strftime("%H:%M:%S")} {text_file_2_deep}{color_priority[priority]}({file}) ',end="")
     for x in text:
-        print(f'{color_priority[priority]}[{priority_txt[priority]}] {datetime.datetime.now().strftime("%H:%M:%S")} {text_file_2_deep}({file}) Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}{colorama.Style.RESET_ALL}')
+        print(f'{color_priority[priority]}Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}',end=" ")
+    print("\n",end=colorama.Style.RESET_ALL)
     if traceback.extract_stack() and priority >= 2:
         traceback.print_exc()
     print_lock.release()
+
+    
+    if logger:
+        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+        logger.write(f"[{priority_txt[priority]}] {timestamp} -> {' '.join(str(t) for t in text)}")
