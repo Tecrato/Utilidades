@@ -5,17 +5,20 @@ from dataclasses import dataclass,field
 class Deltatime:
 	dt:int = field(default=0,init=False,compare=False)
 	FPS:int = 60
-	smothfix:int = 2
+	smothfix:int = 3
+	multiplier:float = 1.0
 
 	def __post_init__(self) -> None:
 		self.last_time = time.time()
 
 
 	def update(self) -> None:
-		self.dt = (time.time()-self.last_time) * self.FPS
+		self.dt = (time.time()-self.last_time)
 		self.last_time = time.time()
-		if self.dt > self.smothfix:
-			self.dt = 1
+		if self.dt * self.FPS > self.smothfix:
+			self.dt = 1/self.FPS
+		else:
+			self.dt *= self.multiplier
 	def reset(self) -> None:
 		self.last_time = time.time()
 		self.dt = 0
