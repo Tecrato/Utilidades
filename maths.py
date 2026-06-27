@@ -69,9 +69,50 @@ def Angulo(
     # Cálculo del vector diferencia
     dx = punto_destino[0] - punto_origen[0]
     dy = punto_destino[1] - punto_origen[1]
+    if dx ==  0 and dy == 0:
+        raise ValueError("Los puntos no pueden ser el mismo")
     angulo_grados = math.degrees(math.atan2(dy, dx)) % 360.0
 
     return angulo_grados
+
+def Angulo_radians(
+        punto_origen: Union[Tuple[float, float], list[float]],
+        punto_destino: Union[Tuple[float, float], list[float]]
+    ) -> float:
+    """
+    Calcula el ángulo polar (en radianes) entre dos puntos en un plano 2D.
+    El ángulo se mide desde el eje X positivo en sentido antihorario.
+
+    Args:
+        punto_origen (Union[Tuple[float, float], list[float]]): Coordenadas (x, y) del punto de origen
+        punto_destino (Union[Tuple[float, float], list[float]]): Coordenadas (x, y) del punto destino
+
+    Returns:
+        float: Ángulo en radianes en el rango [0, 2π)
+
+    Raises:
+        ValueError: Si los puntos no son 2D
+
+    Ejemplos:
+        >>> Angulo_radians((0, 0), (3, 4))
+        0.9272952180016122
+        >>> Angulo_radians((2, 2), (2, 5))
+        1.5707963267948966
+        >>> Angulo_radians((0, 0), (-5, 0))
+        3.141592653589793
+    """
+    
+    # Validación de inputs
+    if len(punto_origen) != 2 or len(punto_destino) != 2:
+        raise ValueError("Ambos puntos deben ser coordenadas 2D numéricas")
+    # Cálculo del vector diferencia
+    dx = punto_destino[0] - punto_origen[0]
+    dy = punto_destino[1] - punto_origen[1]
+    if dx ==  0 and dy == 0:
+        raise ValueError("Los puntos no pueden ser el mismo")
+    angulo_radians = math.atan2(dy, dx) % (2 * math.pi)
+
+    return angulo_radians
 
 def Angulo_solo(
         vector: Union[Tuple[float, float], list[float]]
@@ -239,11 +280,11 @@ def recta_entre_puntos(
     return (round(m, 10), round(b, 10))
 
 def lineal_interception_func(
-    m1: float, 
-    b1: float, 
-    m2: float, 
-    b2: float
-) -> Union[Tuple[float, float], str, None]:
+        m1: float, 
+        b1: float, 
+        m2: float, 
+        b2: float
+    ) -> Union[Tuple[float, float], str, None]:
     """
     Calcula el punto de intersección entre dos rectas y = m1x + b1 e y = m2x + b2.
     
@@ -285,11 +326,11 @@ def lineal_interception_func(
     
     return (round(x, 10), round(y, 10))  # Redondeo para evitar errores de precisión
 def lineal_interception(
-    p1: Tuple[float, float], 
-    p2: Tuple[float, float], 
-    p3: Tuple[float, float], 
-    p4: Tuple[float, float]
-) -> Union[Tuple[float, float], str, None]:
+        p1: Tuple[float, float], 
+        p2: Tuple[float, float], 
+        p3: Tuple[float, float], 
+        p4: Tuple[float, float]
+    ) -> Union[Tuple[float, float], str, None]:
     """
     Calcula la intersección de dos líneas definidas por pares de puntos.
     
@@ -354,11 +395,11 @@ def lineal_interception(
     return (round(x, 10), round(y, 10))
 
 def line_to_polygon_intersection(
-    line: Tuple[Tuple[float, float], Tuple[float, float]],
-    polygon: List[Tuple[float, float]],
-    center: Tuple[float, float],
-    max_radio: float
-) -> List[Tuple[float, float]]:
+        line: Tuple[Tuple[float, float], Tuple[float, float]],
+        polygon: List[Tuple[float, float]],
+        center: Tuple[float, float],
+        max_radio: float
+    ) -> List[Tuple[float, float]]:
     """
     Encuentra intersecciones entre una línea y un polígono usando:
     - Spatial hashing para descartar bordes lejanos
@@ -497,13 +538,13 @@ def calcular_centroide(coordenadas: List[Tuple[Union[int, float], ...]]) -> List
 
 
 def calcular_integral(
-    funcion: Callable[[float], float],
-    a: float,
-    b: float,
-    metodo: Literal['simpson', 'trapezoidal', 'adaptive'] = 'simpson',
-    tolerancia: float = 1e-6,
-    max_profundidad: int = 20
-) -> float:
+        funcion: Callable[[float], float],
+        a: float,
+        b: float,
+        metodo: Literal['simpson', 'trapezoidal', 'adaptive'] = 'simpson',
+        tolerancia: float = 1e-6,
+        max_profundidad: int = 20
+    ) -> float:
     """
     Integración numérica adaptativa sin dependencias externas.
     
@@ -765,6 +806,8 @@ class Vector2:
         return Vector2(other[0] - self.x, other[1] - self.y)
     
     def __mul__(self, scalar: float) -> 'Vector2':
+        return Vector2(self.x * scalar, self.y * scalar)
+    def __rmul__(self, scalar: float) -> 'Vector2':
         return Vector2(self.x * scalar, self.y * scalar)
     
     def __truediv__(self, scalar: float) -> 'Vector2':
