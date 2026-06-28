@@ -10,20 +10,19 @@ class Engranaje(BasePolygon):
 			radio: float, 
 			angle: float = 0, 
 			color: Tuple[int, int, int] = (255, 255, 255),
-			cell_size: float = 100.0
 		):
 		
 		super().__init__(pos, radio, angle, cell_size)
-		self._n_dientes = dientes
-		self._size_diente = size_diente
+		self.__n_dientes = dientes
+		self.__size_diente = size_diente
 		self.color = color
-		self._generate()
+		self.__generate()
 
-	def _generate(self):
+	def __generate(self):
 		"""Generación precisa de dientes cuadrados radiales"""
 		vertices = []
 		paso_angular = 360 / self.n_dientes
-		radio_total = self._radio + self._size_diente
+		radio_total = self.radio + self.__size_diente
 		
 		for i in range(self.n_dientes):
 			angulo_central = radians(paso_angular * i + self._angle)
@@ -31,54 +30,52 @@ class Engranaje(BasePolygon):
 			# Base inicio
 			vertices.append(
 				(
-					self._pos[0] + cos(angulo_central - radians(paso_angular/4)) * self._radio,
-					self._pos[1] - sin(angulo_central - radians(paso_angular/4)) * self._radio
+					self.pos[0] + cos(angulo_central - radians(paso_angular/4)) * self.radio,
+					self.pos[1] - sin(angulo_central - radians(paso_angular/4)) * self.radio
 				)
 			)
 			# Punta inicio
 			vertices.append(
 				(
-					self._pos[0] + cos(angulo_central - radians(paso_angular/8)) * radio_total,
-					self._pos[1] - sin(angulo_central - radians(paso_angular/8)) * radio_total
+					self.pos[0] + cos(angulo_central - radians(paso_angular/8)) * radio_total,
+					self.pos[1] - sin(angulo_central - radians(paso_angular/8)) * radio_total
 				)
 			)
 
 			# Base fin
 			vertices.append(
 				(
-					self._pos[0] + cos(angulo_central + radians(paso_angular/8)) * radio_total,
-					self._pos[1] - sin(angulo_central + radians(paso_angular/8)) * radio_total
+					self.pos[0] + cos(angulo_central + radians(paso_angular/8)) * radio_total,
+					self.pos[1] - sin(angulo_central + radians(paso_angular/8)) * radio_total
 				)
 			)
 			# Punta fin
 			vertices.append(
 				(
-					self._pos[0] + cos(angulo_central + radians(paso_angular/4)) * self._radio,
-					self._pos[1] - sin(angulo_central + radians(paso_angular/4)) * self._radio
+					self.pos[0] + cos(angulo_central + radians(paso_angular/4)) * self.radio,
+					self.pos[1] - sin(angulo_central + radians(paso_angular/4)) * self.radio
 				)
 			)
 			
 		# Suavizar transiciones entre dientes
 		self._figure = vertices
-		self._edges = list(zip(self._figure, self._figure[1:] + self._figure[:1]))
-		self._build_spatial_grid()
+		self.update_rect()
 
 	# Setters actualizados para regeneración automática
 	@property
 	def n_dientes(self) -> int:
-		return self._n_dientes
+		return self.__n_dientes
 	@n_dientes.setter
 	def n_dientes(self, value: int):
-		if value != self._n_dientes and value > 3:
-			self._n_dientes = value
-			self._generate()
+		if value != self.__n_dientes and value > 3:
+			self.__n_dientes = value
+			self.__generate()
 
 	@property
 	def size_diente(self) -> float:
-		return self._size_diente
+		return self.__size_diente
 	@size_diente.setter
 	def size_diente(self, value: float):
-		if value != self._size_diente:
-			self._size_diente = value
-			self._generate()
-			self._update_bounding_box()
+		if value != self.__size_diente:
+			self.__size_diente = value
+			self.__generate()

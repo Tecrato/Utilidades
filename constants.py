@@ -1,6 +1,9 @@
 import ctypes
 from ctypes import wintypes
+from typing import Callable, List, Tuple, Union, NamedTuple
 
+
+DIV60FPS = .01666666666666666666666666666667
 
 class BITMAPINFOHEADER(ctypes.Structure):
     _fields_ = [("biSize", wintypes.DWORD), ("biWidth", wintypes.LONG),
@@ -14,3 +17,7 @@ class BITMAPINFOHEADER(ctypes.Structure):
 class BLENDFUNCTION(ctypes.Structure):
     _fields_ = [("BlendOp", ctypes.c_byte), ("BlendFlags", ctypes.c_byte),
                 ("SourceConstantAlpha", ctypes.c_byte), ("AlphaFormat", ctypes.c_byte)]
+    
+MenuItem = Union[Tuple[str, Callable], Tuple[str, List['MenuItem']]]
+
+
