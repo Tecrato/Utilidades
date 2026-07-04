@@ -31,6 +31,7 @@ from .figuras.poligono_regular import PoligonoRegular
 from .figuras.poligono_irregular import PoligonoIrregular
 from .figuras.engranajes import Engranaje
 
+from . import Animator
 
 print(
     "Bienvenido a las Utilidades Variadas, Hecho por Edouard Sandoval\n"
