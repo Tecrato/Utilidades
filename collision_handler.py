@@ -3,10 +3,17 @@ from typing import Optional, Tuple, TypedDict
 
 from .maths import left_top_width_height, Rect, rect_colition
 
+
+"Recomendaciones:"
+"Si es posible añadir el rect al sistema, usar solo get_collides_of_external_rect() es mas costoso para la CPU"
+""
+
+
 class ObjectInfo(TypedDict):
     rect: Rect
     aditional_info: dict
     zones: set[tuple[int,int]]
+    
 
 class Zone_node:
     def __init__(self, left, top, width, height):
@@ -48,17 +55,21 @@ class Collision_handler:
             for x in y:
                 x.objs.clear()
         self.objects.clear()
+
+    def get_zones_matrix_number_in(self, rect: Rect):
+        row_min = max(0, rect.top // self.node_size)
+        row_max = min(self.num_nodes[1] - 1, (rect.top + rect.height - 1) // self.node_size)
+        col_min = max(0, rect.left // self.node_size)
+        col_max = min(self.num_nodes[0] - 1, (rect.left + rect.width - 1) // self.node_size)
+        return row_min, row_max, col_min, col_max
+    
     def add_element(self, id_obj, rect: left_top_width_height, aditional_info: Optional[dict] = None, **kwargs):
         if aditional_info is None:
             aditional_info = {}
         rect = Rect(*rect)
 
 
-
-        row_min = max(0, rect.top // self.node_size)
-        row_max = min(self.num_nodes[1] - 1, (rect.top + rect.height - 1) // self.node_size)
-        col_min = max(0, rect.left // self.node_size)
-        col_max = min(self.num_nodes[0] - 1, (rect.left + rect.width - 1) // self.node_size)
+        row_min, row_max, col_min, col_max = self.get_zones_matrix_number_in(rect)
 
         zones = set()
         for y in range(int(row_min), int(row_max) + 1):
@@ -73,6 +84,17 @@ class Collision_handler:
         for zone in self.objects[id_obj]["zones"]:
             self.zone_matrix[zone[1]][zone[0]].objs.discard(id_obj)
         return self.objects.pop(id_obj)
+
+    def filter_objects(self, filter_func):
+        return {k: v for k, v in self.objects.items() if filter_func(v)}
+
+    def del_objects_with_filter_func(self, filter_func):
+        objs_to_delete = []
+        for k, v in self.objects.items():
+            if filter_func(v):
+                objs_to_delete.append(k)
+        for k in objs_to_delete:
+            self.del_element(k)
 
     def move_obj(self,id_obj,r):
         obj = self.del_element(id_obj)
@@ -126,6 +148,17 @@ class Collision_handler:
         for obj in objs:
             if rect_colition(self.objects[id_obj]["rect"], self.objects[obj]["rect"]):
                 lista.add(obj)
+        return lista
+
+    def get_collides_of_external_rect(self, rect):
+        rect = Rect(*rect)
+        row_min, row_max, col_min, col_max = self.get_zones_matrix_number_in(rect)
+        lista = set()
+        for y in range(int(row_min), int(row_max) + 1):
+            for x in range(int(col_min), int(col_max) + 1):
+                for obj in self.zone_matrix[y][x].objs:
+                    if rect_colition(rect, self.objects[obj]["rect"]):
+                        lista.add(obj)
         return lista
 
     def __getitem__(self, key):

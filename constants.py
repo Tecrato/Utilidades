@@ -21,3 +21,14 @@ class BLENDFUNCTION(ctypes.Structure):
 MenuItem = Union[Tuple[str, Callable], Tuple[str, List['MenuItem']]]
 
 
+class Rect(NamedTuple):
+    left: float
+    top: float
+    width: float
+    height: float
+
+    def __repr__(self):
+        return f"Rect({self.left}, {self.top}, {self.width}, {self.height})"
+
+    def __getitem__(self, index):
+        return (self.left, self.top, self.width, self.height)[index]

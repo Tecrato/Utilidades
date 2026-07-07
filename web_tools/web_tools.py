@@ -170,7 +170,7 @@ class Http_Session:
         return {cookie.name: cookie.value for cookie in self.session}
 
     @cookies.setter
-    def cookies(self, cookies: Dict[str, str]) -> None:
+    def cookies(self, cookies: Dict[str, str]|str) -> None:
         # Set cookies from dict (simplificado)
         if isinstance(cookies, str):
             cookies = parse_cookies(cookies)
