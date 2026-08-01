@@ -1,4 +1,5 @@
 import time
+from typing import Callable
 from dataclasses import dataclass,field
 
 @dataclass
@@ -54,6 +55,21 @@ def tener_el_tiempo(func):
 			print(f'El tiempo fue {tiempo_final:.3f} ms')
 		else:
 			print(f'El tiempo fue {tiempo_final:.3f} seg')
+		return result
+	return wr
+
+def func_exec_time(func: Callable):
+	def wr(*args, **kwargs) -> None:
+		time1 = time.perf_counter()
+
+		result = func(*args,**kwargs)
+
+		tiempo_final = time.perf_counter() - time1
+		if tiempo_final < 1.0:
+			tiempo_final *= 1000
+			print(f'({func.__name__}) => {tiempo_final:.3f} ms')
+		else:
+			print(f'({func.__name__}) => {tiempo_final:.3f} seg')
 		return result
 	return wr
 

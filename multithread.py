@@ -8,9 +8,9 @@ class Funcs_pool:
         self.running: dict = dict()
         self.running_ids: dict = dict()
         
-    def add(self,alias: str, *funcs) -> None:
+    def add(self,alias: str, *funcs, daemon=True) -> None:
         if alias in self.threads: raise Exception('Ya existe la key')
-        self.threads[f'{alias}'] = {'funcs': funcs}
+        self.threads[f'{alias}'] = {'funcs': funcs, 'daemon':  True}
         if not f'{alias}' in self.running:
             self.running[f'{alias}'] = {}
             self.running_ids[f'{alias}'] = []
@@ -43,7 +43,7 @@ class Funcs_pool:
         # self.running[f'{alias}_{id}'] = Thread(target=self.new,args=(alias,id))
         # self.running[f'{alias}_{id}'].start()
         self.running_ids[f'{alias}'].append(id)
-        self.running[f'{alias}'][f'{id}'] = Thread(target=self.__new,args=(alias,id), daemon=True)
+        self.running[f'{alias}'][f'{id}'] = Thread(target=self.__new,args=(alias,id), daemon=self.threads[f'{alias}']['daemon'])
         self.running[f'{alias}'][f'{id}'].start()
 
     def __new(self,alias, id) -> None:
