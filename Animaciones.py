@@ -1,6 +1,7 @@
 from typing import Tuple, Union, List
 from math import pi, comb
-from pygame import Vector2
+from .maths import Vector2
+
 
 
 class Simple_acceleration:
@@ -22,6 +23,7 @@ class Curva_de_Bezier:
         self.timer = timer
         self.extra_time = extra_time
         self.points = [Vector2(ag) for ag in points]
+        self.actual_pos = self.points[0]
         if len(self.points) < 2:
             raise 'Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)'
 
@@ -32,16 +34,24 @@ class Curva_de_Bezier:
         ' - Define en que % de la animacion estara'
         self.__T = progress
 
-    def update(self,dt=1) -> Vector2|bool:
+    def update(self,dt: float|int=1) -> Vector2:
+        # if self.__T >= self.extra_time:
+        #     return True
         self.__T += (1/self.timer) * dt
-        if self.__T > self.extra_time:
-            self.__T = 1
-            return True
+        if self.__T >= self.extra_time:
+            self.__T = self.extra_time
         result = Vector2(0,0)
         for i,p in enumerate(self.points):
             coeff = comb(len(self.points)-1,i) * self.__T**i * (1-self.__T)**(len(self.points)-1-i)
             result += coeff * p
+        self.actual_pos = result
         return result
+    
+    def get_pos(self) -> Vector2:
+        return self.actual_pos
+    
+    def is_finished(self) -> bool:
+        return self.__T >= self.extra_time
 
 class Second_Order_Dinamics:
     """
@@ -89,6 +99,7 @@ class Second_Order_Dinamics:
         # Manejo automático de dt para aplicaciones en tiempo real
         if dt > self._dt_crit:
             dt = self._dt_crit
+        
         
         target_vec = Vector2(target)
         
