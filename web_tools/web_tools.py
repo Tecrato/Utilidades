@@ -45,7 +45,7 @@ def get(url, timeout=10, params=None, headers: dict = None) -> Response:
     return Response(urllib.request.urlopen(r, timeout=timeout))
 
 
-def send_post(url, data: dict = None, timeout=10, headers: dict={}, parser='form') -> Response:
+def send_post(url, data: dict | None = None, timeout=10, headers: dict={}, parser='form') -> Response:
     if not headers:
         headers = DEFAULT_HEADERS
     if data and parser == 'form':

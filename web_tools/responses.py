@@ -26,6 +26,18 @@ class Response:
     @property
     def text(self):
         return self.response.read().decode('utf-8')
+
+    @property
+    def status(self):
+        return self.response.status
+    
+    @property
+    def status_code(self):
+        return self.response.getcode()
+
+    @property
+    def length(self):
+        return self.response.length
     
     def __enter__(self):
         return self
@@ -36,3 +48,8 @@ class Response:
         self.response.close()
     def __del__(self):
         self.close()
+
+    def __str__(self):
+        return f"Response(status_code={self.status}, headers={self.headers}, reason={self.reason}, length={self.response.length})"
+    def __repr__(self):
+        return self.__str__()
