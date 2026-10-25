@@ -12,20 +12,20 @@ class Engranaje(BasePolygon):
 			color: Tuple[int, int, int] = (255, 255, 255),
 		):
 		
-		super().__init__(pos, radio, angle, cell_size)
+		super().__init__(pos, radio, angle)
 		self.__n_dientes = dientes
 		self.__size_diente = size_diente
 		self.color = color
-		self.__generate()
+		self.generate()
 
-	def __generate(self):
+	def generate(self):
 		"""Generación precisa de dientes cuadrados radiales"""
 		vertices = []
 		paso_angular = 360 / self.n_dientes
 		radio_total = self.radio + self.__size_diente
 		
 		for i in range(self.n_dientes):
-			angulo_central = radians(paso_angular * i + self._angle)
+			angulo_central = radians(paso_angular * i + self.angle)
 			
 			# Base inicio
 			vertices.append(
@@ -58,7 +58,7 @@ class Engranaje(BasePolygon):
 			)
 			
 		# Suavizar transiciones entre dientes
-		self._figure = vertices
+		self.figura = vertices
 		self.update_rect()
 
 	# Setters actualizados para regeneración automática
@@ -69,7 +69,7 @@ class Engranaje(BasePolygon):
 	def n_dientes(self, value: int):
 		if value != self.__n_dientes and value > 3:
 			self.__n_dientes = value
-			self.__generate()
+			self.generate()
 
 	@property
 	def size_diente(self) -> float:
@@ -78,4 +78,4 @@ class Engranaje(BasePolygon):
 	def size_diente(self, value: float):
 		if value != self.__size_diente:
 			self.__size_diente = value
-			self.__generate()
+			self.generate()

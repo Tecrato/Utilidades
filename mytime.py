@@ -4,43 +4,45 @@ from dataclasses import dataclass,field
 
 @dataclass
 class Deltatime:
-	dt:int = field(default=0,init=False,compare=False)
+	dt:int|float = field(default=0,init=False,compare=False)
 	FPS:int = 60
-	smothfix:int = 3
+	smoothfix:int = 3
 	multiplier:float = 1.0
 
 	def __post_init__(self) -> None:
-		self.last_time = time.time()
+		self.last_time = time.perf_counter()
 
 
 	def update(self) -> None:
-		self.dt = (time.time()-self.last_time)
-		self.last_time = time.time()
-		if self.dt * self.FPS > self.smothfix:
+		self.dt = (time.perf_counter()-self.last_time)
+		self.last_time = time.perf_counter()
+		if self.dt * self.FPS > self.smoothfix:
 			self.dt = 1/self.FPS
 		else:
 			self.dt *= self.multiplier
 	def reset(self) -> None:
-		self.last_time = time.time()
+		self.last_time = time.perf_counter()
 		self.dt = 0
 	
 	def __str__(self):
 		return f'FPS: {self.FPS:.1f} dt: {self.dt:.1f}'
 
-	def __sum__(self,other):
+	def __add__(self, other):
 		return self.dt + other
-	def __rsum__(self,other):
+	def __radd__(self, other):
 		return self.dt + other
 	def __sub__(self,other):
 		return self.dt - other
 	def __rsub__(self,other):
-		return self.dt - other
+		return other - self.dt
 	def __mul__(self,other):
 		return self.dt * other
 	def __rmul__(self,other):
 		return self.dt * other
 	def __truediv__(self,other):
 		return self.dt / other
+	def __rtruediv__(self,other):
+		return other / self.dt
 		
 
 def tener_el_tiempo(func):
@@ -75,8 +77,8 @@ def func_exec_time(func: Callable):
 
 def format_date(seconds,escalones=5):
 	result = {'seg':0,'min':0,'hour':0,'day':0,'year':0}
-	if 5 < escalones < 1:
-		raise Exception('Debe tener minimo 1 escalon (segundos) y un maximo de 5 (años)')
+	if not 1 <= escalones <= 5:
+		raise ValueError('Debe tener minimo 1 escalon (segundos) y un maximo de 5 (años)')
 	result['seg'] = int(seconds % 60)
 	if escalones > 1:
 		seconds -= result['seg']

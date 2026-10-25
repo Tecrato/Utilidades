@@ -25,7 +25,7 @@ class Curva_de_Bezier:
         self.points = [Vector2(ag) for ag in points]
         self.actual_pos = self.points[0]
         if len(self.points) < 2:
-            raise 'Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)'
+            raise ValueError('Debes dar 2 puntos o mas para logar la animacion deseada (Cubic Bezier)')
 
     def move(self, points) -> None:
         self.points = [Vector2(ag) for ag in points]
@@ -53,7 +53,7 @@ class Curva_de_Bezier:
     def is_finished(self) -> bool:
         return self.__T >= self.extra_time
 
-class Second_Order_Dinamics:
+class Second_Order_Dynamics:
     """
     Sistema de dinámica de segundo orden para animaciones fluidas y realistas.
     

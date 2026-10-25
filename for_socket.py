@@ -1,6 +1,6 @@
 import socket
 import time
-from threading import Thread, Lock, Event
+from threading import Thread, Lock, Event, current_thread
 from typing import Optional, Callable
 
 class Socket_Server_Threaded:
@@ -112,8 +112,8 @@ class Socket_Server_Threaded:
             except:
                 pass
             with self.lock:
-                if Thread.current_thread() in self.threads:
-                    self.threads.remove(Thread.current_thread())
+                if current_thread() in self.threads:
+                    self.threads.remove(current_thread())
 
     def send(self, client: socket.socket, data: bytes) -> bool:
         try:

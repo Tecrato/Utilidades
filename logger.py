@@ -48,9 +48,8 @@ class Logger:
 
     def write(self, text) -> None:
         if self.printing:
-            print_lock.acquire()
-            print("Añadido a logger:", text)
-            print_lock.release()
+            with print_lock:
+                print("Añadido a logger:", text)
         self.logger.write(str(text)+'\n')
     
     def open_folder(self):
@@ -83,23 +82,23 @@ def debug_print(*text: Any, priority: int = 0, logger: Optional[Logger] = None) 
     """
     if not 0 <= priority <= 4:
         raise ValueError(f'Invalid priority: {priority}, valid priorities between 0 and 4')
-    print_lock.acquire()
-    # va a mostrar tambien el nombre del archivo entre parentesis
+    with print_lock:
+        # va a mostrar tambien el nombre del archivo entre parentesis
 
-    file = sys._getframe(1).f_code.co_filename.split('\\')[-1]
-    text_file_2_deep = ""
-    try :
-        text_file_2_deep = f"({sys._getframe(2).f_code.co_filename.split('\\')[-1]}) {sys._getframe(2).f_lineno} -> "
-    except:
+        marco = sys._getframe(1)
+        fichero = Path(marco.f_code.co_filename).name
         text_file_2_deep = ""
-        
-    print(f'[{priority_txt[priority]}] {datetime.datetime.now().strftime("%H:%M:%S")} {text_file_2_deep}{color_priority[priority]}({file}) ',end="")
-    for x in text:
-        print(f'{color_priority[priority]}Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}',end=" ")
-    print("\n",end=colorama.Style.RESET_ALL)
-    if traceback.extract_stack() and priority >= 2:
-        traceback.print_exc()
-    print_lock.release()
+        try :
+            text_file_2_deep = f"({Path(sys._getframe(2).f_code.co_filename).name}) {sys._getframe(2).f_lineno} -> "
+        except:
+            text_file_2_deep = ""
+            
+        print(f'[{priority_txt[priority]}] {datetime.datetime.now().strftime("%H:%M:%S")} {text_file_2_deep}{color_priority[priority]}({fichero}) ',end="")
+        for x in text:
+            print(f'{color_priority[priority]}Line {sys._getframe(1).f_lineno} -> <{type(x).__name__}>{str(x)}',end=" ")
+        print("\n",end=colorama.Style.RESET_ALL)
+        if priority >= 2 and sys.exc_info()[0] is not None:
+            traceback.print_exc() 
 
     
     if logger:

@@ -12,7 +12,7 @@ from typing import (
 from .constants import Rect
 left_top_width_height = tuple[float,float,float,float]
 
-def Hipotenuza(vector1, vector2) -> int:
+def Hipotenusa(vector1, vector2) -> int:
     """
     Calcula la distancia euclídea entre dos vectores numéricos de igual dimensión.
 
@@ -27,9 +27,9 @@ def Hipotenuza(vector1, vector2) -> int:
         ValueError: Si los vectores tienen dimensiones diferentes
 
     Ejemplo:
-        >>> Hipotenuza([0, 0], [3, 4])
+        >>> Hipotenusa([0, 0], [3, 4])
         5.0
-        >>> Hipotenuza((1, 2, 3), (4, 5, 6))
+        >>> Hipotenusa((1, 2, 3), (4, 5, 6))
         5.196152422706632
     """
     if len(vector1) != len(vector2):
@@ -209,7 +209,7 @@ def notacion_cientifica(n: int) -> str:
     
     return f"{sign}{s[0]}{formatted_decimal}x10^{exponent}"
 
-def rect_colition(rect1: left_top_width_height|Rect, rect2: left_top_width_height|Rect):
+def rect_collision(rect1: left_top_width_height|Rect, rect2: left_top_width_height|Rect):
     if (
         (
             rect1[0]<rect2[0]+rect2[2] and
@@ -619,17 +619,8 @@ class LinearRegressionSimple:
         self.error = self.calcular_error()  # Calcular error cuadrático medio
 
     def calcular_pendiente(self):
-        x_sum = sum(self.x)
-        y_sum = sum(self.y)
-        xy_sum = sum(xi * yi for xi, yi in zip(self.x, self.y))
-        xx_sum = sum(xi ** 2 for xi in self.x)
-        n = len(self.x)
-        
-        # Cálculo de la pendiente (a) y la intersección (b)
-        a = (n * xy_sum - x_sum * y_sum) / (n * xx_sum - x_sum ** 2)
-        b = (y_sum - a * x_sum) / n
-        
-        return a, b
+        # Única implementación: la función libre del módulo
+        return calcular_pendiente(self.x, self.y)
 
     def calcular_error(self):
         error = 0
@@ -647,17 +638,45 @@ class LinearRegressionSimple:
         return (self.a * x) + self.b
     
 def calcular_pendiente(datos_x, datos_y):
-    x,y,xy,xx,a,b = 0,0,0,0,0,0
-    for l_x,l_y in zip(datos_x,datos_y):
-        for x,y in zip(l_x,l_y):
-            x += x
-            y += y
-            xy += x * y
-            xx += x ** 2
-    
-    a = ((len(datos_x) * xy) - (x * y)) / ((len(datos_x) * xx) - (x ** 2))
-    b = ((y - b * x) / len(datos_x))
-    return a,b
+    """
+    Calcula la pendiente (a) y la ordenada al origen (b) de la recta
+    y = a*x + b por mínimos cuadrados (regresión lineal simple).
+
+    Args:
+        datos_x (Iterable[float]): Valores de x
+        datos_y (Iterable[float]): Valores de y
+
+    Returns:
+        tuple[float, float]: (a, b)
+
+    Raises:
+        ValueError: Si las listas tienen distinto largo, están vacías, o todos
+            los valores de x son iguales (la pendiente no está definida).
+
+    Ejemplos:
+        >>> calcular_pendiente([1, 2, 3], [2, 4, 6])
+        (2.0, 0.0)
+        >>> calcular_pendiente([1, 2, 3], [1, 2, 3])
+        (1.0, 0.0)
+    """
+    n = len(datos_x)
+    if n != len(datos_y):
+        raise ValueError("Las listas de 'x' e 'y' deben tener la misma longitud.")
+    if n == 0:
+        raise ValueError("Las listas no pueden estar vacías.")
+
+    x_sum = sum(datos_x)
+    y_sum = sum(datos_y)
+    xy_sum = sum(xi * yi for xi, yi in zip(datos_x, datos_y))
+    xx_sum = sum(xi ** 2 for xi in datos_x)
+
+    denominador = n * xx_sum - x_sum ** 2
+    if denominador == 0:
+        raise ValueError("Todos los valores de x son iguales: la pendiente no está definida.")
+
+    a = (n * xy_sum - x_sum * y_sum) / denominador
+    b = (y_sum - a * x_sum) / n
+    return a, b
 
 class LinearRegressionMultiple:
     def __init__(self, learning_rate=0.01, iterations=5_000):
@@ -726,7 +745,10 @@ class Vector2:
     @overload
     def __init__(self, vector: Self): ...
     @overload
+    def __init__(self, vector: Tuple[int|float,int|float]): ...
+    @overload
     def __init__(self, x: float = 0.0, y: float = 0.0): ...
+    
     def __init__(self, *args):
         if len(args) == 0:
             self.__x = 0.0
@@ -737,12 +759,12 @@ class Vector2:
             if isinstance(arg, Vector2):
                 self.__x = float(arg.x)
                 self.__y = float(arg.y)
-            elif isinstance(arg, Iterable):
-                self.__x = float(arg[0])
-                self.__y = float(arg[1])
             elif isinstance(arg, (int,float)):
                 self.__x = float(arg)
                 self.__y = float(arg)
+            elif getattr(arg, "__getitem__"):
+                self.__x = float(arg[0])
+                self.__y = float(arg[1])
             else:
                 raise TypeError('Invalid arguments')
         elif len(args) == 2:

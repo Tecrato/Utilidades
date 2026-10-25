@@ -1,6 +1,6 @@
 from .maths import (
     Angulo,
-    Hipotenuza,
+    Hipotenusa,
     format_size_bits_to_bytes_str,
     lineal_interception,
     lineal_interception_func, 
@@ -9,12 +9,12 @@ from .maths import (
     Vector2,
     LinearRegressionSimple,
     LinearRegressionMultiple,
-    rect_colition
+    rect_collision
 )
 from .mytime import Deltatime, tener_el_tiempo, format_date
 from .multithread import Funcs_pool, Semaforo
 from .web_tools import *
-from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dinamics
+from .Animaciones import Simple_acceleration, Curva_de_Bezier, Second_Order_Dynamics
 from .logger import Logger, debug_print
 from .collision_handler import Collision_handler
 
@@ -33,6 +33,5 @@ from .figuras.engranajes import Engranaje
 
 from . import Animator
 
-print(
-    "Bienvenido a las Utilidades Variadas, Hecho por Edouard Sandoval\n"
-)
+def about() -> None:
+    print("Bienvenido a las Utilidades Variadas, Hecho por Edouard Sandoval\n")

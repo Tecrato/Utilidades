@@ -8,18 +8,17 @@ class PoligonoIrregular(BasePolygon):
                  puntos: List[Dict[str, float]], 
                  pos: Tuple[float, float] = (0, 0), 
                  radio: float = 20, 
-                 angle: float = 0, 
-                 cell_size: float = 50.0):
-        super().__init__(pos, radio, angle, cell_size)
+                 angle: float = 0):
+        super().__init__(pos, radio, angle)
         self.__puntos = puntos
-        self.__generate()
+        self.generate()
 
-    def __generate(self):
+    def generate(self):
         """Generación vectorizada con transformaciones in situ"""
-        self._figure = [
+        self.figura = [
             (
-                self._pos[0] + cos(radians(p[0] + self._angle)) * p[1] * self._radio,
-                self._pos[1] - sin(radians(p[0] + self._angle)) * p[1] * self._radio
+                self.pos.x + cos(radians(p[0] + self.angle)) * p[1] * self.radio,
+                self.pos.y - sin(radians(p[0] + self.angle)) * p[1] * self.radio
             ) for p in self.__puntos
         ]
         self.update_rect()
@@ -28,4 +27,4 @@ class PoligonoIrregular(BasePolygon):
         """Actualización parcial de un punto con invalidación selectiva"""
         if 'angle' in kwargs or 'radio' in kwargs:
             self.__puntos[index].update(kwargs)
-            self.__generate()
+            self.generate()

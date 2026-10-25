@@ -116,7 +116,10 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
 class Http_Session:
     def __init__(self, certificate_file=None, verify=True):
         self.session = cookiejar.CookieJar()
-        self.ssl_context = default_ssl_context
+        self.ssl_context = ssl.create_default_context(
+            ssl.Purpose.SERVER_AUTH,
+            cafile=certifi.where()
+        )
         if not verify:
             self.ssl_context.check_hostname = False
             self.ssl_context.verify_mode = ssl.CERT_NONE
@@ -141,23 +144,24 @@ class Http_Session:
             debug_print(e,priority=2)
             return errors_handler(e)
     
-    def post(self, url, data: dict|str = {}, timeout=10, headers: dict = None, parser='json', **kwargs) -> Response:
-        if not headers:
-            headers = self.__headers
+    def post(self, url, data = None, timeout=10, headers = None, parser='json', **kwargs) -> Response:
+        cabeceras = dict(self.__headers)
+        if headers:
+            cabeceras.update(headers)
         if parser == 'form':
-            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+            cabeceras['Content-Type'] = 'application/x-www-form-urlencoded'
             data = urllib.parse.urlencode(data, doseq=True).encode('utf-8')
         elif parser == 'json':
-            headers['Content-Type'] = 'application/json'
-            data = json.dumps(data).encode('utf-8')
+            cabeceras['Content-Type'] = 'application/json'
+            data = b"" if data is None else json.dumps(data).encode('utf-8')
         elif parser == "plain text":
             data = data.encode()
-        r = urllib.request.Request(url, data=data, headers=headers if headers else self.__headers, method='POST', **kwargs)
+        r = urllib.request.Request(url, data=data, headers=cabeceras, method='POST', **kwargs)
         try:
             return Response(self.opener.open(r, timeout=timeout))
         except Exception as e:
-            debug_print(e,1)
-            errors_handler(e)
+            debug_print(e,priority=2)
+            return errors_handler(e)
 
     def __enter__(self):
         return self

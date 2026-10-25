@@ -1,7 +1,7 @@
 import math
 from typing import Optional, Tuple, TypedDict
 
-from .maths import left_top_width_height, Rect, rect_colition
+from .maths import left_top_width_height, Rect, rect_collision
 
 
 "Recomendaciones:"
@@ -11,7 +11,7 @@ from .maths import left_top_width_height, Rect, rect_colition
 
 class ObjectInfo(TypedDict):
     rect: Rect
-    aditional_info: dict
+    additional_info: dict
     zones: set[tuple[int,int]]
     
 
@@ -63,9 +63,9 @@ class Collision_handler:
         col_max = min(self.num_nodes[0] - 1, (rect.left + rect.width - 1) // self.node_size)
         return row_min, row_max, col_min, col_max
     
-    def add_element(self, id_obj, rect: left_top_width_height, aditional_info: Optional[dict] = None, **kwargs):
-        if aditional_info is None:
-            aditional_info = {}
+    def add_element(self, id_obj, rect: left_top_width_height, additional_info: Optional[dict] = None, **kwargs):
+        if additional_info is None:
+            additional_info = {}
         rect = Rect(*rect)
 
 
@@ -77,7 +77,7 @@ class Collision_handler:
                 self.zone_matrix[y][x].objs.add(id_obj)
                 zones.add((x, y))
 
-        self.objects[id_obj] = {"rect": rect, "aditional_info": aditional_info, "zones": zones}
+        self.objects[id_obj] = {"rect": rect, "additional_info": additional_info, "zones": zones}
 
 
     def del_element(self,id_obj):
@@ -98,7 +98,7 @@ class Collision_handler:
 
     def move_obj(self,id_obj,r):
         obj = self.del_element(id_obj)
-        self.add_element(id_obj, r, obj["aditional_info"])
+        self.add_element(id_obj, r, obj["additional_info"])
 
     def get_all_zones_rects(self):
         "Return : gets all zones rects"
@@ -146,7 +146,7 @@ class Collision_handler:
         objs = self.get_objects_in_zone(id_obj)
         lista = set()
         for obj in objs:
-            if rect_colition(self.objects[id_obj]["rect"], self.objects[obj]["rect"]):
+            if rect_collision(self.objects[id_obj]["rect"], self.objects[obj]["rect"]):
                 lista.add(obj)
         return lista
 
@@ -157,7 +157,7 @@ class Collision_handler:
         for y in range(int(row_min), int(row_max) + 1):
             for x in range(int(col_min), int(col_max) + 1):
                 for obj in self.zone_matrix[y][x].objs:
-                    if rect_colition(rect, self.objects[obj]["rect"]):
+                    if rect_collision(rect, self.objects[obj]["rect"]):
                         lista.add(obj)
         return lista
 

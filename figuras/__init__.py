@@ -1,3 +1,10 @@
+from .poligono_regular import PoligonoRegular
+from .poligono_irregular import PoligonoIrregular
+from .engranajes import Engranaje
+
+__all__ = ["PoligonoRegular", "PoligonoIrregular", "Engranaje"]
+
+
 def import_from_file(file_path):
     file = open(file_path, 'r').readlines()[0]
     lista_puntos = []

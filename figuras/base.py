@@ -1,4 +1,6 @@
+from abc import abstractmethod
 from typing import List, Tuple
+from ..constants import Rect
 from ..maths import Vector2
 
 class BasePolygon:
@@ -11,8 +13,11 @@ class BasePolygon:
         self.__radio = radio
         self.__angle = angle
         self.figura: List[Tuple[float, float]] = []
-        self.rect: Tuple[float, float, float, float] = (0, 0, 0, 0)
+        self.rect: Rect = Rect(0, 0, 0, 0)
         self.use_mouse_wheel = False
+
+    @abstractmethod
+    def generate(self): ...
 
     # ==================== PROPIEDADES OPTIMIZADAS ====================
     @property
@@ -45,23 +50,27 @@ class BasePolygon:
             self.generate()
     @property
     def height(self) -> float:
-        return self.rect[3]-self.rect[1]
+        return self.rect.height
+
+    @property
+    def width(self) -> float:
+        return self.rect.width
 
     def rotate(self, angle: float):
         self.angle += angle
         
     
     def update_rect(self):
-        """Actualiza el AABB (Axis-Aligned Bounding Box) del polígono"""
+        """Actualiza el AABB del polígono en el formato (L, T, W, H) de Utilidades."""
         if not self.figura:
-            self.rect = (0, 0, 0, 0)
+            self.rect = Rect(0, 0, 0, 0)
             return
-            
+
         min_x = min(p[0] for p in self.figura)
         max_x = max(p[0] for p in self.figura)
         min_y = min(p[1] for p in self.figura)
         max_y = max(p[1] for p in self.figura)
-        self.rect = (min_x, min_y, max_x, max_y)
+        self.rect = Rect(min_x, min_y, max_x - min_x, max_y - min_y)
 
 
     @property

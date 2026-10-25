@@ -19,6 +19,7 @@ class PoligonoRegular(BasePolygon):
                 self.pos.y + sin(radians(step * i + self.angle)) * self.radio
             ) for i in range(self.__lados)
         ]
+        self.update_rect()
         
 
     @property
