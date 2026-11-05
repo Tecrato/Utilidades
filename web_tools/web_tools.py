@@ -6,6 +6,7 @@ import urllib.error
 import json
 import certifi
 import ssl
+from functools import lru_cache
 
 from typing import Dict, Self
 from http import cookiejar
@@ -113,19 +114,26 @@ def check_update(program_name:str,version_actual:str,version_deseada='last'):
     else:
         return False
 
+
+@lru_cache(maxsize=1)
+def contexto_por_defecto():
+    return ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=certifi.where())
+
 class Http_Session:
     def __init__(self, certificate_file=None, verify=True):
         self.session = cookiejar.CookieJar()
-        self.ssl_context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH,
-            cafile=certifi.where()
-        )
-        if not verify:
-            self.ssl_context.check_hostname = False
-            self.ssl_context.verify_mode = ssl.CERT_NONE
+        if verify and not certificate_file:
+            # solo lectura: se comparte entre todas las sesiones
+            self.ssl_context = contexto_por_defecto()
+        else:
+            # verify=False o certificado propio: contexto privado (mutarlo no afecta a los demás)
+            self.ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=certifi.where())
+            if not verify:
+                self.ssl_context.check_hostname = False
+                self.ssl_context.verify_mode = ssl.CERT_NONE
+            if certificate_file:
+                self.ssl_context.load_verify_locations(certificate_file)
 
-        if certificate_file:
-            self.ssl_context.load_verify_locations(certificate_file)
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.session),urllib.request.HTTPHandler(),urllib.request.HTTPSHandler(context=self.ssl_context))
         self.__headers = {'User-Agent': 'Mozilla/5.0'}
     
@@ -208,12 +216,14 @@ class Http_Session:
     def headers(self, headers: dict) -> None:
         self.__headers.update(headers)
 
+
     def copy(self) -> Self:
-        copy = Http_Session()
-        copy.session = self.session
-        copy.opener = self.opener
-        copy.headers = self.__headers.copy()
-        return copy
+        nuevo = Http_Session.__new__(Http_Session)      # sin __init__
+        nuevo.session = self.session
+        nuevo.opener = self.opener
+        nuevo.ssl_context = self.ssl_context            # se comparte
+        nuevo._Http_Session__headers = dict(self._Http_Session__headers)
+        return nuevo
 
     def __del__(self):
         self.close()

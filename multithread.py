@@ -2,6 +2,8 @@ from typing import Any, Callable
 import time
 from threading import Thread, Lock, Condition, Timer, Event, current_thread
 
+from .logger import debug_print
+
 class Funcs_pool:
     """Lanza secuencias de funciones en hilos, una ejecución por alias e id.
 
@@ -134,9 +136,14 @@ class Interval_funcs:
         return True
 
     def __start_func(self, alias, stop: Event):
-        # stop.wait(t) duerme el intervalo y despierta al instante si se pide parar
+        # stop.wait(t) duerme el intervalo y despierta al instante si se pide parar.
+        # Si la función lanza, el intervalo sigue vivo: el hilo no puede morir
+        # en silencio dejando el objeto como si estuviera funcionando.
         while not stop.wait(self.task_dict[alias]['time']):
-            self.task_dict[alias]['func']()
+            try:
+                self.task_dict[alias]['func']()
+            except Exception as exc:
+                debug_print(f'intervalo {alias!r} lanzó {type(exc).__name__}: {exc}', priority=3)
     
     def change_time(self, alias: str, new_time: float):
         self.task_dict['{}'.format(alias)]['time'] = new_time
